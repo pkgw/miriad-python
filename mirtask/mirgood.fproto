@@ -1,0 +1,512 @@
+subroutine output(line) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/txtio.f
+    character*(*) :: line
+end subroutine output
+
+subroutine uvdatinp(key,flags) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    character*(*) :: key
+    character*(*) :: flags
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatinp
+
+function uvdatopn(tin) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    integer intent (out) :: tin
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    logical :: uvdatopn
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end function uvdatopn
+
+subroutine uvdatrd(preamble,data,flags,n,nread) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    double precision dimension(*) :: preamble
+    complex dimension(n) :: data
+    logical dimension(n),depend(n) :: flags
+    integer optional,check(len(data)>=n),depend(data) :: n=len(data)
+    integer intent(out) :: nread
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatrd
+
+subroutine uvdatcls ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatcls
+
+subroutine varinit(tin,linetype) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+    integer :: tin
+    character*(*) :: linetype
+    integer :: vhandc
+    integer :: vhandu
+    logical :: avall
+    common /varcom/ vhandc,vhandu,avall
+end subroutine varinit
+
+subroutine varonit(tin,tout,linetype) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+    integer :: tin
+    integer :: tout
+    character*(*) :: linetype
+end subroutine varonit
+
+subroutine hisinput(tno,name) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/hisinput.f
+    integer :: tno
+    character*(*) :: name
+end subroutine hisinput
+
+subroutine uvdatgti(object,ival) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    character*(*) :: object
+    integer dimension(*) :: ival
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatgti
+
+subroutine uvdatgtr(object,rval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    character*(*) :: object
+    real :: rval
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatgtr
+
+subroutine uvdatgta(object,aval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+    character*(*) :: object
+    character*(*) intent(inout) :: aval
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatgta
+
+subroutine varcopy(tin,tout) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+    integer :: tin
+    integer :: tout
+    integer :: vhandc
+    integer :: vhandu
+    logical :: avall
+    common /varcom/ vhandc,vhandu,avall
+end subroutine varcopy
+
+subroutine todayjul(julian) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/julday.f
+    double precision intent(out) :: julian
+end subroutine todayjul
+
+subroutine julday(julian,form,calday) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/julday.f
+    double precision :: julian
+    character*(*) :: form
+    character*(*) intent (inout):: calday
+end subroutine julday
