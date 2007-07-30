@@ -1,0 +1,7 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+
+Name: miriad-pytask
+Description: Python modules for writing Miriad tasks.
+Version: @VERSION@
