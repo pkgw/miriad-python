@@ -12,9 +12,6 @@ class GainsReader (object):
     """Read in gains from a Miriad data set. Code based on gplist.for."""
     
     def __init__ (self, dset):
-        if not dset.hasItem ('gains'):
-            raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.name)
-
         self.dset = dset
 
     nants = None
@@ -28,6 +25,9 @@ class GainsReader (object):
         information itself. Sets the following attributes on the object:
         ngains, nfeeds, ntau, nants, nsols."""
 
+        if not dset.hasItem ('gains'):
+            raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.name)
+
         self.ngains = ngains = self.dset.getHeaderInt ('ngains', 0)
         self.nfeeds = nfeeds = self.dset.getHeaderInt ('nfeeds', 1)
         self.ntau = ntau = self.dset.getHeaderInt ('ntau', 0)
@@ -35,8 +35,8 @@ class GainsReader (object):
         if nfeeds < 1 or nfeeds > 2 or \
            ngains % (nfeeds + ntau) != 0 or \
            ntau > 1 or ntau < 0:
-            raise MiriadError ('Bad number of gains (%d), feeds (%d), or taus (%d) in UV dataset' % \
-                               (ngains, nfeeds, ntau))
+            raise RuntimeError ('Bad number of gains (%d), feeds (%d), or taus (%d) in UV dataset' % \
+                                (ngains, nfeeds, ntau))
 
         self.nants = nants = ngains / (nfeeds + ntau)
 
@@ -48,7 +48,7 @@ class GainsReader (object):
         once. Returns (time, gains), where time is an ndarray of nsols
         doubles, and gains is an ndarray of (nsols, ngains) complexes."""
 
-        if self.nsols is None: raise SystemError ('Need to call prep() first!')
+        if self.nsols is None: raise RuntimeError ('Need to call prep() first!')
         
         nsols, ngains = self.nsols, self.ngains
         
@@ -71,7 +71,7 @@ class GainsReader (object):
         """Generate a sequence of (time, gains), where time is a double and
         gains is an ndarray of ngains complexes."""
         
-        if self.nsols is None: raise SystemError ('Need to call prep() first!')
+        if self.nsols is None: raise RuntimeError ('Need to call prep() first!')
         
         nsols, ngains = self.nsols, self.ngains
         
