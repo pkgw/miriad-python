@@ -132,15 +132,15 @@ static PyObject *
 py_hmode (PyObject *self, PyObject *args)
 {
     int tno;
-    char *mode;
+    char mode[8];
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &mode))
+    if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
     MTS_CHECK_BUG;
     hmode_c (tno, mode);
 
-    Py_RETURN_NONE;
+    return Py_BuildValue ("s", mode);
 }
 
 static PyObject *
@@ -1278,10 +1278,10 @@ static PyMethodDef uvio_methods[] = {
     DEF(habort, "(void) => void"),
     DEF(hrm, "(int tno) => void"),
     DEF(hclose, "(int tno) => void"),
-    DEF(hdelete, "(int tno, char *keyword) => void"),
-    DEF(haccess, "(int tno, char *keyword, char *status) => int itno"),
-    DEF(hmode, "(int tno, char *mode) => void"),
-    DEF(hexists, "(int tno, char *keyword) => int retval"),
+    DEF(hdelete, "(int tno, str keyword) => void"),
+    DEF(haccess, "(int tno, str keyword, str status) => int itno"),
+    DEF(hmode, "(int tno) => str mode"),
+    DEF(hexists, "(int tno, str keyword) => int retval"),
     DEF(hdaccess, "(int ihandle) => void"),
     DEF(hsize, "(int ihandle) => long retval"),
     DEF(hseek, "(int ihandle, long offset) => void"),
