@@ -1,14 +1,26 @@
-#include <Python.h>
+#include <string.h> /* strerror */
 
-#define PY_ARRAY_UNIQUE_SYMBOL py_uvio_array_api
-
-#include "numpy/arrayobject.h"
+#include "mirtasksupport.h"
 
 #include "hio.h"
 #include "miriad.h"
-#include "_uviomodule.h"
 
 #define BUFSZ 512
+
+static int check_iostat (int iostat);
+
+static int
+check_iostat (int iostat)
+{
+    if (iostat == 0)
+	return 0;
+
+    errno = iostat;
+    PyErr_SetFromErrno (PyExc_IOError);
+    return 1;
+}
+
+#define CHECK_IOSTAT(iostat) if (check_iostat (iostat)) return NULL
 
 /* hio.c */
 
@@ -21,10 +33,11 @@ py_hopen (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ss", &name, &status))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hopen_c (&tno, name, status, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue("(ii)", tno, iostat);
+    return Py_BuildValue("i", tno);
 }
 
 static PyObject *
@@ -35,10 +48,11 @@ py_hflush (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hflush_c (tno, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue("i", iostat);
+    Py_RETURN_NONE;
 }
 
 
@@ -48,7 +62,7 @@ py_habort (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, ""))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     habort_c ();
 
     Py_RETURN_NONE;
@@ -62,7 +76,7 @@ py_hrm (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hrm_c (tno);
 
     Py_RETURN_NONE;
@@ -76,7 +90,7 @@ py_hclose (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hclose_c (tno);
 
     Py_RETURN_NONE;
@@ -91,10 +105,11 @@ py_hdelete (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hdelete_c (tno, keyword, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("i", iostat);
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -106,10 +121,11 @@ py_haccess (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &status))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     haccess_c (tno, &itno, keyword, status, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("ii", itno, iostat);
+    return Py_BuildValue ("i", itno);
 }
 
 static PyObject *
@@ -121,7 +137,7 @@ py_hmode (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &mode))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hmode_c (tno, mode);
 
     Py_RETURN_NONE;
@@ -136,7 +152,7 @@ py_hexists (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     ret = hexists_c (tno, keyword);
 
     return Py_BuildValue ("i", ret);
@@ -150,10 +166,11 @@ py_hdaccess (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &ihandle))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hdaccess_c (ihandle, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("i", iostat);
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -165,7 +182,7 @@ py_hsize (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &ihandle))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = hsize_c (ihandle);
 
     return Py_BuildValue ("l", (long) retval);
@@ -182,7 +199,7 @@ py_hseek (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "il", &ihandle, &offset))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hseek_c (ihandle, (off_t) offset);
 
     Py_RETURN_NONE;
@@ -197,7 +214,7 @@ py_htell (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &ihandle))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = htell_c (ihandle);
 
     return Py_BuildValue ("l", (long) retval);
@@ -212,10 +229,11 @@ py_hreada (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &ihandle))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hreada_c (ihandle, line, BUFSZ-1, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("(si)", iostat);
+    return Py_BuildValue ("s", line);
 }
 
 static PyObject *
@@ -228,10 +246,11 @@ py_hwritea (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isl", &ihandle, &line, &length))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hwritea_c (ihandle, line, (size_t) length, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("i", iostat);
+    Py_RETURN_NONE;
 }
 
 /* hio macros */
@@ -281,11 +300,12 @@ hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
 
     /* do it */
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hio_c (item, dowrite, type, PyArray_DATA (buf), (off_t) offset, 
 	   (size_t) length, &iostat);
+    CHECK_IOSTAT(iostat);
 
-    return Py_BuildValue ("i", iostat);
+    Py_RETURN_NONE;
 }
 
 #define MAKE_HIO(ident, mtype, dtype, size) \
@@ -317,7 +337,7 @@ py_hisopen (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &status))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hisopen_c (tno, status);
 
     Py_RETURN_NONE;
@@ -332,7 +352,7 @@ py_hiswrite (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &text))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hiswrite_c (tno, text);
 
     Py_RETURN_NONE;
@@ -348,7 +368,7 @@ py_hisclose (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hisclose_c (tno);
 
     Py_RETURN_NONE;
@@ -367,7 +387,7 @@ py_rdhdr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhdr_c (tno, keyword, &value, defval);
 
     return Py_BuildValue ("f", value);
@@ -383,7 +403,7 @@ py_rdhdi (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &defval))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhdi_c (tno, keyword, &value, defval);
 
     return Py_BuildValue ("i", value);
@@ -405,7 +425,7 @@ py_rdhdl (PyObject *self, PyObject *args)
     else
 	defval8 = 0;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhdl_c (tno, keyword, &value, defval8);
 
     return Py_BuildValue ("i", (int) value);
@@ -421,7 +441,7 @@ py_rdhdd (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhdd_c (tno, keyword, &value, defval);
 
     return Py_BuildValue ("d", value);
@@ -438,7 +458,7 @@ py_rdhdc (PyObject *self, PyObject *args)
 			   &(defval[1])))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhdc_c (tno, keyword, value, defval);
 
     return Py_BuildValue ("(ff)", value[0], value[1]);
@@ -454,7 +474,7 @@ py_rdhda (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &defval))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     rdhda_c (tno, keyword, value, defval, BUFSZ-1);
 
     return Py_BuildValue ("s", value);
@@ -469,7 +489,7 @@ py_hdcopy (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "iis", &tin, &tout, &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hdcopy_c (tin, tout, keyword);
 
     Py_RETURN_NONE;
@@ -484,7 +504,7 @@ py_hdprsnt (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = hdprsnt_c (tno, keyword);
 
     return Py_BuildValue ("i", retval);
@@ -501,7 +521,7 @@ py_hdprobe (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     hdprobe_c (tno, keyword, descr, BUFSZ, type, &n);
 
     return Py_BuildValue ("(ssi)", descr, type, n);
@@ -521,7 +541,7 @@ py_uvopen (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ss", &name, &status))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvopen_c (&tno, name, status);
 
     return Py_BuildValue ("i", tno);
@@ -535,7 +555,7 @@ py_uvclose (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvclose_c (tno);
 
     Py_RETURN_NONE;
@@ -549,7 +569,7 @@ py_uvflush (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvflush_c (tno);
 
     Py_RETURN_NONE;
@@ -563,7 +583,7 @@ py_uvnext (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvnext_c (tno);
 
     Py_RETURN_NONE;
@@ -577,7 +597,7 @@ py_uvrewind (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvrewind_c (tno);
 
     Py_RETURN_NONE;
@@ -591,7 +611,7 @@ py_uvcopyvr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ii", &tno, &tout))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvcopyvr_c (tno, tout);
 
     Py_RETURN_NONE;
@@ -605,7 +625,7 @@ py_uvupdate (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = uvupdate_c (tno);
 
     return Py_BuildValue ("i", retval);
@@ -619,7 +639,7 @@ py_uvvarini (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &tno))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvvarini_c (tno, &vhan);
 
     return Py_BuildValue ("i", vhan);
@@ -634,7 +654,7 @@ py_uvvarset (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &vhan, &var))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvvarset_c (vhan, var);
 
     Py_RETURN_NONE;
@@ -648,7 +668,7 @@ py_uvvarcpy (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ii", &vhan, &tout))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvvarcpy_c (vhan, tout);
 
     Py_RETURN_NONE;
@@ -662,7 +682,7 @@ py_uvvarupd (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "i", &vhan))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = uvvarupd_c (vhan);
 
     return Py_BuildValue ("i", retval);
@@ -679,7 +699,7 @@ py_uvprobvr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &var))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvprobvr_c (tno, var, &type, &length, &updated);
 
     return Py_BuildValue ("cii", type, length, updated);
@@ -694,7 +714,7 @@ py_uvtrack (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "iss", &tno, &name, &switches))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvtrack_c (tno, name, switches);
 
     Py_RETURN_NONE;
@@ -709,7 +729,7 @@ py_uvscan (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "is", &tno, &var))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = uvscan_c (tno, var);
 
     return Py_BuildValue ("i", retval);
@@ -800,7 +820,7 @@ py_uvwrite (PyObject *self, PyObject *args)
     }
 
     /* finally ... */
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvwrite_c (tno, PyArray_DATA (preamble), PyArray_DATA (data), 
 	       PyArray_DATA (flags), n);
     
@@ -821,7 +841,7 @@ py_uvset (PyObject *self, PyObject *args)
 			   &n, &p1, &p2, &p3))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     uvset_c (tno, object, type, n, p1, p2, p3);
 
     Py_RETURN_NONE;
@@ -860,7 +880,7 @@ py_uvputvri (PyObject *self, PyObject *args)
 	return NULL;
     }
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     uvputvri_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
 
@@ -893,7 +913,7 @@ py_uvputvrr (PyObject *self, PyObject *args)
 	return NULL;
     }
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     uvputvrr_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
 
@@ -919,7 +939,7 @@ py_bugseverity (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, ""))
 	return NULL;
 
-    UVIO_CHECK_BUG; /*???*/
+    MTS_CHECK_BUG; /*???*/
     retval = bugseverity_c ();
     
     return Py_BuildValue ("c", retval);
@@ -933,7 +953,7 @@ py_bugmessage (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, ""))
 	return NULL;
 
-    UVIO_CHECK_BUG; /*???*/
+    MTS_CHECK_BUG; /*???*/
     retval = bugmessage_c ();
     
     return Py_BuildValue ("s", retval);
@@ -947,7 +967,7 @@ py_buglabel (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &name))
 	return NULL;
 
-    UVIO_CHECK_BUG; /*???*/
+    MTS_CHECK_BUG; /*???*/
     buglabel_c (name);
     
     Py_RETURN_NONE;
@@ -962,7 +982,7 @@ py_bugno (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ci", &s, &n))
 	return NULL;
 
-    UVIO_CHECK_BUG; /*???*/
+    MTS_CHECK_BUG; /*???*/
     bugno_c (s, n);
     
     Py_RETURN_NONE;
@@ -976,52 +996,12 @@ py_bug (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "cs", &s, &m))
 	return NULL;
 
-    UVIO_CHECK_BUG; /*???*/
+    MTS_CHECK_BUG; /*???*/
     bug_c (s, m);
     
     Py_RETURN_NONE;
 }
 #endif
-
-static PyObject *ex_miriad_err;
-static char bug_msg[BUFSZ];
-jmp_buf py_uvio_bug_recover;
-
-static void
-bug_handler (void)
-{
-    char sev = bugseverity_c ();
-    char *msg = bugmessage_c ();
-
-    if (sev == 'f') {
-	strcpy (bug_msg, msg);
-	longjmp (py_uvio_bug_recover, 1);
-    } else {
-#if PY_MINOR_VERSION > 4
-	PyErr_WarnEx (PyExc_UserWarning, msg, 1);
-#else
-	PyErr_Warn (PyExc_UserWarning, msg);
-#endif
-	if (PyErr_Occurred () != NULL)
-	    longjmp (py_uvio_bug_recover, 1);
-    }
-}
-
-void
-py_uvio_set_bug (void)
-{
-    if (PyErr_Occurred () == NULL)
-	/* The exception may have been set before (if the warning was
-	 * promoted to an error) */
-	PyErr_SetString (ex_miriad_err, bug_msg);
-}
-
-static void
-setup_bug_handling (void)
-{
-    ex_miriad_err = PyErr_NewException ("_uvio.MiriadError", NULL, NULL);
-    bugrecover_c (bug_handler);
-}
 
 /* no bugv -- no point in dealing with that */
 
@@ -1037,7 +1017,7 @@ py_keyinit (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &task))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyinit_c (task);
 
     Py_RETURN_NONE;
@@ -1051,7 +1031,7 @@ py_keyput (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ss", &task, &string))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyput_c (task, string);
 
     Py_RETURN_NONE;
@@ -1067,7 +1047,7 @@ py_keyini (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "O!", &PyList_Type, &list))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     /* We must copy the strings individually because keyini
      * modifies them. Could be smarter about memory allocation,
@@ -1100,7 +1080,7 @@ py_keyfin (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, ""))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyfin_c ();
 
     Py_RETURN_NONE;
@@ -1116,7 +1096,7 @@ py_keyprsnt (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     retval = keyprsnt_c (keyword);
 
     return Py_BuildValue ("i", retval);
@@ -1130,7 +1110,7 @@ py_keya (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ss", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keya_c (keyword, value, dflt);
 
     return Py_BuildValue ("s", value);
@@ -1144,7 +1124,7 @@ py_keyf (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "ss", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyf_c (keyword, value, dflt);
 
     return Py_BuildValue ("s", value);
@@ -1159,7 +1139,7 @@ py_keyd (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "sd", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyd_c (keyword, &value, dflt);
 
     return Py_BuildValue ("d", value);
@@ -1174,7 +1154,7 @@ py_keyr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "sf", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyr_c (keyword, &value, dflt);
 
     return Py_BuildValue ("f", value);
@@ -1189,7 +1169,7 @@ py_keyi (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "si", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyi_c (keyword, &value, dflt);
 
     return Py_BuildValue ("i", value);
@@ -1204,7 +1184,7 @@ py_keyl (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "si", &keyword, &dflt))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
     keyl_c (keyword, &value, dflt);
 
     return Py_BuildValue ("i", value);
@@ -1223,7 +1203,7 @@ py_mkeyd (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     mkeyd_c (keyword, vals, DUMBAPI, &n);
 
@@ -1246,7 +1226,7 @@ py_mkeyr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     mkeyr_c (keyword, vals, DUMBAPI, &n);
 
@@ -1269,7 +1249,7 @@ py_mkeyi (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "s", &keyword))
 	return NULL;
 
-    UVIO_CHECK_BUG;
+    MTS_CHECK_BUG;
 
     mkeyi_c (keyword, vals, DUMBAPI, &n);
 
@@ -1293,29 +1273,29 @@ static PyMethodDef uvio_methods[] = {
 
 #define DEF(name, signature) { #name, py_##name, METH_VARARGS, #name " " signature }
 
-    DEF(hopen, "(str name, str status) => (int tno, int iostat)"),
-    DEF(hflush, "(int tno) => int iostat"),
+    DEF(hopen, "(str name, str status) => int tno"),
+    DEF(hflush, "(int tno) => void"),
     DEF(habort, "(void) => void"),
     DEF(hrm, "(int tno) => void"),
     DEF(hclose, "(int tno) => void"),
-    DEF(hdelete, "(int tno, char *keyword) => int iostat"),
-    DEF(haccess, "(int tno, char *keyword, char *status) => (int itno, int iostat)"),
+    DEF(hdelete, "(int tno, char *keyword) => void"),
+    DEF(haccess, "(int tno, char *keyword, char *status) => int itno"),
     DEF(hmode, "(int tno, char *mode) => void"),
     DEF(hexists, "(int tno, char *keyword) => int retval"),
-    DEF(hdaccess, "(int ihandle) => int iostat"),
+    DEF(hdaccess, "(int ihandle) => void"),
     DEF(hsize, "(int ihandle) => long retval"),
     DEF(hseek, "(int ihandle, long offset) => void"),
     DEF(htell, "(int ihandle) => long retval"),
-    DEF(hreada, "(int ihandle) => (str line, int iostat)"),
-    DEF(hwritea, "(int ihandle, str line, long length) => int iostat"),
+    DEF(hreada, "(int ihandle) => str line"),
+    DEF(hwritea, "(int ihandle, str line, long length) => void"),
 
     /* hio macros */
 
 #define HIO_ENTRY(ident, buftype) \
   	DEF(hread##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
-	  "long length) => int iostat"), \
+	  "long length) => void"), \
   	DEF(hwrite##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
-	  "long length) => int iostat")
+	  "long length) => void")
     
     HIO_ENTRY(b, byte),
     HIO_ENTRY(i, int),
@@ -1439,10 +1419,14 @@ init_uvio (void)
 {
     PyObject *mod, *dict;
 
-    import_array ();
-    setup_bug_handling ();
+    mts_setup ("_uvio.MiriadError");
+
+    if (PyErr_Occurred ()) {
+	PyErr_SetString (PyExc_ImportError, "Can't initialize module _uvio: failed to import numpy");
+	return;
+    }
 
     mod = Py_InitModule("_uvio", uvio_methods);
     dict = PyModule_GetDict (mod);
-    PyDict_SetItemString (dict, "MiriadError", ex_miriad_err);
+    PyDict_SetItemString (dict, "MiriadError", mts_exc_miriad_err);
 }
