@@ -14,6 +14,7 @@ import base
 from base import *
 
 import readgains
+import uvdat
 
 # Automatically do this
 

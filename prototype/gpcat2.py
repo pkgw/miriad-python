@@ -18,7 +18,7 @@ ll.keyfin ()
 if vis == ' ':
     raise MiriadError ('An input file must be given')
 
-ds = mirtask.DataSet (vis)
+ds = mirtask.UserDataSet (vis)
 gr = mirtask.readgains.GainsReader (ds)
 gr.prep ()
 

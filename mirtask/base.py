@@ -23,31 +23,37 @@ __all__ += ['initKeys']
 # given that there are standard APIs like uvdat*
 
 class DataSet (object):
-    """A generic Miriad data-set."""
+    """A generic Miriad data-set. Subclasses must implement a _close()
+    method."""
     
-    def __init__ (self, fname, create=False):
-        if create: mode = 'new'
-        else: mode = 'old'
-
-        self.name = fname
-        self.tno = ll.hopen (fname, mode)
-
     def __del__ (self):
         # tno can be None if we got an exception inside hopen,
         # or if we are deleteAll'ed
 
         if ll is None or not hasattr (self, 'tno'): return
 
-        if self._histOpen: self.closeHistory ()
+        self._close ()
         
-        ll.hclose (self.tno)
-
     def __repr__ (self):
-        return 'DataSet (%s)' % (repr (self.name))
+        if hasattr (self, 'name'):
+            return 'DataSet (%s)' % (repr (self.name))
+        return 'DataSet (<unknown filename>)'
 
     def __str__ (self):
-        return '<DataSet \"%s\" handle %d>' % (self.name, self.tno)
+        if hasattr (self, 'name'):
+            return '<DataSet \"%s\" handle %d>' % (self.name, self.tno)
+        return '<DataSet [unknown filename] handle %d>' % (self.tno, )
 
+    def close (self):
+        """Close the dataset."""
+
+        if not hasattr (self, 'tno'): raise RuntimeError ('Trying to re-close a dataset')
+
+        if self._histOpen: self.closeHistory ()
+        
+        self._close ()
+        delattr (self, 'tno')
+    
     def flush (self):
         """Write any changed items in the data set out to disk."""
         
@@ -134,6 +140,14 @@ class DataSet (object):
         
         ll.hiswrite (self.tno, text)
 
+    def logInvocation (self, taskname, args=None):
+        """Write text into this data set's history file logging the invocation
+        of this task: when it was run and what parameters it was given. Can
+        optionally be given an argument list if that contained in sys.argv
+        does not represent this task."""
+
+        ll.hisinput (self.tno, taskname, args)
+    
     def closeHistory (self):
         """Close this data set's history item."""
 
@@ -352,3 +366,235 @@ class DataItem (object):
         ll.hwritec (self.itno, buf, offset, length)
 
 __all__ += ['DataSet', 'DataItem']
+
+class UserDataSet (DataSet):
+    def __init__ (self, fname, create=False):
+        if create: mode = 'new'
+        else: mode = 'old'
+
+        self.tno = ll.hopen (fname, mode)
+        self.name = fname
+        
+    def _close (self):
+        ll.hclose (self.tno)
+
+__all__ += ['UserDataSet']
+
+class UVDataSet (DataSet):
+    def __init__ (self, fname, mode):
+        if mode == 'r': modestr = 'old'
+        elif mode == 'w': modestr = 'new'
+        elif mode == 'a': modestr = 'append'
+        else: raise ValueError ('Unexpected mode string ' + mode)
+
+        self.tno = ll.uvopen (fname, modestr)
+        self.name = fname
+
+    def _close (self):
+        ll.uvclose (self.tno)
+
+    # These override the basic DataSet operations
+
+    def flush (self):
+        """Write out any unbuffered changes to the UV data set."""
+        
+        ll.uvflush (self.tno)
+
+    # UV-specific operations
+
+    def next (self):
+        """Skip to the next UV data record. On write, this causes an
+        end-of-record mark to be written."""
+
+        ll.uvnext (self.tno)
+
+    def rewind (self):
+        """Rewind to the beginning of the file, allowing the UV data to
+        be reread from the start."""
+
+        ll.uvrewind (self.tno)
+
+    def write (self, preamble, data, flags, length=None):
+        """Write a visibility record consisting of the given preamble,
+        data, flags, and length. Length defaults to the length of the
+        flags array."""
+
+        if length is None: length = flags.size
+
+        ll.uvwrite (self.tno, preamble, data, flags, length)
+
+    # uvset exploders
+
+    def _uvset (self, object, type, n, p1, p2, p3):
+        ll.uvset (self.tno, object, type, n, p1, p2, p3)
+
+    def setPreambleType (self, *vars):
+        """Specify up to five variables to put in the preamble block.
+        Should be given a list of variable names; 'uv' and 'uvw' are
+        a special expansion of 'coord' that expand out to their
+        respective UV coordinates. Default list is 'uvw', 'time',
+        'baseline'."""
+        
+        self._uvset ('preamble', '/'.join (spec), 0, 0., 0., 0.)
+
+    def setSelectAmplitude (self, selamp):
+        """Specify whether selection based on amplitude should be
+        performed."""
+
+        if selamp: val = 1
+        else: val = 0
+        
+        self._uvset ("selection", "amplitude", val, 0., 0., 0.,)
+        
+    def setSelectAmplitude (self, selamp):
+        """Specify whether selection based on window should be
+        performed."""
+
+        if selamp: val = 1
+        else: val = 0
+        
+        self._uvset ("selection", "window", val, 0., 0., 0.,)
+
+    def setPlanetParams (self, major, minor, angle):
+        """Set the reference parameters for planet scaling and
+        rotation."""
+
+        self._uvset ("planet", "", 0, major, minor, angle)
+    
+    def setWavelengthMode (self, wlmode):
+        """Specify that UV coordinates should be returned in units
+        of wavelength. Otherwise, they are returned in nanoseconds."""
+
+        if wlmode:
+            self._uvset ("coord", "wavelength", 0, 0., 0., 0.)
+        else:
+            self._uvset ("coord", "nanosec", 0, 0., 0., 0.)
+
+    # oh god there are a bunch more of these: data linetype, refernce
+    # linetype, gflag, flags, corr
+    
+    # Variable handling
+
+    def copyMarkedVars (self, output):
+        """Copy variables in this data set to the output data set. Only
+        copies those variables which have changed and are marked as
+        'copy'."""
+
+        ll.uvcopyvr (self.tno, output.tno)
+
+    def updated (self):
+        """Return true if any user-specified 'important variables' have
+        been updated in the last chunk of data read."""
+
+        return bool (ll.uvupdate (self.tno))
+
+    def initVarsAsInput (self, linetype):
+        """Initialize the UV reading functions to copy variables from
+        this file as an input file. Linetype should be one of 'channel',
+        'wide', or 'velocity'. Maps to Miriad's varinit() call."""
+
+        ll.varinit (self.tno, linetype)
+
+    def initVarsAsOutput (self, input, linetype):
+        """Initialize this dataset as the output file for the UV
+        reading functions. Linetype should be one of 'channel', 'wide',
+        or 'velocity'. Maps to Miriad's varonit() call."""
+
+        ll.varonit (input.tno, self.tno, linetype)
+
+    def copyLineVars (self, output):
+        """Copy UV variables to the output dataset that describe the
+        current line in the input set."""
+
+        ll.varcopy (self.tno, output.tno)
+
+    def makeVarTracker (self):
+        """Create a UVVarTracker object, which can be used to track
+        the values of UV variables and when they change."""
+        
+        return UVVarTracker (self)
+
+    def probeVar (self, varname):
+        """Get information about a given variable. Returns (type, length,
+        updated) or None if the variable is undefined.
+
+        type - The variable type character: a (text), r ("real"/float),
+        i (int), d (double), c (complex)
+
+        length - The number of elements in this variable; zero if unknown.
+
+        updated - True if the variable was updated on the last UV data read.
+        """
+
+        (type, length, updated) = ll.uvprobvr (self.tno, varname)
+
+        if type == '' or type == ' ': return None
+        return (type, length, updated)
+
+    def trackVar (self, varname, watch, copy):
+        """Set how the given variable is tracked. If 'watch' is true, updated()
+        will return true when this variable changes after a chunk of UV data
+        is read. If 'copy' is true, this variable will be copied when
+        copyMarkedVars() is called.
+        """
+
+        switches = ''
+        if watch: switches += 'u'
+        if copy: switches += 'c'
+
+        ll.uvtrack (self.tno, varname, switches)
+
+    def scanUntilChange (self, varname):
+        """Scan through the UV data until the given variable changes. Reads
+        to the end of the record in which the variable changes. Returns False
+        if end-of-file was reached, True otherwise."""
+
+        return ll.uvscan (self.tno, varname) == 0
+
+    def writeVarInt (self, name, val):
+        """Write an integer UV variable. val can either be a single value or
+        an ndarray for array variables."""
+        
+        if not isinstance (val, ndarray):
+            v2 = N.ndarray (1, dtype=N.int32)
+            v2[0] = int (val)
+            val = v2
+
+        ll.uvputvri (self.tno, name, val)
+    
+    def writeVarFloat (self, name, val):
+        """Write an integer UV variable. val can either be a single value or
+        an ndarray for array variables."""
+        
+        if not isinstance (val, ndarray):
+            v2 = N.ndarray (1, dtype=N.float32)
+            v2[0] = float (val)
+            val = v2
+
+        ll.uvputvrr (self.tno, name, val)
+    
+class UVVarTracker (object):
+    def __init__ (self, owner):
+        self.dataset = owner
+        self.vhnd = ll.uvvarini (owner.tno)
+
+    def track (self, *vars):
+        """Indicate that the specifieds variable should be tracked by this
+        tracker."""
+
+        for var in vars:
+            ll.uvvarset (self.vhnd, var)
+
+    def copyTo (self, output):
+        """Copy the variables tracked by this tracker into the output
+        data set."""
+
+        ll.uvvarcpy (self.vhnd, output.tno)
+
+    def updated (self):
+        """Return true if one of the variables tracked by this tracker
+        was updated in the last UV data read."""
+
+        return bool (ll.uvvarupd (self.vhnd))
+
+__all__ += ['UVDataSet', 'UVVarTracker']

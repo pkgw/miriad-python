@@ -6,7 +6,8 @@ mtpy_PYTHON = \
   lowlevel.py \
   \
   base.py \
-  readgains.py
+  readgains.py \
+  uvdat.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
 mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la _mirugly.la

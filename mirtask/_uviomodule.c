@@ -731,6 +731,8 @@ py_uvscan (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG;
     retval = uvscan_c (tno, var);
+    if (retval != -1)
+	CHECK_IOSTAT(retval);
 
     return Py_BuildValue ("i", retval);
 }

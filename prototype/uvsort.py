@@ -1,42 +1,32 @@
 #!/usr/bin/python
 
-import pymirread
+import mirtask
+import mirtask.lowlevel as ll
+from mirtask import uvdat
 import numpy as N
-m = pymirread._mirgood
-u = pymirread._uvio
 
-MAXCHAN = 4096
 CHUNKSIZE = 32768
 
 sortedtime = N.zeros (CHUNKSIZE, dtype=N.double)
 npertime = N.zeros (CHUNKSIZE, dtype=N.int)
 
-m.output ('UvSort: python bastardization')
-# keys initialized by pymirread.__init__.
-uvflags = 'bxdlr3'
-m.uvdatinp ('vis', uvflags)
+ll.output ('UvSort: python bastardization')
+# keys initialized by mirtask.__init__.
 
+uvdat.init ('bxdlr3')
 out = u.keya ('out', ' ')
 u.keyfin ()
 
 if out == ' ':
-    pymirread.bug ('f', 'Output file must be specified')
+    raise RuntimeError ('Output file must be specified')
 
 nrec = 0
 
 m.output ('First pass: reading timestamps and sorting')
 
-(status, tin) = m.uvdatopn ()
-if not status:
-    pymirread.bug ('f', 'Cannot open input file')
+ds = uvdat.singleInputSet ()
 
-preamble = N.zeros (5, dtype=N.double)
-data = N.zeros (MAXCHAN, dtype=N.complex64)
-flags = N.zeros (MAXCHAN, dtype=N.int32)
-
-nread = m.uvdatrd (preamble, data, flags, MAXCHAN)
-
-while nread > 0:
+for (preamble, data, flags, nread) in uvdat.readData ():
     nrec += 1
 
     if nrec >= sortedtime.size: sortedtime.resize (sortedtime.size + CHUNKSIZE)
@@ -44,7 +34,8 @@ while nread > 0:
     sortedtime[nrec - 1] = preamble[3]
     nread = m.uvdatrd (preamble, data, flags, MAXCHAN)
 
-m.uvdatcls ()
+del ds
+
 sortedtime.resize (nrec)
 sortedtime.sort ()
 
@@ -59,35 +50,30 @@ for i in xrange (0, nrec):
 
     npertime[nuniq - 1] += 1
 
-m.output ('% 12d unique UV timestamps, %d UV records' % (nuniq, nrec))
-m.output ('Second pass: copying data')
+ll.output ('% 12d unique UV timestamps, %d UV records' % (nuniq, nrec))
+ll.output ('Second pass: copying data')
 
-pymirread.initKeys ()
-m.uvdatinp ('vis', uvflags)
+mirtask.initKeys ()
+uvdat.init ('bxdlr3')
 out = u.keya ('out', ' ')
 u.keyfin ()
 
-(status, tin) = m.uvdatopn ()
-if not status:
-    pymirread.bug ('f', 'Cannot open input file')
+din = uvdat.singleInputSet ()
+ltype = uvdat.getLinetype ()
+din.initVarsAsInput (ltype)
 
-ltype = pymirread.uvdatgta ('ltype')
-m.varinit (tin, ltype)
-vupd = u.uvvarini (tin)
-u.uvvarset (vupd, 'dra')
-u.uvvarset (vupd, 'ddec')
-u.uvvarset (vupd, 'source')
-u.uvvarset (vupd, 'on')
+tracker = din.makeVarTracker ()
+tracker.track ('dra', 'ddec', 'source', 'on')
 
-tout = u.uvopen (out, 'new')
-u.uvset (tout, 'preamble', 'uvw/time/baseline', 0, 0., 0., 0.,)
-u.hdcopy (tin, tout, 'history')
-u.hisopen (tout, 'append')
-u.hiswrite (tout, 'UVSORT: python bastardization')
-pymirread.hisinput (tout, 'UVSORT')
-u.hisclose (tout)
+dout = mirtask.UVDataSet (out, 'w')
+dout.setPreambleType ('uvw', 'time', 'baseline')
+dout.initVarsAsOutput (din, linetype)
 
-m.varonit (tin, tout, ltype)
+din.copyHeader (dout, 'history')
+dout.openHistory ()
+dout.writeHistory ('UVSORT: python bastardization')
+dout.logInvocation ('UVSORT')
+dout.closeHistory ()
 
 isrec = 0
 written = 0
@@ -103,7 +89,7 @@ while isrec < nuniq:
     nthistime = 0
     irec = 0
 
-    nread = m.uvdatrd (preamble, data, flags, MAXCHAN)
+    nread = ll.uvdatrd (preamble, data, flags, MAXCHAN)
 
     while nread > 0 and isrec < nuniq:
         irec += 1
@@ -111,14 +97,11 @@ while isrec < nuniq:
         if preamble[3] > sortedtime[isrec]:
             futureskipped = True
         elif preamble[3] == sortedtime[isrec]:
-            m.uvdatgti ('npol', npol)
-            u.uvputvri (tout, 'npol', npol)
-            m.uvdatgti ('pol', pol)
-            u.uvputvri (tout, 'pol', pol)
-            m.varcopy (tin, tout)
-            m.uvdatgtr ('jyperk', jyperk)
-            u.uvputvrr (tout, 'jyperk', jyperk)
-            u.uvwrite (tout, preamble, data, flags, nread)
+            dout.writeVarInt ('npol', uvdat.getNPol ())
+            dout.writeVarInt ('pol', uvdat.getPol ())
+            dout.writeVarFloat ('jyperk', uvdat.getJyPerK ())
+            din.copyLineVars (dout)
+            dout.write (preamble, data, flags, nread)
 
             written += 1
             nthistime += 1
@@ -131,19 +114,19 @@ while isrec < nuniq:
                 print '% 12d of % 6d UV records written' % (written, nrec)
                 nextprog += 0.1
 
-        nread = m.uvdatrd (preamble, data, flags, MAXCHAN)
+        nread = ll.uvdatrd (preamble, data, flags, MAXCHAN)
     
     if nthistime != npertime[isrec]:
-        pymirread.bug ('f', 'Algorithm bug (1) (nthis %d, nper[%d] %d)' % \
+        raise MiriadError ('Algorithm bug (1) (nthis %d, nper[%d] %d)' % \
                        (nthistime, isrec, npertime[isrec]))
 
     nrewind += 1
-    u.uvrewind (tin)
+    din.rewind ()
     isrec += 1
 
-if isrec < nuniq: pymirread.bug ('f', 'Algorithm bug (2)')
-if written != nrec:pymirread.bug ('f', 'Algorithm bug (3)')
+if isrec < nuniq: raise MiriadError ('Algorithm bug (2)')
+if written != nrec: raise MiriadError ('Algorithm bug (3)')
 
 print 'Done sorting. Had to rewind %d times.' % nrewind
-m.uvdatcls ()
-u.uvclose (tout)
+del din, dout
+
