@@ -41,7 +41,6 @@ class UVDatDataSet (UVDataSet):
         self.name = getCurrentName ()
 
     def _close (self):
-        print 'calling uvdatcls'
         ll.uvdatcls ()
 
 def inputSets ():
@@ -111,14 +110,9 @@ def _getOneFloat (kw):
     ll.uvdatgtr (kw, a)
     return a[0]
 
-def _getOneString (kw, maxstr=120):
-    a = N.chararray (maxstr)
-    ll.uvdatgta (kw, a)
-
-    for i in xrange (0, a.size):
-        if a[i] == '': return a[0:i].tostring ()
-    
-    raise MiriadError ('Output from uvdatgta exceeded buffer size')
+def _getOneString (kw):
+    # This is wrapped in lowlevel.
+    return ll.uvdatgta (kw)
 
 def getNPol ():
     """Return the number of simultaneous polarizations being returned by readData.
