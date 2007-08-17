@@ -557,3 +557,16 @@ subroutine mkeya(key,value,nmax,n) ! in subs/keyf.f
     integer :: nmax
     integer intent(out) :: n
 end subroutine mkeya
+
+subroutine basants(baseline,ant1,ant2,check) ! in subs/basant.f
+    double precision :: baseline
+    integer intent(out) :: ant1
+    integer intent(out) :: ant2
+    logical :: check
+end subroutine basants
+
+function antbas(i1,i2) ! in subs/basant.f
+    integer :: i1
+    integer :: i2
+    double precision :: antbas
+end function antbas

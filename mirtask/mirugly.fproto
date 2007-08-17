@@ -184,27 +184,6 @@ subroutine axistype(lin,axis,plane,ctype,label,value,units) ! in subs/axistype.f
     double precision :: value
     character*13 :: units
 end subroutine axistype
-subroutine basant(baseline,ant1,ant2) ! in subs/basant.f
-    double precision :: baseline
-    integer :: ant1
-    integer :: ant2
-end subroutine basant
-subroutine basanta(baseline,ant1,ant2) ! in subs/basant.f
-    double precision :: baseline
-    integer :: ant1
-    integer :: ant2
-end subroutine basanta
-subroutine basants(baseline,ant1,ant2,check) ! in subs/basant.f
-    double precision :: baseline
-    integer :: ant1
-    integer :: ant2
-    logical :: check
-end subroutine basants
-function antbas(i1,i2) ! in subs/basant.f
-    integer :: i1
-    integer :: i2
-    double precision :: antbas
-end function antbas
 function bessi0(x) ! in subs/bessel.f
     double precision :: x
     double precision :: bessi0

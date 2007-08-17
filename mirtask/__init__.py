@@ -13,7 +13,7 @@ MiriadError = _uvio.MiriadError
 import base
 from base import *
 
-import keys, readgains, uvdat
+import keys, readgains, util, uvdat
 
 # Automatically do this -- will do a keyini with sys.argv.
 

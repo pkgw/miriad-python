@@ -8,6 +8,7 @@ mtpy_PYTHON = \
   base.py \
   keys.py \
   readgains.py \
+  util.py \
   uvdat.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
