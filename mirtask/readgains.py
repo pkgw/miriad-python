@@ -25,8 +25,8 @@ class GainsReader (object):
         information itself. Sets the following attributes on the object:
         ngains, nfeeds, ntau, nants, nsols."""
 
-        if not dset.hasItem ('gains'):
-            raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.name)
+        if not self.dset.hasItem ('gains'):
+            raise ValueError ('Input "%s" doesn\'t have a gains table!' % self.dset.name)
 
         self.ngains = ngains = self.dset.getHeaderInt ('ngains', 0)
         self.nfeeds = nfeeds = self.dset.getHeaderInt ('nfeeds', 1)
@@ -38,10 +38,9 @@ class GainsReader (object):
             raise RuntimeError ('Bad number of gains (%d), feeds (%d), or taus (%d) in UV dataset' % \
                                 (ngains, nfeeds, ntau))
 
-        self.nants = nants = ngains / (nfeeds + ntau)
-
+        self.nants = ngains / (nfeeds + ntau)
         self.gitem = self.dset.getItem ('gains', 'r')
-        self.nsols = nsols = (self.gitem.getSize () - 8) / (8 * ngains + 8)
+        self.nsols = (self.gitem.getSize () - 8) / (8 * ngains + 8)
         
     def readAll (self):
         """Read in all of the gain and time information in at
