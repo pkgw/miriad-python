@@ -6,13 +6,14 @@ mtpy_PYTHON = \
   lowlevel.py \
   \
   base.py \
+  keys.py \
   readgains.py \
   uvdat.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
 mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la _mirugly.la
 
-AM_CFLAGS = $(PYTHON_INCLUDES) -I$(NUMPY_INCLUDEDIR) $(MIR_CFLAGS) -I$(srcdir)
+AM_CFLAGS = -Wall -g -O2 $(PYTHON_INCLUDES) -I$(NUMPY_INCLUDEDIR) $(MIR_CFLAGS) -I$(srcdir)
 mod_ldflags = -module -avoid-version
 
 libmirtasksupport_la_LDFLAGS =
