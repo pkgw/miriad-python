@@ -1192,27 +1192,28 @@ py_keyl (PyObject *self, PyObject *args)
     return Py_BuildValue ("i", value);
 }
 
-#define DUMBAPI 256
-
 static PyObject *
 py_mkeyd (PyObject *self, PyObject *args)
 {
     char *keyword;
-    double vals[DUMBAPI];
-    int n, i;
+    double *vals;
+    int n, i, nmax;
     PyObject *retval;
 
-    if (!PyArg_ParseTuple (args, "s", &keyword))
+    if (!PyArg_ParseTuple (args, "si", &keyword, &nmax))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    mkeyd_c (keyword, vals, DUMBAPI, &n);
+    vals = PyMem_Malloc (sizeof (double) * nmax);
+    mkeyd_c (keyword, vals, nmax, &n);
 
     retval = PyTuple_New (n);
 
     for (i = 0; i < n; i++)
 	PyTuple_SetItem (retval, i, PyFloat_FromDouble (vals[i]));
+
+    PyMem_Free (vals);
 
     return retval;
 }
@@ -1221,21 +1222,24 @@ static PyObject *
 py_mkeyr (PyObject *self, PyObject *args)
 {
     char *keyword;
-    float vals[DUMBAPI];
-    int n, i;
+    float *vals;
+    int n, i, nmax;
     PyObject *retval;
 
-    if (!PyArg_ParseTuple (args, "s", &keyword))
+    if (!PyArg_ParseTuple (args, "si", &keyword, &nmax))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    mkeyr_c (keyword, vals, DUMBAPI, &n);
+    vals = PyMem_Malloc (sizeof (float) * nmax);
+    mkeyr_c (keyword, vals, nmax, &n);
 
     retval = PyTuple_New (n);
 
     for (i = 0; i < n; i++)
 	PyTuple_SetItem (retval, i, PyFloat_FromDouble ((double) vals[i]));
+
+    PyMem_Free (vals);
 
     return retval;
 }
@@ -1244,21 +1248,24 @@ static PyObject *
 py_mkeyi (PyObject *self, PyObject *args)
 {
     char *keyword;
-    int vals[DUMBAPI];
-    int n, i;
+    int *vals;
+    int n, i, nmax;
     PyObject *retval;
 
-    if (!PyArg_ParseTuple (args, "s", &keyword))
+    if (!PyArg_ParseTuple (args, "si", &keyword, &nmax))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    mkeyi_c (keyword, vals, DUMBAPI, &n);
+    vals = PyMem_Malloc (sizeof (int) * nmax);
+    mkeyi_c (keyword, vals, nmax, &n);
 
     retval = PyTuple_New (n);
 
     for (i = 0; i < n; i++)
 	PyTuple_SetItem (retval, i, PyInt_FromLong ((long) vals[i]));
+
+    PyMem_Free (vals);
 
     return retval;
 }
@@ -1388,9 +1395,9 @@ static PyMethodDef uvio_methods[] = {
     DEF(keyr, "(str keyword, float default) => float value"),
     DEF(keyi, "(str keyword, int default) => int value"),
     DEF(keyl, "(str keyword, int default) => int value [for booleans]"),
-    DEF(mkeyd, "(str keyword) => (tuple of double values)"),
-    DEF(mkeyr, "(str keyword) => (tuple of float values)"),
-    DEF(mkeyi, "(str keyword) => (tuple of int values)"),
+    DEF(mkeyd, "(str keyword, int nmax) => (tuple of double values)"),
+    DEF(mkeyr, "(str keyword, int nmax) => (tuple of float values)"),
+    DEF(mkeyi, "(str keyword, int nmax) => (tuple of int values)"),
 
     /* mir */
 

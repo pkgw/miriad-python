@@ -89,3 +89,75 @@ def uvdatgta (obj):
         if aval[i] == '': return aval[0:i].tostring ()
     
     raise MiriadError ('Output from uvdatgta exceeded buffer size')
+
+def mkeyf (key, nmax, bufsz=120):
+    """Wrapper for mkeyf with extra layer of string sanity."""
+
+    value = _N.chararray ((nmax, bufsz))
+    n = _mirgood.mkeyf (key, value, nmax)
+
+    # Can't find a better way to make this work. Sigh.
+    
+    ret = []
+
+    for i in xrange (0, n):
+        s = ''
+        for j in xrange (0, bufsz):
+            if value[i,j] == '': break
+            s += value[i,j]
+
+        ret.append (s)
+
+    return ret
+
+def mkeya (key, nmax, bufsz=120):
+    """Wrapper for mkeya with extra layer of string sanity."""
+
+    value = _N.chararray ((nmax, bufsz))
+    n = _mirgood.mkeya (key, value, nmax)
+
+    # Can't find a better way to make this work. Sigh.
+    
+    ret = []
+
+    for i in xrange (0, n):
+        s = ''
+        for j in xrange (0, bufsz):
+            if value[i,j] == '': break
+            s += value[i,j]
+
+        ret.append (s)
+
+    return ret
+
+def keymatch (key, types, maxout):
+    """Wrapper for keymatch with extra layer of string sanity."""
+
+    ml = 0
+
+    for t in types:
+        ml = max (ml, len (str (t)))
+
+    tarr = []
+
+    for t in types:
+        s = str (t)
+        tarr.append (s.ljust (ml, ' '))
+
+    out = _N.chararray ((maxout, ml))
+    # Not sure why f2py thinks maxout is optional here.
+    nout = _mirgood.keymatch (key, types, out, len (types), maxout)
+
+    # Can't find a better way to make this work. Sigh.
+    
+    ret = []
+
+    for i in xrange (0, nout):
+        s = ''
+        for j in xrange (0, ml):
+            if out[i,j] == '': break
+            s += out[i,j]
+
+        ret.append (s)
+
+    return ret

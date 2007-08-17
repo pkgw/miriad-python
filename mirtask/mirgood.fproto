@@ -1,8 +1,10 @@
-subroutine output(line) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/txtio.f
+! -*- f90 -*-
+
+subroutine output(line) ! in subs/txtio.f
     character*(*) :: line
 end subroutine output
 
-subroutine uvdatinp(key,flags) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatinp(key,flags) ! in subs/uvdat.f
     character*(*) :: key
     character*(*) :: flags
     character*32 :: line
@@ -69,7 +71,7 @@ subroutine uvdatinp(key,flags) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/u
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatinp
 
-function uvdatopn(tin) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+function uvdatopn(tin) ! in subs/uvdat.f
     integer intent (out) :: tin
     character*32 :: line
     character*32 :: ref
@@ -136,7 +138,7 @@ function uvdatopn(tin) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end function uvdatopn
 
-subroutine uvdatrd(preamble,data,flags,n,nread) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatrd(preamble,data,flags,n,nread) ! in subs/uvdat.f
     double precision dimension(*) :: preamble
     complex dimension(n) :: data
     logical dimension(n),depend(n) :: flags
@@ -206,7 +208,7 @@ subroutine uvdatrd(preamble,data,flags,n,nread) ! in /l/pkwill/cvs/cosmic/miriad
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatrd
 
-subroutine uvdatcls ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatcls ! in subs/uvdat.f
     character*32 :: line
     character*32 :: ref
     character*maxnam :: inbuf
@@ -271,7 +273,7 @@ subroutine uvdatcls ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatcls
 
-subroutine varinit(tin,linetype) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+subroutine varinit(tin,linetype) ! in subs/var.f
     integer :: tin
     character*(*) :: linetype
     integer :: vhandc
@@ -280,18 +282,18 @@ subroutine varinit(tin,linetype) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs
     common /varcom/ vhandc,vhandu,avall
 end subroutine varinit
 
-subroutine varonit(tin,tout,linetype) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+subroutine varonit(tin,tout,linetype) ! in subs/var.f
     integer :: tin
     integer :: tout
     character*(*) :: linetype
 end subroutine varonit
 
-subroutine hisinput(tno,name) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/hisinput.f
+subroutine hisinput(tno,name) ! in subs/hisinput.f
     integer :: tno
     character*(*) :: name
 end subroutine hisinput
 
-subroutine uvdatgti(object,ival) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatgti(object,ival) ! in subs/uvdat.f
     character*(*) :: object
     integer dimension(*) :: ival
     character*32 :: line
@@ -358,7 +360,7 @@ subroutine uvdatgti(object,ival) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatgti
 
-subroutine uvdatgtr(object,rval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatgtr(object,rval) ! in subs/uvdat.f
     character*(*) :: object
     real :: rval
     character*32 :: line
@@ -425,7 +427,7 @@ subroutine uvdatgtr(object,rval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatgtr
 
-subroutine uvdatgta(object,aval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/uvdat.f
+subroutine uvdatgta(object,aval) ! in subs/uvdat.f
     character*(*) :: object
     character*(*) intent(inout) :: aval
     character*32 :: line
@@ -492,7 +494,7 @@ subroutine uvdatgta(object,aval) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatgta
 
-subroutine varcopy(tin,tout) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var.f
+subroutine varcopy(tin,tout) ! in subs/var.f
     integer :: tin
     integer :: tout
     integer :: vhandc
@@ -501,12 +503,57 @@ subroutine varcopy(tin,tout) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/var
     common /varcom/ vhandc,vhandu,avall
 end subroutine varcopy
 
-subroutine todayjul(julian) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/julday.f
+subroutine todayjul(julian) ! in subs/julday.f
     double precision intent(out) :: julian
 end subroutine todayjul
 
-subroutine julday(julian,form,calday) ! in /l/pkwill/cvs/cosmic/miriad/BUILD/src/subs/julday.f
+subroutine julday(julian,form,calday) ! in subs/julday.f
     double precision :: julian
     character*(*) :: form
     character*(*) intent (inout):: calday
 end subroutine julday
+
+subroutine options(key,opts,present,nopt) ! in subs/options.f
+    character*(*) :: key
+    character*(*) dimension(nopt) :: opts
+    logical dimension(nopt),depend(nopt),intent(out) :: present
+    integer optional,check(shape(opts,0)==nopt),depend(opts) :: nopt=shape(opts,0)
+end subroutine options
+
+subroutine keymatch(key,ntype,types,maxout,out,nout) ! in subs/options.f
+    character*(*) :: key
+    integer optional,check(shape(types,0)==ntype),depend(types) :: ntype=shape(types,0)
+    character*(*) dimension(ntype),intent(c) :: types
+    integer :: maxout
+    character*(*) dimension(maxout),intent(c),intent(inplace) :: out
+    integer intent(out) :: nout
+end subroutine keymatch
+
+subroutine mkeyt(key,value,nmax,n,fmt) ! in subs/tangle.f
+    character*(*) :: key
+    double precision dimension(nmax),intent(out) :: value
+    integer :: nmax
+    integer intent(out) :: n
+    character*(*) :: fmt
+end subroutine mkeyt
+
+subroutine keyt(key,value,fmt,def) ! in subs/tangle.f
+    character*(*) :: key
+    double precision intent(out) :: value
+    character*(*) :: fmt
+    double precision :: def
+end subroutine keyt
+
+subroutine mkeyf(key,value,nmax,n) ! in subs/keyf.f
+    character*(*) :: key
+    character*(*) dimension(nmax),intent(inplace) :: value
+    integer :: nmax
+    integer intent(out) :: n
+end subroutine mkeyf
+
+subroutine mkeya(key,value,nmax,n) ! in subs/keyf.f
+    character*(*) :: key
+    character*(*) dimension(nmax),intent(inplace) :: value
+    integer :: nmax
+    integer intent(out) :: n
+end subroutine mkeya
