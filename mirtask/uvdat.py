@@ -12,27 +12,27 @@ __all__ = []
 def init (flags, keyword='vis'):
     """Initialize standard UV data reading subsystem. Parameters:
 
-    flags - A sequence of characters giving options to the UV reading
-    subsystem. Possible contents are:
+flags - A sequence of characters giving options to the UV reading
+subsystem. Possible contents are:
 
-      r - Get a reference linetype specification via the 'ref' keyword
-      s - Get Stokes parameters / polarizations via the 'stokes' keyword
-      d - Perform input selection via the 'select' keyword
-      l - Get a data linetype specification via the 'line' keyword
-      p - Apply planet rotation and scaling
-      w - Return U and V values in wavelengths
-      1 - Default number of channels is 1
-      x - Data must be cross-correlation data
-      a - Data must be auto-correlation data
-      b - Input must be a single file
-      c - Apply gain/phase and delay corrections
-      e - Apply polarization leakage corrections
-      f - Apply bandpass corrections
-      3 - Always return a 5-element 'preamble' with UVW coordinates
-      
-    keyword - The keyword from which to get one or more UV dataset names.
-    Defaults to 'vis', the usual value.
-    """
+  r - Get a reference linetype specification via the 'ref' keyword
+  s - Get Stokes parameters / polarizations via the 'stokes' keyword
+  d - Perform input selection via the 'select' keyword
+  l - Get a data linetype specification via the 'line' keyword
+  p - Apply planet rotation and scaling
+  w - Return U and V values in wavelengths
+  1 - Default number of channels is 1
+  x - Data must be cross-correlation data
+  a - Data must be auto-correlation data
+  b - Input must be a single file
+  c - Apply gain/phase and delay corrections
+  e - Apply polarization leakage corrections
+  f - Apply bandpass corrections
+  3 - Always return a 5-element 'preamble' with UVW coordinates
+
+keyword - The keyword from which to get one or more UV dataset names.
+Defaults to 'vis', the usual value.
+"""
     ll.uvdatinp (keyword, flags)
 
 class UVDatDataSet (UVDataSet):
@@ -46,7 +46,7 @@ class UVDatDataSet (UVDataSet):
 
 def inputSets ():
     """Generate a sequence of DataSet objects representing the
-    visdata input sets."""
+visdata input sets."""
 
     ds = None
     
@@ -66,9 +66,9 @@ def inputSets ():
 
 def singleInputSet ():
     """Get a single DataSet object representing the visdata input set.
-    You should only use this function if you pass the 'b' option to
-    init ().
-    """
+You should only use this function if you pass the 'b' option to
+init ().
+"""
 
     (status, tin) = ll.uvdatopn ()
 
@@ -79,7 +79,7 @@ def singleInputSet ():
 
 def readData (maxchan = 4096):
     """Generate a sequence of (preamble, data, flags, nread) tuples representing
-    the visibility data in the current file."""
+the visibility data in the current file."""
     
     preamble = N.zeros (5, dtype=N.double)
     data = N.zeros (maxchan, dtype=N.complex64)
@@ -122,14 +122,14 @@ def _getOneString (kw, maxstr=120):
 
 def getNPol ():
     """Return the number of simultaneous polarizations being returned by readData.
-    Zero indicates that this number could not be determined.
-    """    
+Zero indicates that this number could not be determined.
+"""    
     return _getOneInt ('npol')
 
 def getPols ():
     """Return the polarizations being returned by readData, an array of the size
-    returned by getNPol (). Zeros indicate an error. FIXME: what do the numerical
-    values mean?"""
+returned by getNPol (). Zeros indicate an error. FIXME: what do the numerical
+values mean?"""
 
     a = N.zeros (getNPol (), dtype=N.int32)
     ll.uvdatgti ('pols', a)
@@ -137,7 +137,7 @@ def getPols ():
 
 def getPol ():
     """Return the last Stokes parameter returned by readData. May vary from one
-    visibility to another."""
+visibility to another."""
 
     return _getOneInt ('pol')
 
