@@ -78,7 +78,8 @@ init ().
 
 def readData (maxchan = 4096):
     """Generate a sequence of (preamble, data, flags, nread) tuples representing
-the visibility data in the current file."""
+the visibility data in the current file. Must be called with a UVDatDataSet having
+been opened, such as from calling singleInputSet() or inputSets()."""
     
     preamble = N.zeros (5, dtype=N.double)
     data = N.zeros (maxchan, dtype=N.complex64)
