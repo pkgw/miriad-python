@@ -155,3 +155,39 @@ def indexEncodedBaselineMap (ants, includeAutos=False):
         res[idx] = enc
 
     return res
+
+# Polarizations. From subs/uvdat.h
+
+POL_II = 0
+POL_I = 1
+POL_Q = 2
+POL_U = 3
+POL_V = 4
+POL_RR = -1
+POL_LL = -2
+POL_RL = -3
+POL_LR = -4
+POL_XX = -5
+POL_YY = -6
+POL_XY = -7
+POL_YX = -8
+POL_QQ = 5
+POL_UU = 6
+
+_polNames = { POL_II: 'II', POL_I: 'I', POL_Q: 'Q',
+              POL_U: 'U', POL_V: 'V', POL_RR: 'RR',
+              POL_LL: 'LL', POL_RL: 'RL', POL_LR: 'LR',
+              POL_XX: 'XX', POL_YY: 'YY', POL_XY: 'XY',
+              POL_YX: 'YX', POL_QQ: 'QQ', POL_UU: 'UU' }
+
+def polarizationName (polnum):
+    """Return the textual description of a MIRIAD polarization type
+    from its number."""
+
+    return _polNames[polnum]
+
+def polarizationNumber (polname):
+    for (num, name) in _polNames.iteritems ():
+        if name == polname: return num
+
+    raise Exception ('Unknown polarization name \'%s\'' % polname)
