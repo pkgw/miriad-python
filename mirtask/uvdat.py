@@ -50,17 +50,18 @@ visdata input sets."""
     ds = None
     
     while True:
-        if ds is not None: ds.close ()
+        if ds is not None and ds.isOpen (): ds.close ()
         
         (status, tin) = ll.uvdatopn ()
 
         if not status: break
 
         ds = UVDatDataSet (tin)
+        yield ds
 
     if ds is None:
         raise RuntimeError ('No input UV data sets?')
-    else:
+    elif ds.isOpen ():
         ds.close ()
 
 def singleInputSet ():
@@ -97,7 +98,7 @@ def readAll (maxchan = 4096):
     
     for ds in inputSets ():
         for t in readData (maxchan=maxchan):
-            yield t
+            yield (ds, ) + t
 
 # Variable probes
 
