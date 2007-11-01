@@ -33,6 +33,9 @@ class DataSet (object):
             return '<DataSet \"%s\" handle %d>' % (self.name, self.tno)
         return '<DataSet [unknown filename] handle %d>' % (self.tno, )
 
+    def isOpen (self):
+        return hasattr (self, 'tno')
+    
     def close (self):
         """Close the dataset."""
 
@@ -520,6 +523,69 @@ class UVDataSet (DataSet):
         if type == '' or type == ' ': return None
         return (type, length, updated)
 
+    def getVarString (self, varname):
+        """Retrieve the current value of a string-valued UV
+        variable. Maximum length of 512 characters."""
+
+        return ll.uvgetvra (self.tno, varname)
+    
+    def getVarInt (self, varname, n=1):
+        """Retrieve the current value or values of an int-valued UV
+        variable."""
+
+        return ll.uvgetvri (self.tno, varname, n)
+    
+    def getVarFloat (self, varname, n=1):
+        """Retrieve the current value or values of a float-valued UV
+        variable."""
+
+        return ll.uvgetvrr (self.tno, varname, n)
+
+    def getVarDouble (self, varname, n=1):
+        """Retrieve the current value or values of a double-valued UV
+        variable."""
+
+        return ll.uvgetvrd (self.tno, varname, n)
+    
+    def getVarComplex (self, varname, n=1):
+        """Retrieve the current value or values of a complex-valued UV
+        variable."""
+
+        return ll.uvgetvrc (self.tno, varname, n)
+    
+    def getVarFirstString (self, varname, dflt):
+        """Retrieve the first value of a string-valued UV
+        variable with a default if the variable is not present.
+        Maximum length of 512 characters."""
+
+        return ll.uvrdvra (self.tno, varname, dflt)
+    
+    def getVarFirstInt (self, varname, dflt):
+        """Retrieve the first value of an int-valued UV
+        variable with a default if the variable is not present."""
+
+        return ll.uvrdvri (self.tno, varname, dflt)
+    
+    def getVarFirstFloat (self, varname, dflt):
+        """Retrieve the first value of a float-valued UV
+        variable with a default if the variable is not present."""
+
+        return ll.uvrdvrr (self.tno, varname, dflt)
+    
+    def getVarFirstDouble (self, varname, dflt):
+        """Retrieve the first value of a double-valued UV
+        variable with a default if the variable is not present."""
+
+        return ll.uvrdvrd (self.tno, varname, dflt)
+    
+    def getVarFirstComplex (self, varname, dflt):
+        """Retrieve the first value of a complex-valued UV
+        variable with a default if the variable is not present."""
+
+        dflt = complex (dflt)
+        retval = ll.uvrdvrd (self.tno, varname, (dflt.real, dflt.imag))
+        return complex (retval[0], retval[1])
+    
     def trackVar (self, varname, watch, copy):
         """Set how the given variable is tracked. If 'watch' is true, updated()
         will return true when this variable changes after a chunk of UV data

@@ -688,7 +688,208 @@ py_uvvarupd (PyObject *self, PyObject *args)
     return Py_BuildValue ("i", retval);
 }
 
-/* skip uv{get,put,rd}vr_c generic versions */
+static PyObject *
+py_uvgetvra (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var, value[BUFSZ];
+
+    if (!PyArg_ParseTuple (args, "is", &tno, &var))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvgetvra_c (tno, var, value, BUFSZ);
+
+    return Py_BuildValue ("s", value);
+}
+
+static PyObject *
+py_uvgetvri (PyObject *self, PyObject *args)
+{
+    int tno, n, i;
+    char *var;
+    PyObject *retval;
+    int *vals;
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    vals = PyMem_Malloc (sizeof (int) * n);
+    uvgetvri_c (tno, var, vals, n);
+
+    retval = PyTuple_New (n);
+
+    for (i = 0; i < n; i++)
+	PyTuple_SetItem (retval, i, PyInt_FromLong ((long) vals[i]));
+
+    PyMem_Free (vals);
+
+    return retval;
+}
+
+static PyObject *
+py_uvgetvrr (PyObject *self, PyObject *args)
+{
+    int tno, n, i;
+    char *var;
+    PyObject *retval;
+    float *vals;
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    vals = PyMem_Malloc (sizeof (float) * n);
+    uvgetvrr_c (tno, var, vals, n);
+
+    retval = PyTuple_New (n);
+
+    for (i = 0; i < n; i++)
+	PyTuple_SetItem (retval, i, PyFloat_FromDouble ((double) vals[i]));
+
+    PyMem_Free (vals);
+
+    return retval;
+}
+
+static PyObject *
+py_uvgetvrd (PyObject *self, PyObject *args)
+{
+    int tno, n, i;
+    char *var;
+    PyObject *retval;
+    double *vals;
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    vals = PyMem_Malloc (sizeof (double) * n);
+    uvgetvrd_c (tno, var, vals, n);
+
+    retval = PyTuple_New (n);
+
+    for (i = 0; i < n; i++)
+	PyTuple_SetItem (retval, i, PyFloat_FromDouble (vals[i]));
+
+    PyMem_Free (vals);
+
+    return retval;
+}
+
+static PyObject *
+py_uvgetvrc (PyObject *self, PyObject *args)
+{
+    int tno, n, i;
+    char *var;
+    PyObject *retval;
+    double *vals;
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    vals = PyMem_Malloc (2 * sizeof (float) * n);
+    uvgetvrc_c (tno, var, vals, n);
+
+    retval = PyTuple_New (n);
+
+    for (i = 0; i < n; i++) {
+	double real = (double) vals[2*i];
+	double imag = (double) vals[2*i+1];
+	PyTuple_SetItem (retval, i, PyComplex_FromDoubles (real, imag));
+    }
+
+    PyMem_Free (vals);
+
+    return retval;
+}
+
+static PyObject *
+py_uvrdvra (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var, *dflt, value[BUFSZ];
+
+    if (!PyArg_ParseTuple (args, "iss", &tno, &var, &dflt))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvrdvra_c (tno, var, value, dflt, BUFSZ);
+
+    return Py_BuildValue ("s", value);
+}
+
+static PyObject *
+py_uvrdvri (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var;
+    int val, dflt;
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &dflt))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvrdvri_c (tno, var, &val, &dflt);
+
+    return Py_BuildValue ("i", val);
+}
+
+static PyObject *
+py_uvrdvrr (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var;
+    float val, dflt;
+
+    if (!PyArg_ParseTuple (args, "isf", &tno, &var, &dflt))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvrdvrr_c (tno, var, &val, &dflt);
+
+    return Py_BuildValue ("f", val);
+}
+
+static PyObject *
+py_uvrdvrd (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var;
+    double val, dflt;
+
+    if (!PyArg_ParseTuple (args, "isd", &tno, &var, &dflt))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvrdvrd_c (tno, var, &val, &dflt);
+
+    return Py_BuildValue ("d", val);
+}
+
+static PyObject *
+py_uvrdvrc (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *var;
+    float val[2], dflt[2];
+
+    if (!PyArg_ParseTuple (args, "is(ff)", &tno, &var, &dflt[0], &dflt[1]))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvrdvrd_c (tno, var, val, dflt);
+
+    return Py_BuildValue ("ff", val[0], val[1]);
+}
+
+/* skip uvputvr_c generic versions */
 
 static PyObject *
 py_uvprobvr (PyObject *self, PyObject *args)
@@ -1346,6 +1547,16 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvvarset, "(int vhan, str var) => void"),
     DEF(uvvarcpy, "(int vhan, int tout) => void"),
     DEF(uvvarupd, "(int vhan) => int retval"),
+    DEF(uvgetvra, "(int tno, str var) => str retval"),
+    DEF(uvgetvri, "(int tno, str var, int n) => (tuple of n int values)"),
+    DEF(uvgetvrr, "(int tno, str var, int n) => (tuple of n float values)"),
+    DEF(uvgetvrd, "(int tno, str var, int n) => (tuple of n double values)"),
+    DEF(uvgetvrc, "(int tno, str var, int n) => (tuple of n complex values)"),
+    DEF(uvrdvra, "(int tno, str var, str dflt) => str retval"),
+    DEF(uvrdvri, "(int tno, str var, int dflt) => int retval"),
+    DEF(uvrdvrr, "(int tno, str var, float dflt) => float retval"),
+    DEF(uvrdvrd, "(int tno, str var, double dflt) => double retval"),
+    DEF(uvrdvrc, "(int tno, str var, (float,float) dflt) => (float,float) retval"),
     DEF(uvprobvr, "(int vhan, str var) => (char type, int length, int updated)"),
     DEF(uvtrack, "(int tno, str name, str switches) => void"),
     DEF(uvscan, "(int tno, str var) => int retval"),
