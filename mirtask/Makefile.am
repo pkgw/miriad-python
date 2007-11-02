@@ -12,7 +12,7 @@ mtpy_PYTHON = \
   uvdat.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
-mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la _mirugly.la
+mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
 
 AM_CFLAGS = -Wall -g -O2 $(PYTHON_INCLUDES) -I$(NUMPY_INCLUDEDIR) $(MIR_CFLAGS) -I$(srcdir)
 mod_ldflags = -module -avoid-version
@@ -31,9 +31,9 @@ _mirgood_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirgood
 _mirgood_la_LIBADD = libmirtasksupport.la
 _mirgood_la_SOURCES = _mirgoodmodule.c _mirgood-f2pywrappers.f
 
-_mirugly_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirugly
-_mirugly_la_LIBADD = libmirtasksupport.la
-_mirugly_la_SOURCES = _miruglymodule.c _mirugly-f2pywrappers.f
+#_mirugly_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirugly
+#_mirugly_la_LIBADD = libmirtasksupport.la
+#_mirugly_la_SOURCES = _miruglymodule.c _mirugly-f2pywrappers.f
 
 _%module.c _%-f2pywrappers.f: %.fproto
 	$(F2PY) -m _$* $<

@@ -3,7 +3,7 @@ manner, allowing you to write Miriad tasks in Python.
 """
 
 import _uvio # then io check bug symbols
-import _mirgood, _mirugly # now can do the full Fortran.
+import _mirgood #, _mirugly # now can do the full Fortran.
 import lowlevel
 
 MiriadError = _uvio.MiriadError
