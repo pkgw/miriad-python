@@ -3095,10 +3095,6 @@ subroutine radhms(a,d,radec) ! in subs/deghms.f
     double precision :: d
     character*(*) :: radec
 end subroutine radhms
-subroutine jul2ut(jday,ut) ! in subs/ephem.f
-    double precision :: jday
-    double precision :: ut
-end subroutine jul2ut
 subroutine prerotat(jday,ra,dec,jout,theta) ! in subs/ephem.f
     double precision :: jday
     double precision :: ra

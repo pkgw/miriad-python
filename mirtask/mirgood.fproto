@@ -570,3 +570,8 @@ function antbas(i1,i2) ! in subs/basant.f
     integer :: i2
     double precision :: antbas
 end function antbas
+
+subroutine jul2ut(jday,ut) ! in subs/ephem.f
+    double precision :: jday
+    double precision intent(out) :: ut
+end subroutine jul2ut

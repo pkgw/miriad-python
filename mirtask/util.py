@@ -191,3 +191,27 @@ def polarizationNumber (polname):
         if name == polname: return num
 
     raise Exception ('Unknown polarization name \'%s\'' % polname)
+
+# Date stuff
+
+def jdToFull (jd):
+    """Return a string representing the given Julian date as date
+    and time of the form 'YYMMDD:HH:MM:SS.S'."""
+    return ll.julday (jd, 'H')
+
+def jdToPartial (jd):
+    """Return a string representing the time-of-day portion of the
+    given Julian date in the form 'HH:MM:SS'. Obviously, this loses
+    precision from the JD representation."""
+
+    # smauvplt does the hr/min/sec breakdown manually so I shall
+    # do the same except maybe a bit better because I use jul2ut.
+
+    from math import floor, pi
+    fullhrs = ll.jul2ut (jd) * 12 / pi
+
+    hr = int (floor (fullhrs))
+    mn = int (floor (60 * (fullhrs - hr)))
+    sc = int (3600 * (fullhrs - hr - mn / 60.))
+
+    return '%02d:%02d:%02d' % (hr, mn, sc)
