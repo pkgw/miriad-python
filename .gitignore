@@ -10,4 +10,4 @@ missing
 py-compile
 *~
 Makefile.in
-BUILD
+BUILD*
