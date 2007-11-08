@@ -9,7 +9,7 @@ import mirtask
 import mirtask.lowlevel as ll
 import numpy as N
 
-print 'GpCat2: Python'
+print 'GpCat2: Python take on gpcat that doesn\'t crash'
 
 # keys initialized by mirtask.__init__.
 vis = ll.keya ('vis', ' ')
@@ -50,7 +50,7 @@ for (time, gains) in gr.readSeq ():
     print '%s:' % (ll.julday (time, 'H'), ),
 
     for ant in ants:
-        print ' %8lf' % (abs (gains[ant * gr.nfeeds])),
+        print ' %8.7lg' % (abs (gains[ant * gr.nfeeds])),
     print
 
 # All done.
