@@ -47,7 +47,7 @@ for (time, gains) in gr.readSeq ():
 
     # Now print the data
     
-    print '%s:' % (ll.julday (time, 'H'), ),
+    print mirtask.util.jdToFull (time) + ':', 
 
     for ant in ants:
         print ' %8.7lg' % (abs (gains[ant * gr.nfeeds])),
