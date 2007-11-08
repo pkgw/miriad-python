@@ -1050,7 +1050,39 @@ py_uvset (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* uvread, uvwread, uvflgwr, uvwflgwr skipped: all too lowlevel */
+/* uvread, uvwread, uvwflgwr skipped: all too lowlevel */
+
+static PyObject *
+py_uvflgwr (PyObject *self, PyObject *args)
+{
+    int tno;
+    PyObject *flags;
+
+    if (!PyArg_ParseTuple (args, "iO!", &tno, &PyArray_Type, &flags))
+	return NULL;
+
+    if (!PyArray_ISINTEGER (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be int ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (flags) != NPY_SIZEOF_INT) {
+	PyErr_SetString (PyExc_TypeError, "flags must be plain-int-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
+	return NULL;
+    }
+
+    MTS_CHECK_BUG;
+    
+    uvflgwr_c (tno, PyArray_DATA (flags));
+
+    Py_RETURN_NONE;
+}
+
 /* uvinfo: too hard */
 
 /* XXX uvio incomplete! .... */
@@ -1564,7 +1596,8 @@ static PyMethodDef uvio_methods[] = {
 	" int-ndarray flags, int n) => void"),
     DEF(uvset, "(int tno, str object, str type, int n, double p1,\n"
 	" double p2, double p3) => void"),
-
+    DEF(uvflgwr, "(int tno, int-ndarray flags) => void"),
+    
     /* XXX uvio incomplete ... */
 
     /* uvio macros */

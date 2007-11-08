@@ -415,6 +415,13 @@ class UVDataSet (DataSet):
 
         ll.uvwrite (self.tno, preamble, data, flags, length)
 
+    def rewriteFlags (self, flags):
+        """Rewrite the channel flagging data for the current
+        visibility record. 'flags' should be a 1D integer ndarray of the
+        same length and dtype returned by a uvread call."""
+
+        ll.uvflgwr (self.tno, flags)
+        
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):
