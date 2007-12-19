@@ -33,7 +33,8 @@ name    - The name of the keyword.
 kind    - The keyword kind: 'f' for filename, 'a' for textual string,
           'i' for integer, 'd' for double, 'b' for boolean, and 't'
           for time or angle.
-default - The default value of the keyword.
+default - The default value of the keyword. The default for a multivalued
+          keyword is ignored and should be None.
 nmax    - The maximum number of items to return for this keyword. Defaults
           to 1, indicating a single-value keyword.
 timefmt - The expected format of the time value. Only needed if kind is 't'.
