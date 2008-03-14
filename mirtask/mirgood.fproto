@@ -575,3 +575,8 @@ subroutine jul2ut(jday,ut) ! in subs/ephem.f
     double precision :: jday
     double precision intent(out) :: ut
 end subroutine jul2ut
+
+function polspara(code) ! in subs/pols.f
+    integer :: code
+    logical :: polspara
+end function polspara

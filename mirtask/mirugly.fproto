@@ -11095,10 +11095,6 @@ function plint(x,y,z) ! in subs/plproc.f
     logical :: plint
     common /plprocom/ ldash,mdash,n0,meandist,dist,tprev,smat,erad,prad,bmaj,bmin,bpa,fac,cospa,sinpa,planet,nmat,fake
 end function plint
-function polspara(code) ! in subs/pols.f
-    integer :: code
-    logical :: polspara
-end function polspara
 function polsc2p(code) ! in subs/pols.f
     integer :: code
     character*(*) :: polsc2p

@@ -192,6 +192,12 @@ def polarizationNumber (polname):
 
     raise Exception ('Unknown polarization name \'%s\'' % polname)
 
+def polarizationIsInten (polnum):
+    """Return True if the given polarization is intensity-type, e.g.,
+    is I, XX, YY, RR, or LL."""
+    
+    return ll.polspara (polnum)
+
 # Date stuff
 
 def jdToFull (jd):
