@@ -434,7 +434,7 @@ class UVDataSet (DataSet):
         respective UV coordinates. Default list is 'uvw', 'time',
         'baseline'."""
         
-        self._uvset ('preamble', '/'.join (spec), 0, 0., 0., 0.)
+        self._uvset ('preamble', '/'.join (vars), 0, 0., 0., 0.)
 
     def setSelectAmplitude (self, selamp):
         """Specify whether selection based on amplitude should be
@@ -445,11 +445,11 @@ class UVDataSet (DataSet):
         
         self._uvset ("selection", "amplitude", val, 0., 0., 0.,)
         
-    def setSelectAmplitude (self, selamp):
+    def setSelectWindow (self, selwin):
         """Specify whether selection based on window should be
         performed."""
 
-        if selamp: val = 1
+        if selwin: val = 1
         else: val = 0
         
         self._uvset ("selection", "window", val, 0., 0., 0.,)
@@ -469,6 +469,12 @@ class UVDataSet (DataSet):
         else:
             self._uvset ("coord", "nanosec", 0, 0., 0., 0.)
 
+    def setCorrelationType (self, type):
+        """Set the correlation type that will be used in this
+        vis file."""
+
+        self._uvset ("corr", type, 0, 0., 0., 0.)
+    
     # oh god there are a bunch more of these: data linetype, refernce
     # linetype, gflag, flags, corr
     
@@ -540,26 +546,38 @@ class UVDataSet (DataSet):
         """Retrieve the current value or values of an int-valued UV
         variable."""
 
-        return ll.uvgetvri (self.tno, varname, n)
-    
+        ret = ll.uvgetvri (self.tno, varname, n)
+
+        if n == 1: return ret[0]
+        return N.asarray (ret, dtype=N.int)
+        
     def getVarFloat (self, varname, n=1):
         """Retrieve the current value or values of a float-valued UV
         variable."""
 
-        return ll.uvgetvrr (self.tno, varname, n)
+        ret = ll.uvgetvrr (self.tno, varname, n)
+
+        if n == 1: return ret[0]
+        return N.asarray (ret, dtype=N.float32)
 
     def getVarDouble (self, varname, n=1):
         """Retrieve the current value or values of a double-valued UV
         variable."""
 
-        return ll.uvgetvrd (self.tno, varname, n)
+        ret = ll.uvgetvrd (self.tno, varname, n)
     
+        if n == 1: return ret[0]
+        return N.asarray (ret, dtype=N.double64)
+
     def getVarComplex (self, varname, n=1):
         """Retrieve the current value or values of a complex-valued UV
         variable."""
 
-        return ll.uvgetvrc (self.tno, varname, n)
+        ret = ll.uvgetvrc (self.tno, varname, n)
     
+        if n == 1: return ret[0]
+        return N.asarray (ret, dtype=N.complex64)
+
     def getVarFirstString (self, varname, dflt):
         """Retrieve the first value of a string-valued UV
         variable with a default if the variable is not present.
@@ -617,7 +635,7 @@ class UVDataSet (DataSet):
         """Write an integer UV variable. val can either be a single value or
         an ndarray for array variables."""
         
-        if not isinstance (val, ndarray):
+        if not isinstance (val, N.ndarray):
             v2 = N.ndarray (1, dtype=N.int32)
             v2[0] = int (val)
             val = v2
@@ -625,15 +643,26 @@ class UVDataSet (DataSet):
         ll.uvputvri (self.tno, name, val)
     
     def writeVarFloat (self, name, val):
-        """Write an integer UV variable. val can either be a single value or
+        """Write an float UV variable. val can either be a single value or
         an ndarray for array variables."""
         
-        if not isinstance (val, ndarray):
+        if not isinstance (val, N.ndarray):
             v2 = N.ndarray (1, dtype=N.float32)
             v2[0] = float (val)
             val = v2
 
         ll.uvputvrr (self.tno, name, val)
+    
+    def writeVarDouble (self, name, val):
+        """Write a double UV variable. val can either be a single value or
+        an ndarray for array variables."""
+        
+        if not isinstance (val, N.ndarray):
+            v2 = N.ndarray (1, dtype=N.float64)
+            v2[0] = float (val)
+            val = v2
+
+        ll.uvputvrd (self.tno, name, val)
     
 class UVVarTracker (object):
     def __init__ (self, owner):
