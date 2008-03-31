@@ -48,7 +48,9 @@ def hisinput (tno, name, args=None):
     because it relies on iargc() and getarg(), which may not contain
     the arguments we are actually using."""
 
-    if args is None: args = _sys.argv
+    if args is None:
+        import sys
+        args = sys.argv
 
     # I can't figure out what all the parsing of name is supposed
     # to accomplish. Ignore it all.
