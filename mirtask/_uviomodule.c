@@ -1155,6 +1155,39 @@ py_uvputvrr (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+py_uvputvrd (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *name;
+    PyObject *value;
+
+    if (!PyArg_ParseTuple (args, "isO!", &tno, &name, 
+			   &PyArray_Type, &value))
+	return NULL;
+
+    if (!PyArray_ISFLOAT (value)) {
+	PyErr_SetString (PyExc_TypeError, "value must be float ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (value) != NPY_SIZEOF_DOUBLE) {
+	PyErr_SetString (PyExc_TypeError, "value must be double-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (value)) {
+	PyErr_SetString (PyExc_TypeError, "value must be contiguous ndarray");
+	return NULL;
+    }
+
+    MTS_CHECK_BUG;
+
+    uvputvrd_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
+
+    Py_RETURN_NONE;
+}
+
 /* xyio */
 
 /* maskio */
@@ -1604,6 +1637,7 @@ static PyMethodDef uvio_methods[] = {
 
     DEF(uvputvri, "(int tno, str name, int-ndarray value) => void"),
     DEF(uvputvrr, "(int tno, str name, float-ndarray value) => void"),
+    DEF(uvputvrd, "(int tno, str name, double-ndarray value) => void"),
 	
     /* XXX uvio macros incomplete ... */
 
