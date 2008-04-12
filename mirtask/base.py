@@ -4,7 +4,7 @@ gains table conveniently.
 
 import lowlevel as ll
 import numpy as N
-from mirtask import MiriadError
+from lowlevel import MiriadError
 
 __all__ = []
 
