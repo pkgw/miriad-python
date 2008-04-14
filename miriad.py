@@ -105,10 +105,26 @@ class Data (object):
         data.setPredecessor (self, branchOp, opParams)
         return data
 
-    def open (self, create=False):
+    _openObj = None
+
+    def _openImpl (self, mode):
         from mirtask import UserDataSet
 
-        return UserDataSet (self.base, create)
+        if mode == 'r':
+            create = False
+        elif mode == 'w':
+            create = True
+        else:
+            raise Exception ('Unsupported mode ' + mode)
+
+        return UserDataSet (self, create)
+    
+    def open (self, mode):
+        if self._openObj is not None and self._openObj.isOpen ():
+            raise Exception ('Data set %s already open' % self)
+        
+        self._openObj = self._openImpl (mode)
+        return self._openObj
     
     # History and modification tracking stuff.
 
@@ -313,6 +329,10 @@ class VisData (Data):
         task.setArgs (**params)
         return task
 
+    def _openImpl (self, mode):
+        from mirtask import UVDataSet
+        return UVDataSet (self, mode)
+        
     # Not-necessarily-interactive operations
 
     def catTo (self, dest, **params):
