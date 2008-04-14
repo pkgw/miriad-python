@@ -37,6 +37,14 @@ class Data (object):
     def __repr__ (self):
         return '<MIRIAD data, base "%s">' % self.base
 
+    def __eq__ (self, other):
+        if other is None: return False
+        if not isinstance (other, Data): return False
+        return self.realPath () == other.realPath ()
+
+    def __hash__ (self):
+        return hash (self.realPath ())
+    
     # Low-level attributes
     
     @property
