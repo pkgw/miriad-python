@@ -109,9 +109,10 @@ class Data (object):
         return kind (self.base + '.' + name)
 
     def branch (self, name, branchOp, opParams, kind=None):
-        data = self.makeVariant (name, kind)
-        data.setPredecessor (self, branchOp, opParams)
-        return data
+        branched = self.makeVariant (name, kind)
+        branchOps[branchOp] (self, branched, *opParams)
+        branched.setPredecessor (self, branchOp, opParams)
+        return branched
 
     _openObj = None
 
@@ -327,9 +328,61 @@ def _flagOperation (data, select, line, flagval):
     TaskUVFlag (vis=data, select=sParam, line=lParam, flagval=flagval).run ()
     data.recordMutation ('uvflag', (select, line, flagval))
 
+def _multiFlagOperation (data, filename):
+    data.checkExists ()
+    from mirexec import TaskUVFlag
+
+    f = file (filename, 'r')
+    t = TaskUVFlag (vis=data)
+    first = True
+    
+    for l in f:
+        if first:
+            if l[0] != '#':
+                raise Exception ('first line doesn\'t begin with # in ' + filename)
+            first = False
+            continue
+        
+        a = l.strip ().split (sep)
+        if len (a) != 3: raise Exception ('Unexpected line: ' + l.strip ())
+
+        if len (a[0]): t.select = a[0]
+        else: t.select = None
+        
+        if len (a[1]): t.line = a[1]
+        else: t.line = None
+
+        t.flagval = a[2]
+
+        t.run ()
+
+    data.recordMutation ('multiflag', (filename, ))
+
+        
+def _smamfcalOperation (data, *params):
+    data.checkExists ()
+
+    from mirexec import SmaMfCal
+
+    paramDict = paramRecover (params)
+    SmaMfCal (vis=data, **paramDict).run ()
+    dest.recordMutation (data, 'smamfcal', params)
+
+def _selfcalOperation (data, *params):
+    data.checkExists ()
+
+    from mirexec import TaskSelfCal
+
+    paramDict = paramRecover (params)
+    TaskSelfCal (vis=data, **paramDict).run ()
+    dest.recordMutation (data, 'selfcal', params)
+
 branchOps['uvcat'] = _catOperation
 branchOps['uvaver'] = _averOperation
 mutOps['uvflag'] = _flagOperation
+mutOps['multiflag'] = _multiFlagOperation
+mutOps['smamfcal'] = _smamfcalOperation
+mutOps['selfcal'] = _selfcalOperation
 
 class VisData (Data):
     def apply (self, task, **params):
@@ -394,4 +447,16 @@ class VisData (Data):
     def fChans (self, start, count, flagval=True):
         self.fGeneric (None, 'chan,%d,%d' % (count, start), flagval)
 
+    def fMulti (self, file):
+        _multiFlagOperation (self, file)
+
+    # Other mutations
+
+    def smaMfCal (self, **params):
+        _smamfcalOperation (self, *paramConvert (**params))
+
+    def selfCal (self, **params):
+        _selfcalOperation (self, *paramConvert (**params))
+
 __all__ += ['VisData']
+
