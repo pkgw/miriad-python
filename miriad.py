@@ -108,6 +108,10 @@ class Data (object):
 
         return kind (self.base + '.' + name)
 
+    def vvis (self, name): return self.makeVariant (name, VisData)
+    
+    def vim (self, name): return self.makeVariant (name, ImData)
+    
     def branch (self, name, branchOp, opParams, kind=None):
         branched = self.makeVariant (name, kind)
         branchOps[branchOp] (self, branched, *opParams)
