@@ -393,7 +393,11 @@ class VisData (Data):
     def _openImpl (self, mode):
         from mirtask import UVDataSet
         return UVDataSet (self, mode)
-        
+
+    def readLowlevel (self, saveFlags, **kwargs):
+        from mirtask import uvdat
+        return uvdat.readFileLowlevel (self.base, saveFlags, **kwargs)
+    
     # Not-necessarily-interactive operations
 
     def catTo (self, dest, **params):
@@ -460,3 +464,73 @@ class VisData (Data):
 
 __all__ += ['VisData']
 
+# Image data
+
+class ImData (Data):
+    def apply (self, task, **params):
+        task.in_ = self
+        task.setArgs (**params)
+        return task
+
+    # Interactive helpers
+
+    def xApply (self, task, **params):
+        task.in_ = self
+        task.xint = True
+        task.setArgs (**params)
+        return task
+
+    def xShow (self, **params):
+        self.checkExists ()
+        from mirexec import TaskCgDisp
+        
+        t = TaskCgDisp (in_='%s,%s' % (self.base, self.base),
+                        type='contour,pix', labtyp='hms',
+                        beamtyp='b,l', wedge=True, csize='0.6,1')
+        return t
+    
+    def xShowFit (self, kind='p', **params):
+        self.checkExists ()
+        from mirexec import TaskImFit, TaskCgDisp
+        
+        model = self.makeVariant ('fitmodel', ImData)
+        if model.exists:
+            raise Exception ('Model file %s already exists?' % model)
+        
+        imf = TaskImFit (in_=self, out=model, **params)
+        if kind == 'p':
+            imf.object = 'point'
+        elif kind == 'g':
+            imf.object = 'gaussian'
+        elif kind == 'b':
+            imf.object = 'beam'
+        else:
+            raise Exception ('Unknown fit kind ' + kind)
+
+        imf.run ()
+        model.xShow (**params).run ()
+        model.delete ()
+    
+    def xShowFitResidual (self, kind='p', fov=None, **params):
+        self.checkExists ()
+        from mirexec import TaskImFit, TaskCgDisp
+        
+        resid = self.makeVariant ('fitresid', ImData)
+        if resid.exists:
+            raise Exception ('Resid file %s already exists?' % resid)
+        
+        imf = TaskImFit (in_=self, out=resid, residual=True, **params)
+        if kind == 'p':
+            imf.object = 'point'
+        elif kind == 'g':
+            imf.object = 'gaussian'
+        elif kind == 'b':
+            imf.object = 'beam'
+        else:
+            raise Exception ('Unknown fit kind ' + kind)
+
+        imf.run ()
+        resid.xShow (**params).run ()
+        resid.delete ()
+
+__all__ += ['ImData']
