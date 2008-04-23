@@ -332,26 +332,68 @@ def _flagOperation (data, select, line, flagval):
     TaskUVFlag (vis=data, select=sParam, line=lParam, flagval=flagval).run ()
     data.recordMutation ('uvflag', (select, line, flagval))
 
-def _multiFlagOperation (data, filename):
+def _multiFlagOperation (data, filename, freq, half, pol):
     data.checkExists ()
     from mirexec import TaskUVFlag
 
     f = file (filename, 'r')
     t = TaskUVFlag (vis=data)
     first = True
+    second = False
+    sharedSel = []
     
     for l in f:
         if first:
             if l[0] != '#':
                 raise Exception ('first line doesn\'t begin with # in ' + filename)
             first = False
+            second = True
+            continue
+        elif second:
+            if l[0] != '!':
+                raise Exception ('second line doesn\'t begin with ! in ' + filename)
+            second = False
+
+            # A-priori filters on frequency/corr-half and polarization
+            
+            filtFreq, filtHalf, filtPol = l[1:].strip ().split (sep)
+            
+            if len (filtFreq) > 0:
+                ff, fh = int (filtFreq), int (filtHalf)
+                
+                if freq is None:
+                    # 52 MHz is magic half ATA corr bandwidth
+                    if fh == 1: sharedSel.append ('frequency(%d)' % (ff - 52))
+                    elif fh == 2: sharedSel.append ('frequency(%d)' % ff)
+                    else: assert (False)
+                elif ff != freq or fh != half: return
+
+            if len (filtHalf) > 0:
+                fh = int (filtHalf)
+
+                if half is None:
+                    raise Exception ('Want to filter on corr half but don\'t know it!')
+
+                if fh != half: return
+            
+            if len (filtPol) > 0:
+                if pol is None: sharedSel.append ('pol(%s)' % filtPol)
+                elif pol.lower () != filtPol.lower (): return
+
+            if len (sharedSel): sharedSel = ','.join (sharedSel)
+            else: sharedSel = None
+                
             continue
         
         a = l.strip ().split (sep)
         if len (a) != 3: raise Exception ('Unexpected line: ' + l.strip ())
 
-        if len (a[0]): t.select = a[0]
-        else: t.select = None
+        if sharedSel is None:
+            if len (a[0]): t.select = a[0]
+            else: t.select = None
+        else:
+            if len (a[0]): t.select = sharedSel + ',' + a[0]
+            else: t.select = sharedSel
         
         if len (a[1]): t.line = a[1]
         else: t.line = None
@@ -428,6 +470,23 @@ class VisData (Data):
         from mirexec import SmaUVSpec
         return self.xApply (SmaUVSpec (), **params)
 
+    def xQuickImage (self, delete=True):
+        from mirexec import TaskInvert, TaskClean, TaskRestore
+        
+        mp, bm, cl, rm = [self.vim (x) for x in ('mp', 'bm', 'cl', 'rm')]
+
+        TaskInvert (vis=self, map=mp, beam=bm, select='-auto',
+                    mfs=True).xrun ()
+        TaskClean (map=mp, beam=bm, out=cl).xrun ()
+        TaskRestore (map=mp, beam=bm, model=cl, out=rm).xrun ()
+        rm.xShow ().xrun ()
+
+        if delete:
+            mp.delete ()
+            bm.delete ()
+            cl.delete ()
+            rm.delete ()
+        
     # Flagging
 
     def fGeneric (self, select, line=None, flagval=True):
@@ -455,8 +514,8 @@ class VisData (Data):
     def fChans (self, start, count, flagval=True):
         self.fGeneric (None, 'chan,%d,%d' % (count, start), flagval)
 
-    def fMulti (self, file):
-        _multiFlagOperation (self, file)
+    def fMulti (self, file, freq, half, pol):
+        _multiFlagOperation (self, file, freq, half, pol)
 
     # Other mutations
 
