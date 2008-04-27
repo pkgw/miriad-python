@@ -463,12 +463,12 @@ class VisData (Data):
     def xPlot (self, **params):
         self.checkExists ()
         from mirexec import SmaUVPlot
-        return self.xApply (SmaUVPlot (), **params)
+        return self.xApply (SmaUVPlot (select='-auto', nxy='4,3'), **params)
 
     def xSpec (self, **params):
         self.checkExists ()
         from mirexec import SmaUVSpec
-        return self.xApply (SmaUVSpec (), **params)
+        return self.xApply (SmaUVSpec (select='-auto', axis='ch,bo', nxy='4,3'), **params)
 
     def xQuickImage (self, delete=True):
         from mirexec import TaskInvert, TaskClean, TaskRestore
