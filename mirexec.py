@@ -203,6 +203,7 @@ class TaskBase (object):
     def setArgs (self, **kwargs):
         for (key, val) in kwargs.iteritems ():
             setattr (self, key, val)
+        return self
 
     def prepCommand (self):
         # If xabbr is True, create symbolic links to any data
