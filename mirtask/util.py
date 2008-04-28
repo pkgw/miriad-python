@@ -188,7 +188,7 @@ def polarizationName (polnum):
 
 def polarizationNumber (polname):
     for (num, name) in _polNames.iteritems ():
-        if name == polname: return num
+        if name.lower () == polname.lower (): return num
 
     raise Exception ('Unknown polarization name \'%s\'' % polname)
 
