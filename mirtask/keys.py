@@ -148,7 +148,7 @@ will be issued if any un-registered keywords or options were given.
                 elif kind == 'd':
                     val = ll.mkeyd (name, nmax)
                 elif kind == 'f':
-                    val = ll.mkeyf (name)
+                    val = ll.mkeyf (name, nmax)
                 elif kind == 't':
                     val = ll.mkeyt (name, nmax, timefmt)
                 else: raise Exception ('not reached')
