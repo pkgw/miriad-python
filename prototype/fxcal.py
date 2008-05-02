@@ -27,6 +27,7 @@ opts = keys.process ()
 
 if opts.out == ' ':
     print >>sys.stderr, 'Error: must give an output filename'
+    sys.exit (1)
 
 # Multifile UV copying algorithm copied from uvcat.for.
 
