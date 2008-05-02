@@ -6,6 +6,7 @@ routines maintain state within the Miriad libraries.
 import lowlevel as ll
 import numpy as N
 from mirtask import MiriadError, UVDataSet
+from miriad import VisData
 
 __all__ = []
 
@@ -39,6 +40,7 @@ class UVDatDataSet (UVDataSet):
     def __init__ (self, tno):
         self.tno = tno
         self.name = getCurrentName ()
+        self.refobj = VisData (self.name)
 
     def _close (self):
         ll.uvdatcls ()
