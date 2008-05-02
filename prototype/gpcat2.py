@@ -5,21 +5,22 @@
 # tables.
 
 import sys, os
-import mirtask
-import mirtask.lowlevel as ll
+import miriad
+from mirtask import keys, readgains
+from mirtask.util import jdToFull
 import numpy as N
 
 print 'GpCat2: Python take on gpcat that doesn\'t crash'
 
-# keys initialized by mirtask.__init__.
-vis = ll.keya ('vis', ' ')
-ll.keyfin ()
+keys.init ()
+keys.keyword ('vis', 'f', ' ')
+opts = keys.process ()
 
-if vis == ' ':
+if opts.vis == ' ':
     raise MiriadError ('An input file must be given')
 
-ds = mirtask.UserDataSet (vis)
-gr = mirtask.readgains.GainsReader (ds)
+ds = miriad.Data (opts.vis).open ('r')
+gr = readgains.GainsReader (ds)
 gr.prep ()
 
 print 'Found gain entries for %d antennas.' % (gr.nants)
@@ -47,7 +48,7 @@ for (time, gains) in gr.readSeq ():
 
     # Now print the data
     
-    print mirtask.util.jdToFull (time) + ':', 
+    print jdToFull (time) + ':', 
 
     for ant in ants:
         print ' %8.7lg' % (abs (gains[ant * gr.nfeeds])),
