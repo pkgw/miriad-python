@@ -660,7 +660,12 @@ class SmaMfCal (TaskBase):
                'interval', 'weight', 'smooth', 'polyfit', 'tol']
     _options = ['delay', 'nopassol', 'interpolate', 'oldflux',
                 'msmooth', 'opolyfit', 'wrap', 'averrll']
-    
+
+class TaskMaths (TaskBase):
+    _params = ['exp', 'mask', 'region', 'out', 'imsize', 'xrange',
+               'yrange', 'zrange']
+    _options = ['grow', 'unmask']
+
 # These functions operate on single images or single visibilities,
 # using several of the tasks defined above.
 
