@@ -570,7 +570,7 @@ class UVDataSet (DataSet):
         ret = ll.uvgetvrd (self.tno, varname, n)
     
         if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.double64)
+        return N.asarray (ret, dtype=N.float64)
 
     def getVarComplex (self, varname, n=1):
         """Retrieve the current value or values of a complex-valued UV
