@@ -142,7 +142,7 @@ will be issued if any un-registered keywords or options were given.
                 # Multi-valued
                 
                 if kind == 'a':
-                    val = ll.mkeya (name)
+                    val = ll.mkeya (name, nmax)
                 elif kind == 'i':
                     val = ll.mkeyi (name, nmax)
                 elif kind == 'd':
