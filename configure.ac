@@ -1,4 +1,4 @@
-AC_INIT([miriad-pytask], [0.1.0])
+AC_INIT([miriad-python], [0.1.0])
 AC_CONFIG_SRCDIR([mirtask/_uviomodule.c])
 AC_CONFIG_MACRO_DIR(.)
 AM_INIT_AUTOMAKE([foreign -Wall])
@@ -72,7 +72,7 @@ dnl Output
 
 AC_CONFIG_FILES([
   Makefile
-  miriad-pytask.pc
+  miriad-python.pc
   mirtask/Makefile
 ])
 AC_OUTPUT

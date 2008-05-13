@@ -208,6 +208,7 @@ class DataItem (object):
     
     def __init__ (self, dataset, keyword, mode):
         self.dataset = dataset
+        self.refobj = dataset.refobj
         self.name = keyword
 
         if mode == 'r': modestr = 'read'
@@ -360,12 +361,13 @@ class DataItem (object):
 __all__ += ['DataSet', 'DataItem']
 
 class UserDataSet (DataSet):
-    def __init__ (self, fname, create=False):
+    def __init__ (self, refobj, create=False):
         if create: mode = 'new'
         else: mode = 'old'
 
-        self.tno = ll.hopen (fname, mode)
-        self.name = fname
+        self.tno = ll.hopen (refobj.base, mode)
+        self.refobj = refobj
+        self.name = refobj.base
         
     def _close (self):
         ll.hclose (self.tno)
@@ -373,14 +375,15 @@ class UserDataSet (DataSet):
 __all__ += ['UserDataSet']
 
 class UVDataSet (DataSet):
-    def __init__ (self, fname, mode):
+    def __init__ (self, refobj, mode):
         if mode == 'r': modestr = 'old'
         elif mode == 'w': modestr = 'new'
         elif mode == 'a': modestr = 'append'
         else: raise ValueError ('Unexpected mode string ' + mode)
 
-        self.tno = ll.uvopen (fname, modestr)
-        self.name = fname
+        self.tno = ll.uvopen (refobj.base, modestr)
+        self.refobj = refobj
+        self.name = refobj.base
 
     def _close (self):
         ll.uvclose (self.tno)
@@ -567,7 +570,7 @@ class UVDataSet (DataSet):
         ret = ll.uvgetvrd (self.tno, varname, n)
     
         if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.double64)
+        return N.asarray (ret, dtype=N.float64)
 
     def getVarComplex (self, varname, n=1):
         """Retrieve the current value or values of a complex-valued UV
@@ -667,6 +670,7 @@ class UVDataSet (DataSet):
 class UVVarTracker (object):
     def __init__ (self, owner):
         self.dataset = owner
+        self.refobj = owner.refobj
         self.vhnd = ll.uvvarini (owner.tno)
 
     def track (self, *vars):

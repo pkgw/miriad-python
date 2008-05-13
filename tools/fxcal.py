@@ -13,7 +13,7 @@ correct timestamp.
 This version avoids those issues."""
 
 import sys
-import mirtask
+import miriad, mirtask
 import mirtask.lowlevel as ll
 from mirtask import uvdat, keys
 import numpy as N
@@ -28,10 +28,11 @@ opts = keys.process ()
 
 if opts.out == ' ':
     print >>sys.stderr, 'Error: must give an output filename'
+    sys.exit (1)
 
 # Multifile UV copying algorithm copied from uvcat.for.
 
-dOut = mirtask.UVDataSet (opts.out, 'w')
+dOut = miriad.VisData (opts.out).open ('w')
 dOut.setPreambleType ('uvw', 'time', 'baseline')
 
 first = True
@@ -64,15 +65,14 @@ def dump (dOut, autos, crosses):
 
             fFinal = N.logical_and (flags, N.logical_and (fa1, fa2))
             
-            denom = N.sqrt (da1 * da2)
-            denom[N.where (fFinal == 0)] = 1e10
+            scale = (da1 * da2)**-0.5
+            scale[N.where (fFinal == 0)] = 0
 
-            # the 1e10 above is just in case any values were zero.
-            # We use a huge number to effectively bring the values to 0 ;
+            # the 0 above is just in case any values were zero.
             # the corrs are stored in 16 bits, so our dynamic range is
             # limited.
 
-            dFinal = data / denom
+            dFinal = data * scale
 
             # Have to coerce this back to the desired type.
             fFinal = N.asarray (fFinal, dtype=N.int32)
@@ -150,7 +150,19 @@ for dIn, preamble, data, flags, nread in uvdat.readAll ():
 
         anyChange = True
 
+    flags = flags[0:nread]
+    pol = uvdat.getPol ()
+
     if not flags.any (): continue # skip all-flagged records
+
+    if not mirtask.util.polarizationIsInten (pol):
+        # We'd need to break cross-pols into single pol vals
+        # to look up into the autos table ...
+        continue
+    
+    time = preamble[3]
+    bl = mirtask.util.decodeBaseline (preamble[4])
+    data = data[0:nread]
 
     if not doneNPol:
         if nPol != saveNPol:
@@ -163,17 +175,6 @@ for dIn, preamble, data, flags, nread in uvdat.readAll ():
 
     # Hey! We actually have some data processing to do!
 
-    time = preamble[3]
-    bl = mirtask.util.decodeBaseline (preamble[4])
-    data = data[0:nread]
-    flags = flags[0:nread]
-    pol = uvdat.getPol ()
-
-    if not mirtask.util.polarizationIsInten (pol):
-        # We'd need to break cross-pols into single pol vals
-        # to look up into the autos table ...
-        continue
-    
     if time != lastTime:
         if autos is not None:
             # Dump out previous accumulation of data.

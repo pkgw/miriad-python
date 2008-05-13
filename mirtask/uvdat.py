@@ -6,6 +6,7 @@ routines maintain state within the Miriad libraries.
 import lowlevel as ll
 import numpy as N
 from mirtask import MiriadError, UVDataSet
+from miriad import VisData
 
 __all__ = []
 
@@ -39,6 +40,7 @@ class UVDatDataSet (UVDataSet):
     def __init__ (self, tno):
         self.tno = tno
         self.name = getCurrentName ()
+        self.refobj = VisData (self.name)
 
     def _close (self):
         ll.uvdatcls ()
@@ -99,6 +101,43 @@ def readAll (maxchan = 4096):
     for ds in inputSets ():
         for t in readData (maxchan=maxchan):
             yield (ds, ) + t
+
+def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
+                      select=None, line=None, stokes=None, ref=None):
+    import keys
+
+    # Set up args
+
+    args = ['miriad-python', 'vis=' + fn]
+    flags = 'wb3'
+
+    if select is not None:
+        flags += 'd'
+        args.append ('select=' + select)
+    if line is not None:
+        flags += 'l'
+        args.append ('line=' + line)
+    if stokes is not None:
+        flags += 's'
+        args.append ('stokes=' + stokes)
+    if ref is not None:
+        flags += 'r'
+        args.append ('ref=' + ref)
+    if not nopass: flags += 'f'
+    if not nocal: flags += 'c'
+    if not nopol: flags += 'e'
+
+    # Do the actual reading
+        
+    keys.init (args)
+    init (flags)
+    inp = singleInputSet ()
+
+    for (preamble, data, flags, nread) in readData ():
+        yield inp, preamble, data, flags, nread
+        if saveFlags: inp.rewriteFlags (flags)
+
+    inp.close ()
 
 # Variable probes
 
