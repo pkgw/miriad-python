@@ -11,7 +11,12 @@ from miriad import VisData
 __all__ = []
 
 def init (flags, keyword='vis'):
-    """Initialize standard UV data reading subsystem. Parameters:
+    """Initialize standard UV data reading subsystem. If you are
+writing a standalone task, you should use keys.doUvdat() rather
+than this function to give the use control over whether calibration
+corrections are applied or not.
+
+Parameters:
 
 flags - A sequence of characters giving options to the UV reading
 subsystem. Possible contents are:

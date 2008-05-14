@@ -12,7 +12,6 @@ import numpy as N
 
 print 'GpCat2: Python take on gpcat that doesn\'t crash'
 
-keys.init ()
 keys.keyword ('vis', 'f', ' ')
 opts = keys.process ()
 

@@ -9,11 +9,7 @@ SECOND = 1.0 / 3600. / 24.
 mirtask.keys.keyword ('interval', 'd', 0.01)
 mirtask.keys.keyword ('cutoffs', 'd', None, 3)
 mirtask.keys.option ('rmshist')
-mirtask.keys.init ()
-
-# nocal -> no 'c'
-# nopass -> no 'f'
-# nopol -> no 'e'
+mirtask.keys.doUvdat ('dsl3x', True)
 
 integData = {}
 accData = {}
@@ -100,8 +96,6 @@ def flushOneAcc (pol, ant1, ant2, ant3):
 
 # Prep args. Note our current args model can't support
 # nocal-nopass-nopol options.
-
-mirtask.uvdat.init ('dsl3xcef')
 
 args = mirtask.keys.process ()
 

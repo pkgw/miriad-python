@@ -93,8 +93,40 @@ def option (*names):
 
 __all__ += ['keyword', 'keymatch', 'option']
 
+_uvdatFlags = None
+_uvdatCals = False
+_uvdatViskey = None
+
+def doUvdat (flags, calOpts, viskey='vis'):
+    """Initialize the UVDAT subsystem when reading in keywords.
+Parameters:
+
+flags   - Flags to the MIRIAD UVDATINP routine. See the documentation
+          to uvdat.init () for allowed flags and their meaning.
+
+calOpts - If true, automatically enable the calibration options 'nocal',
+          'nopass', and 'nopol', and apply calibrations in UVDAT unless
+          those options are given. You should use this mechanism instead
+          of passing the 'c', 'e', and 'f' flags to uvdat.init ()
+
+Returns: None.
+"""
+    global _uvdatFlags, _uvdatCals, _uvdatViskey
+
+    _uvdatFlags = flags
+    _uvdatCals = calOpts
+    _uvdatViskey = viskey
+    
+    if calOpts:
+        option ('nocal', 'nopol', 'nopass')
+
+__all__ += ['doUvdat']
+
 def init (args=None):
-    """Re-initialize the MIRIAD database of keyword arguments.
+    """Re-initialize the MIRIAD database of keyword arguments. You do not
+need to call this function explicitly if you are going to call process (),
+since that function calls init () itself.
+
 Parameters:
 
 args - The argv array of this program. If None, sys.argv is used.
@@ -104,12 +136,18 @@ args - The argv array of this program. If None, sys.argv is used.
 
     ll.keyini (args)
 
-def process ():
+def process (args=None):
     """Process the arguments to this task. Returns an object with fields
 set to the values of the registered keyword and option arguments. A warning
 will be issued if any un-registered keywords or options were given.
+
+Parameters:
+
+args - The argv array of this program. If None, sys.argv is used.
 """
 
+    init (args)
+    
     res = KeyHolder ()
     
     # Keywords
@@ -177,6 +215,20 @@ will be issued if any un-registered keywords or options were given.
     for i in range (0, len (names)):
         setattr (res, names[i], present[i] != 0)
 
+    # UVDAT initialization
+
+    if _uvdatFlags is not None:
+        import uvdat
+
+        f = _uvdatFlags
+        
+        if _uvdatCals:
+            if not res.nocal: f += 'c'
+            if not res.nopass: f += 'f'
+            if not res.nopol: f += 'e'
+
+        uvdat.init (f, _uvdatViskey)
+    
     # All done. Check if any unexhausted keywords.
 
     ll.keyfin ()

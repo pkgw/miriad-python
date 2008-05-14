@@ -1,29 +1,29 @@
 #!/usr/bin/python
 
 import sys
-import mirtask
-import mirtask.lowlevel as ll
-from mirtask import uvdat
+import miriad
+from mirtask import keys, uvdat, lowlevel as ll
 import numpy as N
 
+MAXCHAN = 4096
 CHUNKSIZE = 32768
 
 sortedtime = N.zeros (CHUNKSIZE, dtype=N.double)
 npertime = N.zeros (CHUNKSIZE, dtype=N.int)
 
-ll.output ('UvSort: python bastardization')
+print 'UvSort: python bastardization'
 
-ll.keyini (sys.argv)
-uvdat.init ('bxdlr3')
-out = u.keya ('out', ' ')
-u.keyfin ()
+keys.doUvdat ('bxdlr3', True)
+keys.keyword ('out', 'f', ' ')
+args = keys.process ()
 
-if out == ' ':
-    raise RuntimeError ('Output file must be specified')
+if args.out == ' ':
+    print >>sys.stderr, 'Output file must be specified'
+    sys.exit (1)
 
 nrec = 0
 
-m.output ('First pass: reading timestamps and sorting')
+print 'First pass: reading timestamps and sorting'
 
 ds = uvdat.singleInputSet ()
 
@@ -33,7 +33,6 @@ for (preamble, data, flags, nread) in uvdat.readData ():
     if nrec >= sortedtime.size: sortedtime.resize (sortedtime.size + CHUNKSIZE)
 
     sortedtime[nrec - 1] = preamble[3]
-    nread = m.uvdatrd (preamble, data, flags, MAXCHAN)
 
 del ds
 
@@ -51,13 +50,10 @@ for i in xrange (0, nrec):
 
     npertime[nuniq - 1] += 1
 
-ll.output ('% 12d unique UV timestamps, %d UV records' % (nuniq, nrec))
-ll.output ('Second pass: copying data')
+print '% 12d unique UV timestamps, %d UV records' % (nuniq, nrec)
+print 'Second pass: copying data'
 
-mirtask.initKeys ()
-uvdat.init ('bxdlr3')
-out = u.keya ('out', ' ')
-u.keyfin ()
+args = keys.process ()
 
 din = uvdat.singleInputSet ()
 ltype = uvdat.getLinetype ()
@@ -66,9 +62,9 @@ din.initVarsAsInput (ltype)
 tracker = din.makeVarTracker ()
 tracker.track ('dra', 'ddec', 'source', 'on')
 
-dout = mirtask.UVDataSet (out, 'w')
+dout = miriad.VisData (args.out).open ('w')
 dout.setPreambleType ('uvw', 'time', 'baseline')
-dout.initVarsAsOutput (din, linetype)
+dout.initVarsAsOutput (din, ltype)
 
 din.copyHeader (dout, 'history')
 dout.openHistory ()

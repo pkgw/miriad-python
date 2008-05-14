@@ -22,8 +22,7 @@ ll.output ('FxCal.py: reimplementation of uvcal options=fxcal')
 # keys initialized by mirtask.__init__.
 
 keys.keyword ('out', 'f', ' ')
-keys.init ()
-uvdat.init ('ds3')
+keys.doUvdat ('ds3', False)
 opts = keys.process ()
 
 if opts.out == ' ':
