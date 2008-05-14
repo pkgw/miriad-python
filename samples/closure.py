@@ -2,7 +2,7 @@
 
 import numpy as N
 from mirtask import keys, util, uvdat
-from uvutils import *
+from numutils import *
 
 SECOND = 1.0 / 3600. / 24.
 

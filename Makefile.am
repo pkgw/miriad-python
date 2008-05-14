@@ -1,6 +1,6 @@
 SUBDIRS = mirtask samples
 
-python_PYTHON = miriad.py mirexec.py
+python_PYTHON = miriad.py mirexec.py numutils.py
 
 # pkg-config
 
