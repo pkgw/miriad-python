@@ -74,5 +74,6 @@ AC_CONFIG_FILES([
   Makefile
   miriad-python.pc
   mirtask/Makefile
+  samples/Makefile
 ])
 AC_OUTPUT
