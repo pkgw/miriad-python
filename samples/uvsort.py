@@ -8,9 +8,6 @@ import numpy as N
 MAXCHAN = 4096
 CHUNKSIZE = 32768
 
-sortedtime = N.zeros (CHUNKSIZE, dtype=N.double)
-npertime = N.zeros (CHUNKSIZE, dtype=N.int)
-
 print 'UvSort: python bastardization'
 
 keys.doUvdat ('bxdlr3', True)
@@ -21,9 +18,11 @@ if args.out == ' ':
     print >>sys.stderr, 'Output file must be specified'
     sys.exit (1)
 
-nrec = 0
-
 print 'First pass: reading timestamps and sorting'
+
+nrec = 0
+sortedtime = N.zeros (CHUNKSIZE, dtype=N.double)
+npertime = N.zeros (CHUNKSIZE, dtype=N.int)
 
 ds = uvdat.singleInputSet ()
 

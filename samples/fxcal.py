@@ -13,13 +13,11 @@ correct timestamp.
 This version avoids those issues."""
 
 import sys
-import miriad, mirtask
-import mirtask.lowlevel as ll
-from mirtask import uvdat, keys
+import miriad
+from mirtask import uvdat, keys, util
 import numpy as N
 
-ll.output ('FxCal.py: reimplementation of uvcal options=fxcal')
-# keys initialized by mirtask.__init__.
+print 'FxCal: more robust implementation of uvcal options=fxcal'
 
 keys.keyword ('out', 'f', ' ')
 keys.doUvdat ('ds3', False)
@@ -154,13 +152,13 @@ for dIn, preamble, data, flags, nread in uvdat.readAll ():
 
     if not flags.any (): continue # skip all-flagged records
 
-    if not mirtask.util.polarizationIsInten (pol):
+    if not util.polarizationIsInten (pol):
         # We'd need to break cross-pols into single pol vals
         # to look up into the autos table ...
         continue
     
     time = preamble[3]
-    bl = mirtask.util.decodeBaseline (preamble[4])
+    bl = util.decodeBaseline (preamble[4])
     data = data[0:nread]
 
     if not doneNPol:

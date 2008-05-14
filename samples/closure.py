@@ -1,15 +1,15 @@
 #! /usr/bin/env python
 
 import numpy as N
-import mirtask, mirtask.util, mirtask.uvdat, mirtask.keys
+from mirtask import keys, util, uvdat
 from uvutils import *
 
 SECOND = 1.0 / 3600. / 24.
 
-mirtask.keys.keyword ('interval', 'd', 0.01)
-mirtask.keys.keyword ('cutoffs', 'd', None, 3)
-mirtask.keys.option ('rmshist')
-mirtask.keys.doUvdat ('dsl3x', True)
+keys.keyword ('interval', 'd', 0.01)
+keys.keyword ('cutoffs', 'd', None, 3)
+keys.option ('rmshist')
+keys.doUvdat ('dsl3x', True)
 
 integData = {}
 accData = {}
@@ -97,7 +97,7 @@ def flushOneAcc (pol, ant1, ant2, ant3):
 # Prep args. Note our current args model can't support
 # nocal-nopass-nopol options.
 
-args = mirtask.keys.process ()
+args = keys.process ()
 
 interval = args.interval / 60. / 24.
 
@@ -122,18 +122,18 @@ print 'Using cutoffs: good < %lf deg, dubious > %lf deg, bad > %lf deg' \
 first = True
 print 'Reading data ...'
 
-for (inp, preamble, data, flags, nread) in mirtask.uvdat.readAll ():
+for (inp, preamble, data, flags, nread) in uvdat.readAll ():
     data = data[0:nread].copy ()
     flags = flags[0:nread].copy ()
 
     time = preamble[3]
-    bl = mirtask.util.decodeBaseline (preamble[4])
-    pol = mirtask.uvdat.getPol ()
-    var = mirtask.uvdat.getVariance ()
+    bl = util.decodeBaseline (preamble[4])
+    pol = uvdat.getPol ()
+    var = uvdat.getVariance ()
 
     # Some first checks.
     
-    if not mirtask.util.polarizationIsInten (pol): continue
+    if not util.polarizationIsInten (pol): continue
     if not flags.any (): continue
     
     seenpols.add (pol)
@@ -222,21 +222,21 @@ for (key, ga) in allData.iteritems ():
         maybeBad.add ((ant2, ant3))
 
     if rms > dubiousCutoff:
-        s = '%s-%d-%d-%d' % (mirtask.util.polarizationName (pol), ant1, ant2, ant3)
+        s = '%s-%d-%d-%d' % (util.polarizationName (pol), ant1, ant2, ant3)
         print '%20s: %10lg' % (s, rms)
 
 print
 
 #for (key, sa) in blStats.iteritems ():
 #    (pol, ant1, ant2) = key
-#    s = '%s-%d-%d' % (mirtask.util.polarizationName (pol), ant1, ant2)
+#    s = '%s-%d-%d' % (util.polarizationName (pol), ant1, ant2)
 #    print '%20s: %10lg (%10lg, %5d)' % (s, sa.mean (), sa.std (), sa.num ())
 
 #print
 
 #for (key, sa) in antStats.iteritems ():
 #    (pol, ant1) = key
-#    s = '%s-%d' % (mirtask.util.polarizationName (pol), ant1)
+#    s = '%s-%d' % (util.polarizationName (pol), ant1)
 #    print '%20s: %10lg (%10lg, %5d)' % (s, sa.mean (), sa.std (), sa.num ())
 
 if args.rmshist:
@@ -260,7 +260,7 @@ for (key, ga) in allData.iteritems ():
     rms = N.sqrt (N.mean (phs**2))
     bls = [(ant1, ant2), (ant1, ant3), (ant2, ant3)]
 
-    s = '%s-%d-%d-%d' % (mirtask.util.polarizationName (pol), ant1, ant2, ant3)
+    s = '%s-%d-%d-%d' % (util.polarizationName (pol), ant1, ant2, ant3)
 
     if rms < dubiousCutoff:
         nOk += 1
@@ -285,7 +285,7 @@ if len (explInfo) > 0:
     explInfo.sort (key = lambda x: x[1])
 
     for ((pol, bl), count) in explInfo:
-        s = '%s-%d-%d' % (mirtask.util.polarizationName (pol), bl[0], bl[1])
+        s = '%s-%d-%d' % (util.polarizationName (pol), bl[0], bl[1])
         print '%20s: shows up in %d dubious baselines' % (s, count)
 
     print
