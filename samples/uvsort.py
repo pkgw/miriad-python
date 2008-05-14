@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import mirtask
 import mirtask.lowlevel as ll
 from mirtask import uvdat
@@ -11,8 +12,8 @@ sortedtime = N.zeros (CHUNKSIZE, dtype=N.double)
 npertime = N.zeros (CHUNKSIZE, dtype=N.int)
 
 ll.output ('UvSort: python bastardization')
-# keys initialized by mirtask.__init__.
 
+ll.keyini (sys.argv)
 uvdat.init ('bxdlr3')
 out = u.keya ('out', ' ')
 u.keyfin ()

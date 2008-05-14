@@ -17,7 +17,8 @@ keys.keyword ('vis', 'f', ' ')
 opts = keys.process ()
 
 if opts.vis == ' ':
-    raise MiriadError ('An input file must be given')
+    print >>sys.stderr, 'An input file must be given'
+    sys.exit (1)
 
 ds = miriad.Data (opts.vis).open ('r')
 gr = readgains.GainsReader (ds)
