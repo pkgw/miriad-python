@@ -8,7 +8,8 @@ import numpy as N
 MAXCHAN = 4096
 CHUNKSIZE = 32768
 
-print 'UvSort: python bastardization'
+banner = 'UVSORT: python bastardization'
+print banner
 
 keys.doUvdat ('bxdlr3', True)
 keys.keyword ('out', 'f', ' ')
@@ -67,7 +68,7 @@ dout.initVarsAsOutput (din, ltype)
 
 din.copyHeader (dout, 'history')
 dout.openHistory ()
-dout.writeHistory ('UVSORT: python bastardization')
+dout.writeHistory (banner)
 dout.logInvocation ('UVSORT')
 dout.closeHistory ()
 

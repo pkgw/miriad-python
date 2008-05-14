@@ -10,7 +10,8 @@ from mirtask import keys, readgains
 from mirtask.util import jdToFull
 import numpy as N
 
-print 'GpCat2: Python take on gpcat that doesn\'t crash'
+banner = 'GPCAT2: Python take on gpcat that doesn\'t crash'
+print banner
 
 keys.keyword ('vis', 'f', ' ')
 opts = keys.process ()

@@ -4,6 +4,9 @@ import numpy as N
 from mirtask import keys, util, uvdat
 from numutils import *
 
+banner = 'CLOSURE (Python): attempt to diagnose bad baselines base on closure stats.'
+print banner
+
 SECOND = 1.0 / 3600. / 24.
 
 keys.keyword ('interval', 'd', 0.01)

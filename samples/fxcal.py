@@ -17,7 +17,8 @@ import miriad
 from mirtask import uvdat, keys, util
 import numpy as N
 
-print 'FxCal: more robust implementation of uvcal options=fxcal'
+banner = 'FXCAL: reimplementation of uvcal options=fxcal'
+print banner
 
 keys.keyword ('out', 'f', ' ')
 keys.doUvdat ('ds3', False)
@@ -206,8 +207,8 @@ if not polsVaried:
 # All done. Write history entry and quit.
 
 dOut.openHistory ()
-dOut.writeHistory ('FXCAL.PY: reimplementation of uvcal options=fxcal')
-dOut.logInvocation ('FXCAL.PY')
+dOut.writeHistory (banner)
+dOut.logInvocation ('FXCAL')
 dOut.closeHistory ()
 dOut.close ()
 
