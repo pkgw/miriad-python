@@ -3,14 +3,16 @@
 import numpy as N
 from mirtask import keys, util, uvdat
 from numutils import *
+import sys
 
-banner = 'CLOSURE (Python): attempt to diagnose bad baselines base on closure stats.'
+banner = 'CLOSURE (Python): attempt to diagnose bad baselines based on phase triple closures.'
 print banner
 
 SECOND = 1.0 / 3600. / 24.
 
 keys.keyword ('interval', 'd', 0.01)
 keys.keyword ('cutoffs', 'd', None, 3)
+keys.keyword ('numemp', 'i', 10)
 keys.option ('rmshist')
 keys.doUvdat ('dsl3x', True)
 
@@ -22,6 +24,12 @@ allData = AccDict (cr, lambda ga, tup: ga.add (*tup))
 
 seenants = set ()
 seenpols = set ()
+
+def blfmt (pol, ant1, ant2):
+    return '%s-%d-%d' % (util.polarizationName (pol), ant1, ant2)
+
+def tripfmt (pol, ant1, ant2, ant3):
+    return '%s-%d-%d-%d' % (util.polarizationName (pol), ant1, ant2, ant3)
 
 def flushInteg (time):
     global integData
@@ -97,9 +105,6 @@ def flushOneAcc (pol, ant1, ant2, ant3):
     
     allData.accum (key, (time / n, ph, v / n))
 
-# Prep args. Note our current args model can't support
-# nocal-nopass-nopol options.
-
 args = keys.process ()
 
 interval = args.interval / 60. / 24.
@@ -117,8 +122,9 @@ if len (args.cutoffs) > 2:
 else:
     badCutoff = 90.
 
-print 'Using cutoffs: good < %lf deg, dubious > %lf deg, bad > %lf deg' \
+print 'Using cutoffs: good < %g deg, dubious > %g deg, bad > %g deg' \
       % (goodCutoff, dubiousCutoff, badCutoff)
+print 'Averaging interval: %g minutes' % (args.interval)
 
 # Let's go.
 
@@ -166,38 +172,28 @@ for (inp, preamble, data, flags, nread) in uvdat.readAll ():
     tmax = max (tmax, t)
     integData[(bl, pol)] = (data, flags, var)
 
-print ' ... Done.'
+print ' ... done.'
 
 flushInteg (t)
 flushAcc ()
 
-blStats = {}
-antStats = {}
+#blStats = AccDict (StatsAccumulator, lambda sa, rms: sa.add (rms))
+#antStats = AccDict (StatsAccumulator, lambda sa, rms: sa.add (rms))
 shouldGood = set ()
-maybeBad = set ()
-
-def recordBL (pol, ant1, ant2, rms):
-    key = (pol, ant1, ant2)
-    sa = blStats.get (key)
-
-    if sa is None:
-        sa = StatsAccumulator ()
-        blStats[key] = sa
-
-    sa.add (rms)
-
-def recordAnt (pol, ant1, rms):
-    key = (pol, ant1)
-    sa = antStats.get (key)
-    
-    if sa is None:
-        sa = StatsAccumulator ()
-        antStats[key] = sa
-
-    sa.add (rms)
+maybeBad = {}
 
 if args.rmshist:
     allrms = GrowingArray (N.double, 1)
+
+anyDubious = False
+
+def addBad (pol, ant1, ant2):
+    key = (pol, ant1, ant2)
+
+    if key in maybeBad:
+        maybeBad[key] += 1
+    else:
+        maybeBad[key] = 1
 
 for (key, ga) in allData.iteritems ():
     ga.doneAdding ()    
@@ -208,25 +204,28 @@ for (key, ga) in allData.iteritems ():
     if args.rmshist:
         allrms.add (rms)
     
-    recordBL (pol, ant1, ant2, rms)
-    recordBL (pol, ant1, ant3, rms)
-    recordBL (pol, ant2, ant3, rms)
-    recordAnt (pol, ant1, rms)
-    recordAnt (pol, ant2, rms)
-    recordAnt (pol, ant3, rms)
+    #blStats.accum ((pol, ant1, ant2), rms)
+    #blStats.accum ((pol, ant1, ant3), rms)
+    #blStats.accum ((pol, ant2, ant3), rms)
+    #antStats.accum ((pol, ant1), rms)
+    #antStats.accum ((pol, ant2), rms)
+    #antStats.accum ((pol, ant3), rms)
 
     if rms < goodCutoff:
-        shouldGood.add ((ant1, ant2))
-        shouldGood.add ((ant1, ant3))
-        shouldGood.add ((ant2, ant3))
+        shouldGood.add ((pol, ant1, ant2))
+        shouldGood.add ((pol, ant1, ant3))
+        shouldGood.add ((pol, ant2, ant3))
     elif rms > badCutoff:
-        maybeBad.add ((ant1, ant2))
-        maybeBad.add ((ant1, ant3))
-        maybeBad.add ((ant2, ant3))
+        addBad (pol, ant1, ant2)
+        addBad (pol, ant1, ant3)
+        addBad (pol, ant2, ant3)
 
     if rms > dubiousCutoff:
-        s = '%s-%d-%d-%d' % (util.polarizationName (pol), ant1, ant2, ant3)
-        print '%20s: %10lg' % (s, rms)
+        if not anyDubious:
+            print
+            print 'Triples with dubious phase closure values:'
+            anyDubious = True
+        print '%20s: %10g' % (tripfmt (pol, ant1, ant2, ant3), rms)
 
 print
 
@@ -249,21 +248,49 @@ if args.rmshist:
     n = int (N.sqrt (len (allrms)))
     omega.quickHist (allrms.col (0), n).showBlocking ()
 
-culprits = maybeBad.difference (shouldGood)
+theoCulprits = set (maybeBad.iterkeys ()).difference (shouldGood)
 #print 'Should always be good:',', '.join ('%d-%d' % x for x in shouldGood)
-print 'Sometimes bad and never good:', ', '.join ('%d-%d' % x for x in culprits)
-print 'That\'s %d bad baselines and %d good ones' % (len (culprits), len (shouldGood))
+
+allEmpCulprits = sorted (maybeBad.iteritems (), key=lambda x: x[1], reverse=True)
+empCulprits = []
+
+for i in xrange (0, len (allEmpCulprits)):
+    if allEmpCulprits[i][0] not in theoCulprits:
+        empCulprits.append (allEmpCulprits[i])
+
+    if len (empCulprits) >= args.numemp: break
+
+if len (theoCulprits) == 0:
+    print 'No theoretical culprit baselines detected. If there are clearly bad closure triples, try:'
+    print '  * Raising the integration interval'
+    print '  * Lowering the "good" cutoff'
+    print '  * Raising the "dubious" cutoff'
+    print '  * Lowering the "bad" cutoff'
+    print '  * Examining spectra for RFI or other problems'
+else:
+    print ('There are %d theoretical culprit baselines, which are in ' + \
+          'some bad triples and no good ones:') % len (theoCulprits)
+    for x in theoCulprits: print '%20s' % blfmt (*x)
+
+if len (empCulprits) > 0:
+    print
+    print ('Here are the top %d empirical culprit baselines not listed ' + \
+          'above, ranked by the number of bad triples they appear in:') % len (empCulprits)
+    for x in empCulprits: print '%20s: %d' % (blfmt (*x[0]), x[1])
+
+#print
+#print 'There are %d baselines that are at least sometimes in a good triple.' % len (shouldGood)
+
 nDub = 0
 nOk = 0
 explCounts = {}
+unexpls = []
 
 for (key, ga) in allData.iteritems ():
     (pol, ant1, ant2, ant3) = key
     phs = ga.col (1)
     rms = N.sqrt (N.mean (phs**2))
     bls = [(ant1, ant2), (ant1, ant3), (ant2, ant3)]
-
-    s = '%s-%d-%d-%d' % (util.polarizationName (pol), ant1, ant2, ant3)
 
     if rms < dubiousCutoff:
         nOk += 1
@@ -272,13 +299,18 @@ for (key, ga) in allData.iteritems ():
         expl = False
         
         for bl in bls:
-            if bl in culprits:
+            if bl in theoCulprits:
                 if bl not in explCounts: explCounts[(pol, bl)] = 1
                 else: explCounts[(pol, bl)] += 1
                 expl = True
 
-        if not expl:
-            print '%20s: NOT explained (rms = %g)' % (s, rms)
+        if not expl: unexpls.append ((key, rms))
+
+if len (unexpls) > 0:
+    print
+    print 'Unexplained dubious triples - these do not involve a theoretical culprit baseline:'
+    for trip, rms in sorted (unexpls, key=lambda x: x[1], reverse=True):
+        print '%20s: rms = %g' % (tripfmt (*trip), rms)
 
 print
 
@@ -288,10 +320,9 @@ if len (explInfo) > 0:
     explInfo.sort (key = lambda x: x[1])
 
     for ((pol, bl), count) in explInfo:
-        s = '%s-%d-%d' % (util.polarizationName (pol), bl[0], bl[1])
-        print '%20s: shows up in %d dubious baselines' % (s, count)
+        print '%20s: shows up in %d dubious baselines' % (blfmt (pol, bl[0], bl[1]), count)
 
     print
 
-print '%d dubious triples, %d non-dubious triples (cutoff %lg)' % \
-      (nDub, nOk, dubiousCutoff)
+print '%d dubious triples, %d without a theoretical culprit' % (nDub, len (unexpls))
+print '%d non-dubious triples (cutoff %g)' % (nOk, dubiousCutoff)
