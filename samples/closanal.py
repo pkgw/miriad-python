@@ -5,7 +5,7 @@ from mirtask import keys, util, uvdat
 from numutils import *
 import sys
 
-banner = 'CLOSURE (Python): attempt to diagnose bad baselines based on phase triple closures.'
+banner = 'CLOSANAL (Python): attempt to diagnose bad baselines based on phase triple closures.'
 print banner
 
 SECOND = 1.0 / 3600. / 24.
