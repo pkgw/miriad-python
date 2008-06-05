@@ -195,6 +195,11 @@ def addBad (pol, ant1, ant2):
     else:
         maybeBad[key] = 1
 
+nGood = 0
+nBad = 0
+nDubious = 0
+nTotal = 0
+
 for (key, ga) in allData.iteritems ():
     ga.doneAdding ()    
     (pol, ant1, ant2, ant3) = key
@@ -203,6 +208,8 @@ for (key, ga) in allData.iteritems ():
 
     if args.rmshist:
         allrms.add (rms)
+
+    nTotal += 1
     
     #blStats.accum ((pol, ant1, ant2), rms)
     #blStats.accum ((pol, ant1, ant3), rms)
@@ -215,18 +222,25 @@ for (key, ga) in allData.iteritems ():
         shouldGood.add ((pol, ant1, ant2))
         shouldGood.add ((pol, ant1, ant3))
         shouldGood.add ((pol, ant2, ant3))
+        nGood += 1
     elif rms > badCutoff:
         addBad (pol, ant1, ant2)
         addBad (pol, ant1, ant3)
         addBad (pol, ant2, ant3)
+        nBad += 1
 
     if rms > dubiousCutoff:
-        if not anyDubious:
+        if nDubious == 0:
             print
             print 'Triples with dubious phase closure values:'
-            anyDubious = True
         print '%20s: %10g' % (tripfmt (pol, ant1, ant2, ant3), rms)
+        nDubious += 1
 
+print
+print 'Out of %d triples, found' % nTotal
+print '%20d good' % nGood
+print '%20d dubious' % (nDubious - nBad)
+print '%20d bad' % nBad
 print
 
 #for (key, sa) in blStats.iteritems ():
