@@ -227,7 +227,12 @@ args - The argv array of this program. If None, sys.argv is used.
             if not res.nopass: f += 'f'
             if not res.nopol: f += 'e'
 
-        uvdat.init (f, _uvdatViskey)
+        try:
+            uvdat.init (f, _uvdatViskey)
+        except MiriadError, e:
+            # Prettier error message if argument problem.
+            print 'Error:', e
+            sys.exit (1)
     
     # All done. Check if any unexhausted keywords.
 
