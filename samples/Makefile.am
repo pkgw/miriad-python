@@ -1,5 +1,5 @@
 bin_SCRIPTS = \
-  closure.py \
+  closanal.py \
   fxcal.py \
   gpcat2.py \
   multiflag.py \
