@@ -83,6 +83,10 @@ class StatsAccumulator (object):
 __all__.append ('StatsAccumulator')
 
 class AccDict (dict):
+    """An accumulating dictionary."""
+
+    __slots__ = ['_create', '_accum']
+    
     def __init__ (self, create, accum):
         self._create = create
         self._accum = accum
@@ -97,3 +101,22 @@ class AccDict (dict):
         self._accum (entry, val)
 
 __all__.append ('AccDict')
+
+class RedDict (dict):
+    """A reducing dictionary."""
+
+    __slots__ = ['_nothingEquiv', '_reduce']
+                 
+    def __init__ (self, nothingEquiv, reducefn):
+        self._nothingEquiv = nothingEquiv
+        self._reduce = reducefn
+        
+    def reduce (self, key, val):
+        prev = self.get (key)
+
+        if prev is None: prev = self._nothingEquiv
+
+        self[key] = self._reduce (prev, val)
+
+__all__.append ('RedDict')
+
