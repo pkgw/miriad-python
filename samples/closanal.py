@@ -215,22 +215,22 @@ if len (worstTrips) > 0:
 if len (worstBls) > 0:
     print
     print 'Baselines with %s phase closure values:' % adj
-    print '%14s  %10s (%10s, %5s)' % ('Baseline', 'Mean', 'RMS', 'nTrip')
-    for key, sa in worstBls: print '%14s: %10g (%10g, %5d)' % (blfmt (*key), sa.mean (),
-                                                               sa.std (), sa.num ())
+    print '%14s  %10s (%10s, %5s)' % ('Baseline', 'Mean', 'StdDev', 'nTrip')
+    for key, sa in worstBls:
+        print '%14s: %10g (%10g, %5d)' % (blfmt (*key), sa.mean (), sa.std (), sa.num ())
 
 if len (worstAnts) > 0:
     print
     print 'Antennas with %s phase closure values:' % adj
-    print '%14s  %10s (%10s, %5s)' % ('Antenna', 'Mean', 'RMS', 'nTrip')
-    for key, sa in worstAnts: print '%14s: %10g (%10g, %5d)' % (antfmt (*key), sa.mean (),
-                                                                sa.std (), sa.num ())
+    print '%14s  %10s (%10s, %5s)' % ('Antenna', 'Mean', 'StdDev', 'nTrip')
+    for key, sa in worstAnts:
+        print '%14s: %10g (%10g, %5d)' % (antfmt (*key), sa.mean (), sa.std (), sa.num ())
 
 if args.rmshist:
-    import omega
-    allrms.doneAdding ()
     print
     print 'Showing histogram of RMS values ...'
+    import omega
+    allrms.doneAdding ()
     n = int (N.sqrt (len (allrms)))
     omega.quickHist (allrms.col (0), n).showBlocking ()
 
