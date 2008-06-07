@@ -1,4 +1,4 @@
-SUBDIRS = mirtask samples
+SUBDIRS = mirtask
 
 python_PYTHON = miriad.py mirexec.py numutils.py
 
