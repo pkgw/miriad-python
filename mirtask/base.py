@@ -75,7 +75,6 @@ class DataSet (object):
         if mode == '': return self.MODE_UNKNOWN
         elif mode == 'r': return self.MODE_RD
         elif mode == 'rw': return self.MODE_RDWR
-        else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
         
         raise MiriadError ('Unknown hio mode type: ' + mode)
     
