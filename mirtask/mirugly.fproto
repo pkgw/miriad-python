@@ -7081,10 +7081,6 @@ subroutine julcal(julian,year,month,day) ! in subs/julday.f
     integer :: month
     double precision :: day
 end subroutine julcal
-subroutine dayjul(calday,julian) ! in subs/julday.f
-    character*(*) :: calday
-    double precision :: julian
-end subroutine dayjul
 subroutine datepars(calday,a,z,alpha,delim,iarray,ok) ! in subs/julday.f
     character*(*) :: calday
     integer :: a

@@ -580,3 +580,8 @@ function polspara(code) ! in subs/pols.f
     integer :: code
     logical :: polspara
 end function polspara
+
+subroutine dayjul(calday,julian) ! in subs/julday.f
+    character*(*) :: calday
+    double precision intent(out) :: julian
+end subroutine dayjul

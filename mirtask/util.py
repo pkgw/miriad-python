@@ -221,3 +221,21 @@ def jdToPartial (jd):
     sc = int (3600 * (fullhrs - hr - mn / 60.))
 
     return '%02d:%02d:%02d' % (hr, mn, sc)
+
+def dateOrTimeToJD (calendar):
+    """Return a full or offset Julian date parsed from the argument.
+(An offset Julian date is between 0 and 1 and measures a time of day.
+The anchor point to which the offset Julian date is relative to is
+irrelevant to this function.) Acceptable input formats are:
+
+  yymmmdd.dd (D)
+  dd/mm/yy (F)
+  [yymmmdd:][hh[:mm[:ss.s]]] (H)
+  ccyy-mm-dd[Thh[:mm[:ss.ss]]] (T)
+  dd-mm-ccyy
+
+See the documentation to Miriad function DAYJUL for a more detailed
+description of the parser behavior. The returned Julian date is of
+moderate accuracy only, e.g. good to a few seconds (I think?)."""
+
+    return ll.dayjul (calendar)
