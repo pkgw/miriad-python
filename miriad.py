@@ -290,14 +290,27 @@ __all__ += ['Data', 'branchOps', 'mutOps']
 # Visdata
 
 def paramConvert (**params):
-    return tuple ('%s=%s' % t for t in params.iteritems ())
+    opts = (t for t in params.iteritems () if isinstance (t[1], bool))
+    nonopts = (t for t in params.iteritems () if not isinstance (t[1], bool))
+    usedopts = (t[0] for t in opts if t[1])
+    nonstr = ('%s=%s' % t for t in nonopts)
+    optstr = ','.join (usedopts)
+
+    if len (optstr) > 0:
+        return tuple (nonstr) + ('options=' + optstr, )
+
+    return tuple (nonstr)
 
 def paramRecover (items):
     params = {}
 
     for s in items:
         name, val = s.split ('=', 1)
-        params[name] = val
+
+        if name == 'options':
+            for present in val.split (','): params[present] = True
+        else:
+            params[name] = val
 
     return params
 
