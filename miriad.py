@@ -1,5 +1,6 @@
 import sys, os
 from os.path import join
+from stat import ST_MTIME
 
 # Tracing of MIRIAD operations. Almost always used for mirexec
 # functions, but we also record delete/copy/rename in Data.
@@ -54,6 +55,21 @@ class Data (object):
         be created by the execution of a command.)"""
         return os.path.exists (self.base)
 
+    @property
+    def mtime (self):
+        """The modification time of this dataset."""
+        return os.stat (self.base)[ST_MTIME]
+    
+    @property
+    def umtime (self):
+        """The "unconditional" modification time of this dataset --
+zero is returned if the dataset does not exist."""
+        try:
+            return os.stat (self.base)[ST_MTIME]
+        except OSError, e:
+            if e.errno == 2: return 0
+            raise e
+    
     def checkExists (self):
         if self.exists: return
 
