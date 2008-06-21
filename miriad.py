@@ -39,9 +39,11 @@ class Data (object):
         return '<MIRIAD data, base "%s">' % self.base
 
     def __eq__ (self, other):
-        if other is None: return False
-        if not isinstance (other, Data): return False
-        return self.realPath () == other.realPath ()
+        # We could see if other was an instance of self.__class__, but
+        # two different subclasses of data that are pointing to the same
+        # path really are referring to the same object, so I think it's
+        # more correct to just verify that other is an instance of Data.
+        return isinstance (other, Data) and self.realPath () == other.realPath ()
 
     def __hash__ (self):
         return hash (self.realPath ())
