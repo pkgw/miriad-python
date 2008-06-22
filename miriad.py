@@ -122,9 +122,10 @@ zero is returned if the dataset does not exist."""
     
     def makeVariant (self, name, kind=None):
         if kind is None: kind = Data # for some reason kind=Data barfs.
-        if not issubclass (kind, Data): raise Exception ('blarg')
 
-        return kind (self.base + '.' + name)
+        inst = kind (self.base + '.' + name)
+        assert isinstance (inst, Data)
+        return inst
 
     def vvis (self, name): return self.makeVariant (name, VisData)
     
