@@ -939,6 +939,98 @@ py_uvscan (PyObject *self, PyObject *args)
 }
 
 static PyObject *
+py_uvread (PyObject *self, PyObject *args)
+{
+    int tno, n, size, nread;
+    PyObject *preamble, *data, *flags;
+
+    if (!PyArg_ParseTuple (args, "iO!O!O!i", &tno, &PyArray_Type, &preamble,
+			   &PyArray_Type, &data, &PyArray_Type, &flags, &n))
+	return NULL;
+
+    /* verify preamble */
+
+    if (!PyArray_ISFLOAT (preamble)) {
+	PyErr_SetString (PyExc_TypeError, "preamble must be float ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (preamble) != NPY_SIZEOF_DOUBLE) {
+	PyErr_SetString (PyExc_TypeError, "preamble must be double-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (preamble)) {
+	PyErr_SetString (PyExc_TypeError, "preamble must be contiguous ndarray");
+	return NULL;
+    }
+
+    /* data */
+
+    if (!PyArray_ISCOMPLEX (data)) {
+	PyErr_SetString (PyExc_TypeError, "data must be complex ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (data) != 2*NPY_SIZEOF_FLOAT) {
+	PyErr_SetString (PyExc_TypeError, "data must be plain-complex-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (data)) {
+	PyErr_SetString (PyExc_TypeError, "data must be contiguous ndarray");
+	return NULL;
+    }
+
+    /* flags */
+
+    if (!PyArray_ISINTEGER (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be integer ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (flags) != NPY_SIZEOF_INT) {
+	PyErr_SetString (PyExc_TypeError, "flags must be plain-int-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
+	return NULL;
+    }
+
+    /* higher-level checks */
+
+    size = PyArray_SIZE (preamble);
+
+    if (size != 4 && size != 5) {
+	PyErr_SetString (PyExc_ValueError, "preamble array must have 4 or 5 elements");
+	return NULL;
+    }
+
+    size = PyArray_SIZE (flags);
+    if (size < n) {
+	PyErr_Format (PyExc_ValueError, "flags array must have at least %d elements",
+		      n);
+	return NULL;
+    }
+
+    size = PyArray_SIZE (data);
+    if (size < n) {
+	PyErr_Format (PyExc_ValueError, "data array must have at least %d elements",
+		      n);
+	return NULL;
+    }
+
+    /* finally ... */
+    MTS_CHECK_BUG;
+    uvread_c (tno, PyArray_DATA (preamble), PyArray_DATA (data), 
+	      PyArray_DATA (flags), n, &nread);
+
+    return PyInt_FromLong ((long) nread);
+}
+
+static PyObject *
 py_uvwrite (PyObject *self, PyObject *args)
 {
     int tno, n, size;
@@ -1050,7 +1142,7 @@ py_uvset (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* uvread, uvwread, uvwflgwr skipped: all too lowlevel */
+/* uvwread, uvwflgwr skipped */
 
 static PyObject *
 py_uvflgwr (PyObject *self, PyObject *args)
@@ -1625,6 +1717,8 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvprobvr, "(int vhan, str var) => (char type, int length, int updated)"),
     DEF(uvtrack, "(int tno, str name, str switches) => void"),
     DEF(uvscan, "(int tno, str var) => int retval"),
+    DEF(uvread, "(int tno, double-ndarray preamble, float-ndarray data,\n"
+	" int-ndarray flags, int n) => int retval"),
     DEF(uvwrite, "(int tno, double-ndarray preamble, float-ndarray data,\n"
 	" int-ndarray flags, int n) => void"),
     DEF(uvset, "(int tno, str object, str type, int n, double p1,\n"
