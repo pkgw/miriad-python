@@ -60,14 +60,18 @@ class Data (object):
     @property
     def mtime (self):
         """The modification time of this dataset."""
-        return os.stat (self.base)[ST_MTIME]
+        # Once the set is created, it can be modified without updating
+        # the mtime of the directory. But, assuming normal Miriad operating
+        # conditions, the history file should always be modified when the
+        # dataset is modified, and the history file should always be there.
+        return os.stat (join (self.base, 'history'))[ST_MTIME]
     
     @property
     def umtime (self):
         """The "unconditional" modification time of this dataset --
 zero is returned if the dataset does not exist."""
         try:
-            return os.stat (self.base)[ST_MTIME]
+            return os.stat (join (self.base, 'history'))[ST_MTIME]
         except OSError, e:
             if e.errno == 2: return 0
             raise e
