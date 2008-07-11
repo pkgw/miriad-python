@@ -408,6 +408,18 @@ class UVDataSet (DataSet):
 
         ll.uvrewind (self.tno)
 
+    def lowlevelRead (self, preamble, data, flags, length=None):
+        """Read a visibility record from the file. This function should
+        be avoided in favor of the uvdat routines except for certain
+        low-level manipulations. Length defaults to the length of the
+        flags array.
+
+        Returns: the number of items read."""
+
+        if length is None: length = flags.size
+
+        return ll.uvread (self.tno, preamble, data, flags, length)
+    
     def write (self, preamble, data, flags, length=None):
         """Write a visibility record consisting of the given preamble,
         data, flags, and length. Length defaults to the length of the
