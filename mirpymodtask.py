@@ -1,4 +1,9 @@
 #! /bin/sh
+#mirpymodtask
+#
+# The above line is a code used by mirpyhelp.py to detect
+# tasks that are implemented as modules. Keep it within the
+# first 32 bytes of the file.
 #
 # This is a wrapper script for Miriad-Python tasks that are
 # implemented as Python modules. (This is something you might

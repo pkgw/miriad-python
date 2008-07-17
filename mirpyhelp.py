@@ -145,7 +145,19 @@ def showDoc (name, pdoc, sdoc):
         fcheck = file (full, 'r')
         start = fcheck.read (32)
 
-        if 'python' not in start:
+        if 'mirpymodtask' in start:
+            # This script is a wrapper; look for a Python module
+            # with the same name and use that for the docs.
+            try:
+                modobj = __import__ (name)
+                full = modobj.__file__
+            except Exception, e:
+                print >>sys.stderr, 'Error: The task', name, 'seems to be a Python module'
+                print >>sys.stderr, 'but I can\'t successfully load the module to get its'
+                print >>sys.stderr, 'docs.'
+                print >>sys.stderr, 'Exception:', e
+                return True
+        elif 'python' not in start:
             print >>sys.stderr, 'No standard entry for', name, 'and it doesn\'t appear'
             print >>sys.stderr, ' to be a Python file.'
             return True
