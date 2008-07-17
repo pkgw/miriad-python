@@ -4,7 +4,32 @@
 : Tools
 +
 
-Blah
+ This script pages documentation for standard Miriad tasks as well as
+ Python tasks.
+
+ Usage:
+   mirpyhelp.py [name1] [name2] [...]
+
+ If no names are specified, the documentation to mirpyhelp.py (this
+ text) is printed.
+
+ Each name is checked to see if it corresponds to a file in the
+ standard Miriad documentation directories, $MIRPDOC and $MIRSDOC. If
+ so, that documentation file is fed through the lowlevel "doc" command
+ and paged (via the program named in $PAGER or "more" if $PAGER is
+ unset). If "name" is not in one of those directories, the directories
+ listed in $PATH are searched for a file with the specified name. If
+ such a file exists, and it appears to be a Python file, a special
+ Miriad docstring is read from the file, processed with the "doc"
+ command, and paged as above.
+
+ This process is repeated for each name on the commandline.
+
+ This script can be used similarly to the script "mir.help" (which is
+ usually known as "mirhelp"), but it is not an identical drop-in
+ replacement. It is suggested that "mirhelp" be re-aliased to this
+ script and that the true script name, "mir.help", be used if certain
+ features found in that script are needed.
 --
 """
 
@@ -113,7 +138,8 @@ def showDoc (name, pdoc, sdoc):
         dirname, full = findExeFile (name)
 
         if dirname is None:
-            print >>sys.stderr, 'No matches for ', name, 'and couldn\'t find in $PATH.'
+            print >>sys.stderr, 'No matches for', name, 'and couldn\'t find it in $PATH.'
+            print >>sys.stderr, '(Note that exact filename matches are required.)'
             return True
 
         fcheck = file (full, 'r')
