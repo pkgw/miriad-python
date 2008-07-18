@@ -11,3 +11,4 @@ py-compile
 *~
 Makefile.in
 BUILD*
+*.pyc
