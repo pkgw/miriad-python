@@ -151,6 +151,7 @@ def showDoc (name, pdoc, sdoc):
             try:
                 modobj = __import__ (name)
                 full = modobj.__file__
+                if full.endswith ('.pyc'): full = full[:-1]
             except Exception, e:
                 print >>sys.stderr, 'Error: The task', name, 'seems to be a Python module'
                 print >>sys.stderr, 'but I can\'t successfully load the module to get its'
