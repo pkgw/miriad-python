@@ -547,16 +547,20 @@ py_rdhdc (PyObject *self, PyObject *args)
 {
     int tno;
     char *keyword;
+    Py_complex cmplx;
     float value[2], defval[2];
     
-    if (!PyArg_ParseTuple (args, "is(ff)", &tno, &keyword, defval,
-			   &(defval[1])))
+    if (!PyArg_ParseTuple (args, "isD", &tno, &keyword, &cmplx))
 	return NULL;
 
     MTS_CHECK_BUG;
+    defval[0] = (float) cmplx.real;
+    defval[1] = (float) cmplx.imag;
     rdhdc_c (tno, keyword, value, defval);
 
-    return Py_BuildValue ("(ff)", value[0], value[1]);
+    cmplx.real = (double) value[0];
+    cmplx.imag = (double) value[1];
+    return Py_BuildValue ("D", &cmplx);
 }
 
 static PyObject *
@@ -1782,7 +1786,7 @@ static PyMethodDef uvio_methods[] = {
     DEF(rdhdi, "(int tno, str keyword, int defval) => int value"),
     DEF(rdhdl, "(int tno, str keyword, bool-as-int defval) => bool-as-int value"),
     DEF(rdhdd, "(int tno, str keyword, double defval) => double value"),
-    DEF(rdhdc, "(int tno, str keyword, (float,float) defval) => (float,float) value"),
+    DEF(rdhdc, "(int tno, str keyword, complx defval) => complex value"),
     DEF(rdhda, "(int tno, str keyword, str defval) => str value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
     DEF(hdprsnt, "(int tno, str keyword) => int retval"),

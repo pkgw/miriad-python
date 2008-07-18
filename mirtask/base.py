@@ -170,9 +170,7 @@ class DataSet (object):
     def getHeaderComplex (self, keyword, default):
         """Retrieve the value of a complex-valued header variable."""
 
-        dc = complex (default)
-        out = ll.rdhdc (self.tno, keyword, (dc.real, dc.imag))
-        return complex (out[0], out[1])
+        return ll.rdhdc (self.tno, keyword, complex (default))
     
     def getHeaderString (self, keyword, default):
         """Retrieve the value of a string-valued header variable.
