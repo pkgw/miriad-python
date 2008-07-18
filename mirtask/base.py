@@ -180,6 +180,30 @@ class DataSet (object):
 
         return ll.rdhda (self.tno, keyword, str (default))
 
+    def writeHeaderFloat (self, keyword, value):
+        """Write a float-valued header variable."""
+        ll.wrhdr (self.tno, keyword, float (value))
+
+    def writeHeaderInt (self, keyword, value):
+        """Write an int-valued header variable."""
+        ll.wrhdi (self.tno, keyword, int (value))
+
+    def writeHeaderLong (self, keyword, value):
+        """Write a long-int-valued header variable."""
+        ll.wrhdl (self.tno, keyword, int (value))
+
+    def writeHeaderDouble (self, keyword, value):
+        """Write a double-valued header variable."""
+        ll.wrhdd (self.tno, keyword, float (value))
+
+    def writeHeaderComplex (self, keyword, value):
+        """Write a complex-valued header variable."""
+        ll.wrhdc (self.tno, keyword, complex (value))
+    
+    def writeHeaderString (self, keyword, value):
+        """Write a string-valued header variable."""
+        ll.wrhda (self.tno, keyword, str (value))
+
     def copyHeader (self, dest, keyword):
         """Copy a header variable from this data-set to another."""
 
@@ -312,49 +336,49 @@ class DataItem (object):
         """Write an array of bytes to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwriteb (self.itno, buf, offset, length)
 
     def writeInts (self, buf, offset, length=None):
         """Write an array of integers to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwritei (self.itno, buf, offset, length)
 
     def writeShorts (self, buf, offset, length=None):
         """Write an array of 16-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwritej (self.itno, buf, offset, length)
 
     def writeLongs (self, buf, offset, length=None):
         """Write an array of 64-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwritel (self.itno, buf, offset, length)
 
     def writeFloats (self, buf, offset, length=None):
         """Write an array of floats to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwriter (self.itno, buf, offset, length)
 
     def writeDoubles (self, buf, offset, length=None):
         """Write an array of doubles to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwrited (self.itno, buf, offset, length)
 
     def writeComplex (self, buf, offset, length=None):
         """Write an array of complexes to the given location in the data
         item. The default write length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hwritec (self.itno, buf, offset, length)
 
 __all__ += ['DataSet', 'DataItem']

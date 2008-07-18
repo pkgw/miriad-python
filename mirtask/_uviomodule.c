@@ -374,7 +374,102 @@ py_hisclose (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* skip wrhd{r,d,i,c,a} */
+static PyObject *
+py_wrhdr (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *keyword;
+    double value;
+    
+    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    wrhdr_c (tno, keyword, (float) value);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+py_wrhdd (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *keyword;
+    double value;
+    
+    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    wrhdd_c (tno, keyword, value);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+py_wrhdi (PyObject *self, PyObject *args)
+{
+    int tno, value;
+    char *keyword;
+    
+    if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    wrhdi_c (tno, keyword, value);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+py_wrhdl (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *keyword;
+    long int value;
+
+    if (!PyArg_ParseTuple (args, "isl", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    wrhdl_c (tno, keyword, value);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+py_wrhdc (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *keyword;
+    Py_complex value;
+    float asFloat[2];
+
+    if (!PyArg_ParseTuple (args, "isD", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    asFloat[0] = (float) value.real;
+    asFloat[1] = (float) value.imag;
+    wrhdc_c (tno, keyword, asFloat);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+py_wrhda (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *keyword, *value;
+
+    if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    wrhda_c (tno, keyword, value);
+
+    Py_RETURN_NONE;
+}
 
 static PyObject *
 py_rdhdr (PyObject *self, PyObject *args)
@@ -1677,10 +1772,16 @@ static PyMethodDef uvio_methods[] = {
     DEF(hisopen, "(int tno, str status) => void"),
     DEF(hiswrite, "(int tno, str text) => void"),
     DEF(hisclose, "(int tno) => void"),
+    DEF(wrhdr, "(int tno, str keyword, double value) => void"),
+    DEF(wrhdi, "(int tno, str keyword, int value) => void"),
+    DEF(wrhdl, "(int tno, str keyword, int value) => void"),
+    DEF(wrhdd, "(int tno, str keyword, double value) => void"),
+    DEF(wrhdc, "(int tno, str keyword, complex value) => void"),
+    DEF(wrhda, "(int tno, str keyword, str value) => void"),
     DEF(rdhdr, "(int tno, str keyword, double defval) => float value"),
     DEF(rdhdi, "(int tno, str keyword, int defval) => int value"),
     DEF(rdhdl, "(int tno, str keyword, bool-as-int defval) => bool-as-int value"),
-    DEF(rdhdd,  "(int tno, str keyword, double defval) => double value"),
+    DEF(rdhdd, "(int tno, str keyword, double defval) => double value"),
     DEF(rdhdc, "(int tno, str keyword, (float,float) defval) => (float,float) value"),
     DEF(rdhda, "(int tno, str keyword, str defval) => str value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
