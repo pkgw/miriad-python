@@ -2,6 +2,22 @@
 
 import lowlevel as ll
 
+# Banner printing (and Id string decoding)
+
+def printBannerSvn (name, desc, idstr):
+    """Print a banner string containing the name of a task, its
+    description, and versioning information extracted from a
+    Subversion ID string. The banner string is returned as well."""
+
+    file, rev, date, time, user = idstr[5:-2].split ()
+    
+    b = '%s: %s (Python, SVN r%s, modified %s %s)' % (name.upper (), desc,
+                                                      rev, date, time)
+    print b
+    return b
+
+# Baseline-related stuff
+
 def decodeBaseline (encoded, check=True):
     """Decode an encoded baseline double into two antenna numbers."""
     return ll.basants (encoded, check)
