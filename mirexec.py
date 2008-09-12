@@ -26,11 +26,15 @@ for var in _childenvCopylist:
         _childenv[var] = os.environ[var]
 
 for (key, val) in os.environ.iteritems ():
-    # We might want to copy over other things: LD_*, maybe?
+    # another other wildcards to copy over?
     if key.startswith ('MIR'):
-        _childenv[key] = val;
-    if key.startswith ('PGPLOT'):
-        _childenv[key] = val;
+        _childenv[key] = val
+    elif key.startswith ('PGPLOT'):
+        _childenv[key] = val
+    elif key.startswith ('LD_'):
+        _childenv[key] = val
+    elif key.startswith ('DYLD_'):
+        _childenv[key] = val
 
 del var
 
