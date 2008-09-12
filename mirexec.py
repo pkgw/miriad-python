@@ -534,8 +534,7 @@ class TaskSelfCal (TaskBase):
                'minants', 'refant', 'flux', 'offset', 'line',
                'out']
     _options = ['amplitude', 'phase', 'smooth', 'polarized',
-                'mfs', 'relax', 'apriori', 'noscale', 'mosaic',
-                'verbose']
+                'mfs', 'relax', 'apriori', 'noscale', 'mosaic']
 
 class TaskPutHead (TaskBase):
     _name = 'puthd'
