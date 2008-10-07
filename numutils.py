@@ -55,6 +55,48 @@ class GrowingArray (object):
 
 __all__.append ('GrowingArray')
 
+class GrowingVector (object):
+    __slots__ = ['dtype', 'chunkSize', 'nextIdx', 'arr']
+    
+    def __init__ (self, dtype=N.float, chunkSize=128):
+        self.dtype = dtype
+        self.chunkSize = chunkSize
+        
+        self.nextIdx = 0
+        self.arr = None
+
+    def add (self, val):
+        if self.arr is None:
+            self.arr = N.ndarray ((self.chunkSize, ), dtype=self.dtype)
+        elif self.arr.size <= self.nextIdx:
+            self.arr.resize ((self.arr.size + self.chunkSize, ))
+
+        self.arr[self.nextIdx] = val
+        self.nextIdx += 1
+
+    def doneAdding (self):
+        self.arr = self.arr[0:self.nextIdx]
+        del self.nextIdx
+
+    def __getslice__ (self, *args): return self.arr.__getslice__ (*args)
+    def __setslice__ (self, *args): return self.arr.__setslice__ (*args)
+    def __getitem__ (self, *args): return self.arr.__getitem__ (*args)
+    def __setitem__ (self, *args): return self.arr.__setitem__ (*args)
+
+    def shuffle (self, idxs):
+        self.arr = self.arr[idxs]
+    
+    def __len__ (self):
+        return self.arr.size
+    
+    def save (self, fh):
+        self.arr.dump (fh)
+
+    def load (self, fh):
+        self.arr = N.load (fh)
+
+__all__.append ('GrowingVector')
+
 class StatsAccumulator (object):
     # FIXME: I worry about loss of precision when n gets very
     # large: we'll be adding a tiny number to a large number.
@@ -78,7 +120,10 @@ class StatsAccumulator (object):
     def mean (self): return self.xtot / self.n
 
     def std (self):
-        return N.sqrt (self.xsqtot/self.n - (self.xtot/self.n)**2)
+        return N.sqrt (self.var ())
+
+    def var (self):
+        return self.xsqtot/self.n - (self.xtot/self.n)**2
 
 __all__.append ('StatsAccumulator')
 
