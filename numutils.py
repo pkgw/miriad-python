@@ -119,6 +119,8 @@ class StatsAccumulator (object):
     
     def mean (self): return self.xtot / self.n
 
+    def rms (self): return N.sqrt (self.xsqtot / self.n)
+    
     def std (self):
         return N.sqrt (self.var ())
 
