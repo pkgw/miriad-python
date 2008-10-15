@@ -32,7 +32,11 @@ class GrowingArray (object):
         self.addLine (line)
 
     def doneAdding (self):
-        self.arr = self.arr[0:self.nextIdx]
+        if self.arr is None:
+            self.arr = N.ndarray ((0, self.ncols), dtype=self.dtype)
+        else:
+            self.arr = self.arr[0:self.nextIdx]
+            
         del self.nextIdx
 
     def get (self, idx):
@@ -75,7 +79,10 @@ class GrowingVector (object):
         self.nextIdx += 1
 
     def doneAdding (self):
-        self.arr = self.arr[0:self.nextIdx]
+        if self.arr is None:
+            self.arr = N.ndarray ((0, ), dtype=self.dtype)
+        else:
+            self.arr = self.arr[0:self.nextIdx]
         del self.nextIdx
 
     def __getslice__ (self, *args): return self.arr.__getslice__ (*args)
@@ -106,6 +113,9 @@ class StatsAccumulator (object):
     __slots__ = ['xtot', 'xsqtot', 'n']
     
     def __init__ (self):
+        self.clear ()
+
+    def clear (self):
         self.xtot = 0.
         self.xsqtot = 0.
         self.n = 0
