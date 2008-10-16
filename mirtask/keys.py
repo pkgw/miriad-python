@@ -74,7 +74,7 @@ allowed - The full list of allowed item values.
 
     if name in _keywords: raise Exception ('Keyword already registered!')
 
-    _keywords[name] = (kind, nmax, None, allowed, None)
+    _keywords[name] = (None, nmax, None, allowed, None)
 
 _options = set ()
 

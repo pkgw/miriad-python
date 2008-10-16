@@ -148,7 +148,7 @@ def keymatch (key, types, maxout):
 
     out = _N.chararray ((maxout, ml))
     # Not sure why f2py thinks maxout is optional here.
-    nout = _mirgood.keymatch (key, types, out, len (types), maxout)
+    nout = _mirgood.keymatch (key, tarr, out, len (types), maxout)
 
     # Can't find a better way to make this work. Sigh.
     
