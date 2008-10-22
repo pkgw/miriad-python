@@ -4,105 +4,88 @@ import numpy as N
 
 __all__ = []
 
-class GrowingArray (object):
-    __slots__ = ['dtype', 'ncols', 'chunkSize', 'nextIdx', 'arr']
+class ArrayGrower (object):
+    __slots__ = ['dtype', 'ncols', 'chunkSize', '_nextIdx', '_arr']
     
-    def __init__ (self, dtype, ncols, chunkSize=128):
+    def __init__ (self, ncols, dtype=N.float, chunkSize=128):
         self.dtype = dtype
         self.ncols = ncols
         self.chunkSize = chunkSize
-        
-        self.nextIdx = 0
-        self.arr = None
+        self.clear ()
+
+    
+    def clear (self):
+        self._nextIdx = 0
+        self._arr = None
+
 
     def addLine (self, line):
         assert (line.size == self.ncols)
         
-        if self.arr is None:
-            self.arr = N.ndarray ((self.chunkSize, self.ncols), dtype=self.dtype)
-        elif self.arr.shape[0] <= self.nextIdx:
-            newchk = N.ndarray ((self.chunkSize, self.ncols), dtype=self.dtype)
-            self.arr = N.concatenate ((self.arr, newchk))
+        if self._arr is None:
+            self._arr = N.ndarray ((self.chunkSize, self.ncols), dtype=self.dtype)
+        elif self._arr.shape[0] <= self._nextIdx:
+            self._arr.resize ((self._arr.shape[0] + self.chunkSize, self.ncols))
 
-        self.arr[self.nextIdx] = line
-        self.nextIdx += 1
+        self._arr[self._nextIdx] = line
+        self._nextIdx += 1
+
 
     def add (self, *args):
-        line = N.asarray (args, dtype=self.dtype)
-        self.addLine (line)
+        self.addLine (N.asarray (args, dtype=self.dtype))
 
-    def doneAdding (self):
-        if self.arr is None:
-            self.arr = N.ndarray ((0, self.ncols), dtype=self.dtype)
+
+    def finish (self):
+        if self._arr is None:
+            ret = N.ndarray ((0, self.ncols), dtype=self.dtype)
         else:
-            self.arr = self.arr[0:self.nextIdx]
-            
-        del self.nextIdx
+            ret = self._arr
+            ret.resize ((self._nextIdx, self.ncols))
 
-    def get (self, idx):
-        return self.arr[idx]
+        self.clear ()
 
-    def col (self, colnum):
-        return self.arr[:,colnum]
+        return ret
 
-    def shuffle (self, idxs):
-        self.arr = self.arr[idxs]
-    
-    def __len__ (self):
-        return self.arr.shape[0]
-    
-    def save (self, fh):
-        self.arr.dump (fh)
 
-    def load (self, fh):
-        self.arr = N.load (fh)
+__all__.append ('ArrayGrower')
 
-__all__.append ('GrowingArray')
-
-class GrowingVector (object):
-    __slots__ = ['dtype', 'chunkSize', 'nextIdx', 'arr']
+class VectorGrower (object):
+    __slots__ = ['dtype', 'chunkSize', '_nextIdx', '_vec']
     
     def __init__ (self, dtype=N.float, chunkSize=128):
         self.dtype = dtype
         self.chunkSize = chunkSize
-        
-        self.nextIdx = 0
-        self.arr = None
+        self.clear ()
+
+
+    def clear (self):
+        self._nextIdx = 0
+        self._vec = None
+
 
     def add (self, val):
-        if self.arr is None:
-            self.arr = N.ndarray ((self.chunkSize, ), dtype=self.dtype)
-        elif self.arr.size <= self.nextIdx:
-            self.arr.resize ((self.arr.size + self.chunkSize, ))
+        if self._vec is None:
+            self._vec = N.ndarray ((self.chunkSize, ), dtype=self.dtype)
+        elif self._vec.size <= self._nextIdx:
+            self._vec.resize ((self._vec.size + self.chunkSize, ))
 
-        self.arr[self.nextIdx] = val
-        self.nextIdx += 1
+        self._vec[self._nextIdx] = val
+        self._nextIdx += 1
 
-    def doneAdding (self):
-        if self.arr is None:
-            self.arr = N.ndarray ((0, ), dtype=self.dtype)
+
+    def finish (self):
+        if self._vec is None:
+            ret = N.ndarray ((0, ), dtype=self.dtype)
         else:
-            self.arr = self.arr[0:self.nextIdx]
-        del self.nextIdx
+            ret = self._arr
+            ret.resize ((self._nextIdx, ))
 
-    def __getslice__ (self, *args): return self.arr.__getslice__ (*args)
-    def __setslice__ (self, *args): return self.arr.__setslice__ (*args)
-    def __getitem__ (self, *args): return self.arr.__getitem__ (*args)
-    def __setitem__ (self, *args): return self.arr.__setitem__ (*args)
+        self.clear ()
 
-    def shuffle (self, idxs):
-        self.arr = self.arr[idxs]
-    
-    def __len__ (self):
-        return self.arr.size
-    
-    def save (self, fh):
-        self.arr.dump (fh)
+        return ret
 
-    def load (self, fh):
-        self.arr = N.load (fh)
 
-__all__.append ('GrowingVector')
+__all__.append ('VectorGrower')
 
 class StatsAccumulator (object):
     # FIXME: I worry about loss of precision when n gets very
@@ -176,4 +159,3 @@ class RedDict (dict):
         self[key] = self._reduce (prev, val)
 
 __all__.append ('RedDict')
-
