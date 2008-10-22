@@ -39,8 +39,8 @@ class ArrayGrower (object):
         if self._arr is None:
             ret = N.ndarray ((0, self.ncols), dtype=self.dtype)
         else:
+            self._arr.resize ((self._nextIdx, self.ncols))
             ret = self._arr
-            ret.resize ((self._nextIdx, self.ncols))
 
         self.clear ()
 
@@ -77,8 +77,8 @@ class VectorGrower (object):
         if self._vec is None:
             ret = N.ndarray ((0, ), dtype=self.dtype)
         else:
+            self._vec.resize ((self._nextIdx, ))
             ret = self._vec
-            ret.resize ((self._nextIdx, ))
 
         self.clear ()
 
