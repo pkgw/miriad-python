@@ -77,7 +77,7 @@ class VectorGrower (object):
         if self._vec is None:
             ret = N.ndarray ((0, ), dtype=self.dtype)
         else:
-            ret = self._arr
+            ret = self._vec
             ret.resize ((self._nextIdx, ))
 
         self.clear ()
