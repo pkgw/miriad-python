@@ -294,6 +294,9 @@ def papAnt (pap):
 def papFPol (pap):
     return pap & 0x7
 
+def antpol2pap (m, fpol):
+    return ((m - 1) << 3) + fpol
+
 # Routines for dealing with a tuple of two PAPs, which can define
 # a BL-pol.
 
@@ -305,7 +308,7 @@ def fmtPAPs (pair):
     m2 = (pap2 >> 3) + 1
     fp2 = pap2 & 0x7
 
-    return '%d%c-%d%c' % (m1, fp1, m2, fp2)
+    return '%d%c-%d%c' % (m1, fPolNames[fp1], m2, fPolNames[fp2])
 
 def paps2ants (pair):
     """Converts a tuple of two PAPs into a tuple of (ant1, ant2, pol)."""
