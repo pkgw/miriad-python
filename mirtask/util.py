@@ -341,8 +341,8 @@ def mir2paps (inp, preamble):
 
     m1, m2 = ll.basants (preamble[4], True)
 
-    pap1 = (m1 - 1) << 3 + (fps >> 4)
-    pap2 = (m2 - 1) << 3 + (fps & 0x0F)
+    pap1 = ((m1 - 1) << 3) + ((fps >> 4) & 0x07)
+    pap2 = ((m2 - 1) << 3) + (fps & 0x07)
 
     return pap1, pap2
 
