@@ -1,6 +1,7 @@
 """Miscellaneous utility MIRIAD subroutines."""
 
 import lowlevel as ll
+import numpy as N
 
 # Banner printing (and Id string decoding)
 
@@ -214,7 +215,7 @@ def polarizationIsInten (polnum):
     
     return ll.polspara (polnum)
 
-# And, merging them together: antpol and bl-pol handling.
+# And, merging them together: antpol and basepol handling.
 #
 # In the following, "M" stands for the MIRIAD antenna number
 # of an antenna. These numbers are 1-based. "P" stands for
@@ -238,6 +239,36 @@ FPOL_V = 7
 
 fPolNames = 'XYRLIQUV'
 
+# This table helps split a MIRIAD/FITS pol code into a pair of f-pol values.
+# The pair is packed into 8 bits, the upper 3 being for the left pol
+# and the lower 4 being for the right. If the high bit is 1, the pol code
+# cannot legally be split. An offset of 8 is required because the pol codes range
+# from -8 to +6
+
+_polToFPol = [0x10, 0x01, 0x11, 0x00, # YX XY YY XX
+              0x32, 0x23, 0x33, 0x22, # LR RL LL RR
+              0x44, # II
+              0x80, 0x80, 0x80, 0x80, # I Q U V
+              0x55, 0x66] # QQ UU
+
+# This table performs the reverse mapping, with index being the two
+# f-pol values packed into four bits each. A value of 99 indicates
+# an illegal pairing.
+
+_fpolToPol = N.ndarray (128, dtype=N.int)
+_fpolToPol.fill (99)
+_fpolToPol[0x00] = POL_XX
+_fpolToPol[0x01] = POL_XY
+_fpolToPol[0x10] = POL_YX
+_fpolToPol[0x11] = POL_YY
+_fpolToPol[0x22] = POL_RR
+_fpolToPol[0x23] = POL_RL
+_fpolToPol[0x32] = POL_LR
+_fpolToPol[0x33] = POL_LL
+_fpolToPol[0x44] = POL_II
+_fpolToPol[0x55] = POL_QQ
+_fpolToPol[0x66] = POL_UU
+
 # A "portable antpol" (PAP) is a >=8-bit integer identifying an
 # antenna/feed-polarization combination. It can be decoded without any
 # external information.  The translation between PAP and M,FP is:
@@ -253,33 +284,122 @@ fPolNames = 'XYRLIQUV'
 # if sufficiently many bits are used to store the PAP.
 
 def fmtPAP (pap):
-    m = pap >> 3 + 1
+    m = (pap >> 3) + 1
     fp = pap & 0x7
     return '%d%c' % (m, fPolNames[fp])
+
+def papAnt (pap):
+    return (pap >> 3) + 1
+
+def papFPol (pap):
+    return pap & 0x7
+
+# Routines for dealing with a tuple of two PAPs, which can define
+# a BL-pol.
+
+def fmtPAPs (pair):
+    pap1, pap2 = pair
+
+    m1 = (pap1 >> 3) + 1
+    fp1 = pap1 & 0x7
+    m2 = (pap2 >> 3) + 1
+    fp2 = pap2 & 0x7
+
+    return '%d%c-%d%c' % (m1, fp1, m2, fp2)
+
+def paps2ants (pair):
+    """Converts a tuple of two PAPs into a tuple of (ant1, ant2, pol)."""
+
+    pap1, pap2 = pair
+    m1 = (pap1 >> 3) + 1
+    m2 = (pap2 >> 3) + 1
+    assert m1 <= m2, 'Illegal PAP value: m1 > m2'
+
+    idx = ((pap1 & 0x7) << 4) + (pap2 & 0x7)
+    pol = _fpolToPol[idx]
+    assert pol != 99, 'PAP value represents illegal polarization pairing'
+
+    return (m1, m2, pol)
+
+def paps2blpol (pair):
+    """Converts a tuple of two PAPs into a tuple of (bl, pol) where
+'bl' is the MIRIAD-encoded baseline number."""
+
+    m1, m2, pol = paps2ants (pair)
+    return (encodeBaseline (m1, m2), pol)
+
+def mir2paps (inp, preamble):
+    """Uses a UV dataset and a preamble array to return a tuple of
+(pap1, pap2)."""
+
+    pol = inp.getVarInt ('pol')
+    fps = _polToFPol[pol + 8]
+    assert (fps & 0x80) == 0, 'Un-breakable polarization code'
+
+    m1, m2 = ll.basants (preamble[4], True)
+
+    pap1 = (m1 - 1) << 3 + (fps >> 4)
+    pap2 = (m2 - 1) << 3 + (fps & 0x0F)
+
+    return pap1, pap2
+
+def papsAreInten (pair):
+    pap1, pap2 = pair
+    return pap1 & 0x7 == pap2 & 0x7
 
 # A "32-bit portable basepol" (PBP32) is a >=32-bit integer identifying a baseline
 # consisting of two portable antpols. It can be decoded without
 # any external information. The translation between PAP and M1,M2,FP1,FP2 is:
 #
-#  PBP = ((M1 - 1) << 19) + (FP1 << 16) + ((M2 - 1) << 3) + FP2
+#  PBP32 = ((M1 - 1) << 19) + (FP1 << 16) + ((M2 - 1) << 3) + FP2
 #
 # or
 #
-#  M1 = (PBP >> 19) + 1
-#  FP1 = (PBP >> 16) & 0x7
-#  M2 = (PBP >> 3 & 0x1FFF) + 1
-#  FP2 = PBP & 0x7
+#  M1 = (PBP32 >> 19) + 1
+#  FP1 = (PBP32 >> 16) & 0x7
+#  M2 = (PBP32 >> 3 & 0x1FFF) + 1
+#  FP2 = PBP32 & 0x7
 #
 # This encoding allocates 13 bits for antenna number, which gets us up
-# to 4096 antennas. This should be sufficient
+# to 4096 antennas. This should be sufficient for most applications.
 
 def fmtPBP (pbp32):
-    m1 = (pbp32 >> 19 & 0x1FFF) + 1
-    fp1 = pbp32 >> 16 & 0x7
-    m2 = (pbp32 >> 3 & 0x1FFF) + 1
+    m1 = ((pbp32 >> 19) & 0x1FFF) + 1
+    fp1 = (pbp32 >> 16) & 0x7
+    m2 = ((pbp32 >> 3) & 0x1FFF) + 1
     fp2 = pbp32 & 0x7
 
+    assert m2 >= m1, 'Illegal PBP32 in fmtPBP: m1 > m2'
+
     return '%d%c-%d%c' % (m1, fPolNames[fp1], m2, fPolNames[fp2])
+
+def mir2pbp (inp, preamble):
+    pol = inp.getVarInt ('pol')
+    fps = _polToFPol[pol + 8]
+    assert (fps & 0x80) == 0, 'Un-breakable polarization code'
+
+    m1, m2 = ll.basants (preamble[4], True)
+    
+    return ((m1 - 1) << 19) + ((fps & 0x70) << 12) + ((m2 - 1) << 3) \
+        + (fps & 0x7)
+
+def pbp2paps (pbp32):
+    return (pbp32 >> 16, pbp32 & 0xFFFF)
+
+def paps2pbp (pair):
+    pap1, pap2 = pair
+
+    assert (pap1 >> 3) <= (pap2 >> 3), 'Illegal baseline pairing: m1 > m2'
+    assert pap2 <= 0xFFFF, 'Antnum too high to be encoded in PBP32'
+
+    return (pap1 << 16) + (pap2 & 0xFFFF)
+
+def pbpIsInten (pbp32):
+    return ((pbp32 >> 16) & 0x7) == pbp32 & 0x7
+
+# FIXME: following not implemented. Not sure if it is actually
+# necessary since in practice we condense down lists of basepols into
+# customized arrays, since a basepol might be missing.
 
 # An "antpol" (AP) encodes the same information as a PAP, but can only
 # encode two possible polarizations. This means that external
@@ -295,8 +415,8 @@ def fmtPBP (pbp32):
 #
 # or
 #
-# M = (AP >> 1) + 1
-# FP = (AP & 0x1) + RFP
+#  M = (AP >> 1) + 1
+#  FP = (AP & 0x1) + RFP
 
 
 
