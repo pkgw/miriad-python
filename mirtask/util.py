@@ -214,6 +214,92 @@ def polarizationIsInten (polnum):
     
     return ll.polspara (polnum)
 
+# And, merging them together: antpol and bl-pol handling.
+#
+# In the following, "M" stands for the MIRIAD antenna number
+# of an antenna. These numbers are 1-based. "P" stands for
+# a MIRIAD polarization number, values given above.
+#
+# First, a "feed polarization" (f-pol) is a polarization that an
+# individual feed can respond to. I am pretty sure that all or some of
+# the I, Q, U, V values given below are inappropriate, but I do
+# think MIRIAD can work with UV datasets given in Stokes parameters,
+# so for completeness we include them here, even if there can't be
+# a physical feed that corresponds to such an entity.
+
+FPOL_X = 0
+FPOL_Y = 1
+FPOL_R = 2
+FPOL_L = 3
+FPOL_I = 4
+FPOL_Q = 5
+FPOL_U = 6
+FPOL_V = 7
+
+fPolNames = 'XYRLIQUV'
+
+# A "portable antpol" (PAP) is a >=8-bit integer identifying an
+# antenna/feed-polarization combination. It can be decoded without any
+# external information.  The translation between PAP and M,FP is:
+#
+#   PAP = (M - 1) << 3 + FP
+#
+# or
+#
+#   M = PAP >> 3 + 1
+#   P = PAP & 0x7
+#
+# Note that arbitrarily-large antenna numbers can be encoded
+# if sufficiently many bits are used to store the PAP.
+
+def fmtPAP (pap):
+    m = pap >> 3 + 1
+    fp = pap & 0x7
+    return '%d%c' % (m, fPolNames[fp])
+
+# A "32-bit portable basepol" (PBP32) is a >=32-bit integer identifying a baseline
+# consisting of two portable antpols. It can be decoded without
+# any external information. The translation between PAP and M1,M2,FP1,FP2 is:
+#
+#  PBP = ((M1 - 1) << 19) + (FP1 << 16) + ((M2 - 1) << 3) + FP2
+#
+# or
+#
+#  M1 = (PBP >> 19) + 1
+#  FP1 = (PBP >> 16) & 0x7
+#  M2 = (PBP >> 3 & 0x1FFF) + 1
+#  FP2 = PBP & 0x7
+#
+# This encoding allocates 13 bits for antenna number, which gets us up
+# to 4096 antennas. This should be sufficient
+
+def fmtPBP (pbp32):
+    m1 = (pbp32 >> 19 & 0x1FFF) + 1
+    fp1 = pbp32 >> 16 & 0x7
+    m2 = (pbp32 >> 3 & 0x1FFF) + 1
+    fp2 = pbp32 & 0x7
+
+    return '%d%c-%d%c' % (m1, fPolNames[fp1], m2, fPolNames[fp2])
+
+# An "antpol" (AP) encodes the same information as a PAP, but can only
+# encode two possible polarizations. This means that external
+# information is needed to decode an AP, but that it can be used to
+# index into arrays efficiently (assuming a full-pol correlator
+# that doesn't skip many MIRIAD antenna numbers). The assumption is that
+# a set of antpols will include FPs of X & Y or R & L. In the former case
+# the "reference feed polarzation" (RFP) is X; in the latter it is R.
+#
+# The translation between AP, RFP and M, FP is:
+#
+#  AP = (M - 1) << 1 + (FP - RFP)
+#
+# or
+#
+# M = (AP >> 1) + 1
+# FP = (AP & 0x1) + RFP
+
+
+
 # Date stuff
 
 def jdToFull (jd):
