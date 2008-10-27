@@ -669,6 +669,11 @@ class TaskMaths (TaskBase):
                'yrange', 'zrange']
     _options = ['grow', 'unmask']
 
+class TaskImGen (TaskBase):
+    _params = ['in_', 'out', 'factor', 'object', 'spar', 'imsize',
+               'cell', 'radec', 'seed']
+    _options = ['totflux']
+
 # These functions operate on single images or single visibilities,
 # using several of the tasks defined above.
 
