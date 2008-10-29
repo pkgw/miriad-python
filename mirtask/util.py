@@ -362,17 +362,17 @@ moderate accuracy only, e.g. good to a few seconds (I think?)."""
 # Wrapper around NLLSQU, the non-linear least squares solver
 
 def leastSquares (guess, neqn, func, derivative=None,
-                  maxIter=None, eps1=1e-6, eps2=1e-8, stepSizes=None):
+                  maxIter=None, absCrit=None, relCrit=None,
+                  stepSizes=None, allowFail=False):
     """Optimize parameters by performing a nonlinear least-squares fit.
 Parameters:
 
-      guess - A 1D array giving the initial guess of the parameters and
-              containing the best parameter choices after the fit is
-              complete. The size of the array is used to determine the
-              number of parameters.
+      guess - A 1D array giving the initial guess of the parameters.
+              The size of the array is used to determine the number of
+              parameters.
        neqn - The number of equations -- usually, the number of data
               points you have. Should be a positive integer bigger than
-              guess.size
+              guess.size.
        func - A function evaluating the fit residuals. Prototype below.
  derivative - Optional. A function giving the derivative of func with
               regards to changes in the parameters. Prototype below. If
@@ -381,19 +381,25 @@ Parameters:
               given.
     maxIter - Optional. The maximum number of iterations to perform
               before giving up. An integer, or None. If None, maxIter
-              is set to 150 times the number of unknowns. Defaults to
+              is set to 200 times the number of unknowns. Defaults to
               None.
-       eps1 - Optional. Absolute termination criterion: iteration stops
-              if sum(normResids**2) < eps1. Defaults to 1e-6. The
-              validity of the default is highly dependent on the nature
-              of the problem.
-       eps2 - Optional. Relative termination criterion: iteration stops
-              if eps2 * sum(abs(x)) < sum (dx). Default is 1e-8.
+    absCrit - Optional. Absolute termination criterion: iteration stops
+              if sum(normResids**2) < criterion. If None, set to
+              neqn - guess.size (i.e., reduced chi squared = 1). Default
+              is None.
+    relCrit - Optional. Relative termination criterion: iteration stops
+              if relCrit * sum(abs(params)) < sum (abs(dparams)). If
+              None, set to nunk * 1e-4, i.e. explore until the parameters
+              are constrained to about one in 10000 . Default is None.
   stepSizes - Optional. If 'derivative' isn't given, this should be a
               1D array of guess.size parameters, giving the parameter
               step sizes to use when evaluating the derivative of 'func'
               numerically. If 'derivative' is given, the value is
               ignored.
+  allowFail - Optional. If True, return results even for fits that did
+              not succeed. If False, raise an exception in these cases.
+              It is better to choose better values for absCrit and
+              relCrit than it is to set allowFail to True.
 
 Prototype of 'func': func (params, normResids) ; return value ignored.
 
@@ -413,16 +419,25 @@ ignored.
           Gives the derivative of 'func' with regard to the parameters.
           dfdx[i,j] = d(normResids[j]) / d(params[i]) .
 
-Returns: (success, normResids)
+Returns: (success, best, normResids, rChiSq)
 
     success - An integer describing the outcome of the fit.
-              0 - Fit succeeded.
-              1 - A singular matrix was encountered; unable to fit.
-              2 - Maximum number of iterations completed before ???
-              3 - Solution met relative criterion but not absolute
-                  criterion.
+              0 - Fit succeeded; one of the convergence criteria was
+                  achieved.
+              1 - A singular matrix was encountered; unable to complete fit.
+              2 - Maximum number of iterations completed before able to find
+                  a solution meeting either convergence criterion.
+              3 - Failed to achieve a better chi-squared than on the previous
+                  iteration, and the convergence criteria were not met
+                  on the previous iteration. The convergence criteria may be
+                  too stringent, or the initial guess may be leading the solver
+                  into a local minimum too far from the correct solution.
+       best - A 1D array giving the best-fit parameter values found by
+              the algorithm.
  normResids - A 1D array giving the last-evaluated normalized residuals
               as described in the prototype of 'func'.
+     rChiSq - The reduced chi squared of the fit:
+              rChiSq = sum (normResids**2) / (neqn - guess.size)
 
 Implemented using the Miriad function NLLSQU.
 """
@@ -433,35 +448,49 @@ Implemented using the Miriad function NLLSQU.
     # Verify arguments
     
     guess = N.asarray (guess, dtype=N.float32, order='F')
-    assert guess.ndim == 1, 'Least squares guess must be 1-dimensional'
+    if guess.ndim != 1:
+        raise ValueError ('Least squares guess must be 1-dimensional')
     nunk = guess.size
 
     neqn = int (neqn)
-    assert neqn > nunk, 'Not enough equations to solve problem'
+    if neqn <= nunk:
+        raise RuntimeError ('Not enough equations to solve problem')
 
-    assert callable (func), '"func" is not callable?!'
+    if not callable (func):
+        raise TypeError ('"func" is not callable?!')
 
     haveDer = derivative is not None
 
     if haveDer:
-        assert callable (derivative), '"derivative" is not callable?!'
+        if not callable (derivative):
+            raise TypeError ('"derivative" is not callable?!')
         stepSizes = arr ((nunk, ))
     else:
         stepSizes = N.asarray (stepSizes)
-        assert stepSizes.shape == (nunk, ), '"stepSizes" array is wrong shape!'
+        if stepSizes.shape != (nunk, ):
+            raise ValueError ('"stepSizes" array is wrong shape!')
 
     if maxIter is None:
-        maxIter = 150 * nunk
+        maxIter = 200 * nunk
     else:
         maxIter = int (maxIter)
-        assert maxIter > 0, '"maxIter" must be positive'
+        if maxIter <= 0: raise ValueError ('"maxIter" must be positive')
 
-    eps1 = float (eps1)
-    assert eps1 > 0, '"eps1" must be positive'
+    if absCrit is None:
+        absCrit = neqn - nunk
+    else:
+        absCrit = float (absCrit)
+        if absCrit <= 0: raise ValueError ('"criterion" must be positive')
 
-    eps2 = float (eps2)
-    assert eps2 > 0, '"eps2" must be positive'
+    if relCrit is None:
+        #relCrit = 5 * nunk * N.finfo (N.float32).eps
+        relCrit = nunk * 1e-4
+    else:
+        relCrit = float (relCrit)
+        if relCrit <= 0: raise ValueError ('"relCrit" must be positive')
 
+    allowFail = bool (allowFail)
+    
     # Construct scratch arrays
 
     normResids = arr ((neqn, ))
@@ -472,10 +501,16 @@ Implemented using the Miriad function NLLSQU.
 
     # Do it!
 
-    success = nllsqu (guess, stepSizes, maxIter, eps1, eps2, haveDer,
-                      func, derivative, normResids, normResidsPrime,
-                      dx, dfdx, aa)
+    success = nllsqu (guess, stepSizes, maxIter, absCrit, relCrit,
+                      haveDer, func, derivative, normResids,
+                      normResidsPrime, dx, dfdx, aa)
 
+    if success != 0 and not allowFail:
+        msg = ('Nonlinear least-squares fit failed: success = %d '
+               '(see docstring for explanations)' % success)
+        raise RuntimeError (msg)
+    
     # Return useful results
 
-    return success, normResids
+    rChiSq = (normResids**2).sum () / (neqn - nunk)
+    return success, guess, normResids, rChiSq
