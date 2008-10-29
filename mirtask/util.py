@@ -358,3 +358,124 @@ description of the parser behavior. The returned Julian date is of
 moderate accuracy only, e.g. good to a few seconds (I think?)."""
 
     return ll.dayjul (calendar)
+
+# Wrapper around NLLSQU, the non-linear least squares solver
+
+def leastSquares (guess, neqn, func, derivative=None,
+                  maxIter=None, eps1=1e-6, eps1=1e-8, stepSizes=None):
+    """Optimize parameters by performing a nonlinear least-squares fit.
+Parameters:
+
+      guess - A 1D array giving the initial guess of the parameters and
+              containing the best parameter choices after the fit is
+              complete. The size of the array is used to determine the
+              number of parameters.
+       neqn - The number of equations -- usually, the number of data
+              points you have. Should be a positive integer bigger than
+              guess.size
+       func - A function evaluating the fit residuals. Prototype below.
+ derivative - Optional. A function giving the derivative of func with
+              regards to changes in the parameters. Prototype below. If
+              unspecified, the derivative will be approximated by
+              exploring values of 'func', and 'stepSizes' below must be
+              given.
+    maxIter - Optional. The maximum number of iterations to perform
+              before giving up. An integer, or None. If None, maxIter
+              is set to 150 times the number of unknowns. Defaults to
+              None.
+       eps1 - Optional. Absolute termination criterion: iteration stops
+              if sum(normResids**2) < eps1. Defaults to 1e-6. The
+              validity of the default is highly dependent on the nature
+              of the problem.
+       eps2 - Optional. Relative termination criterion: iteration stops
+              if eps2 * sum(abs(x)) < sum (dx). Default is 1e-8.
+  stepSizes - Optional. If 'derivative' isn't given, this should be a
+              1D array of guess.size parameters, giving the parameter
+              step sizes to use when evaluating the derivative of 'func'
+              numerically. If 'derivative' is given, the value is
+              ignored.
+
+Prototype of 'func': func (params, normResids) ; return value ignored.
+
+     params - The current guess of the parameters.
+ normResids - A 1D ndarray of neqn elements used as an output argument.
+              sum(normResids**2) is minimized by the solver. So-called
+              because in the classic case, this variable is set to the
+              normalized residuals:
+
+              normResids[i] = (model (x[i], params) - data[i]) / sigma[i]
+
+Prototype of 'derivative': derivative (params, dfdx) ; return value
+ignored.
+
+ params - The current guess of the parameters.
+   dfdx - A 2D ndarray of (nunk, neqn) elements used as an output argument.
+          Gives the derivative of 'func' with regard to the parameters.
+          dfdx[i,j] = d(normResids[j]) / d(params[i]) .
+
+Returns: (success, normResids)
+
+    success - An integer describing the outcome of the fit.
+              0 - Fit succeeded.
+              1 - A singular matrix was encountered; unable to fit.
+              2 - Maximum number of iterations completed before ???
+              3 - Solution met relative criterion but not absolute
+                  criterion.
+ normResids - A 1D array giving the last-evaluated normalized residuals
+              as described in the prototype of 'func'.
+
+Implemented using the Miriad function NLLSQU.
+"""
+
+    from _mirgood import nllsqu
+    arr = lambda shape: N.zeros (shape, dtype=N.float32, order='F')
+    
+    # Verify arguments
+    
+    guess = N.asarray (guess, dtype=N.float32, order='F')
+    assert guess.ndim == 1, 'Least squares guess must be 1-dimensional'
+    nunk = guess.size
+
+    neqn = int (neqn)
+    assert neqn > nunk, 'Not enough equations to solve problem'
+
+    assert callable (func), '"func" is not callable?!'
+
+    haveDer = derivative is not None
+
+    if haveDer:
+        assert callable (derivative), '"derivative" is not callable?!'
+        stepSizes = arr ((nunk, ))
+    else:
+        stepSizes = N.asarray (stepSizes)
+        assert stepSizes.shape == (nunk, ), '"stepSizes" array is wrong shape!'
+
+    if maxIter is None:
+        maxIter = 150 * nunk
+    else:
+        maxIter = int (maxIter)
+        assert maxIter > 0, '"maxIter" must be positive'
+
+    eps1 = float (eps1)
+    assert eps1 > 0, '"eps1" must be positive'
+
+    eps2 = float (eps2)
+    assert eps2 > 0, '"eps2" must be positive'
+
+    # Construct scratch arrays
+
+    normResids = arr ((neqn, ))
+    normResidsPrime = arr ((neqn, ))
+    dx = arr ((nunk, ))
+    dfdx = arr ((nunk, neqn))
+    aa = arr ((nunk, nunk))
+
+    # Do it!
+
+    success = nllsqu (guess, stepSizes, maxIter, eps1, eps2, haveDer,
+                      func, derivative, normResids, normResidsPrime,
+                      dx, dfdx, aa)
+
+    # Return useful results
+
+    return success, normResids

@@ -10,22 +10,6 @@ python module intprd__user__routines
         end subroutine intpget
     end interface intprd_user_interface
 end python module intprd__user__routines
-python module nllsqu__user__routines 
-    interface nllsqu_user_interface 
-        subroutine func(x,f,n,m) ! in subs/nllsqu.f:nllsqu:unknown_interface
-            real dimension(n) :: x
-            real dimension(m) :: f
-            integer optional,check(len(x)>=n),depend(x) :: n=len(x)
-            integer optional,check(len(f)>=m),depend(f) :: m=len(f)
-        end subroutine func
-        subroutine derive(x,dfdx,n,m) ! in subs/nllsqu.f:nllsqu:unknown_interface
-            real dimension(n) :: x
-            real dimension(n,m),depend(n) :: dfdx
-            integer optional,check(len(x)>=n),depend(x) :: n=len(x)
-            integer optional,check(shape(dfdx,1)==m),depend(dfdx) :: m=shape(dfdx,1)
-        end subroutine derive
-    end interface nllsqu_user_interface
-end python module nllsqu__user__routines
 python module fdjac2__user__routines 
     interface fdjac2_user_interface 
         subroutine fcn(m,n,x,wa,iflag) ! in subs/nswc.f:fdjac2:unknown_interface
@@ -9547,25 +9531,6 @@ function nextpow2(k) ! in subs/nextpow2.f
     integer :: k
     integer :: nextpow2
 end function nextpow2
-subroutine nllsqu(n,m,x,h,itmax,eps1,eps2,der,ifail,func,derive,f,fp,dx,dfdx,aa) ! in subs/nllsqu.f
-    use nllsqu__user__routines
-    integer optional,check(len(x)>=n),depend(x) :: n=len(x)
-    integer optional,check(len(f)>=m),depend(f) :: m=len(f)
-    real dimension(n) :: x
-    real dimension(n),depend(n) :: h
-    integer :: itmax
-    real :: eps1
-    real :: eps2
-    logical :: der
-    integer :: ifail
-    external func
-    external derive
-    real dimension(m) :: f
-    real dimension(m),depend(m) :: fp
-    real dimension(n),depend(n) :: dx
-    real dimension(n,m),depend(n,m) :: dfdx
-    real dimension(n,n),depend(n,n) :: aa
-end subroutine nllsqu
 subroutine randset(seed) ! in subs/noise.f
     integer :: seed
 end subroutine randset
