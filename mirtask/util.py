@@ -362,7 +362,7 @@ moderate accuracy only, e.g. good to a few seconds (I think?)."""
 # Wrapper around NLLSQU, the non-linear least squares solver
 
 def leastSquares (guess, neqn, func, derivative=None,
-                  maxIter=None, eps1=1e-6, eps1=1e-8, stepSizes=None):
+                  maxIter=None, eps1=1e-6, eps2=1e-8, stepSizes=None):
     """Optimize parameters by performing a nonlinear least-squares fit.
 Parameters:
 
