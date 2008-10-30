@@ -622,3 +622,14 @@ subroutine nllsqu(n,m,x,h,itmax,eps1,eps2,der,ifail,func,derive,f,fp,dx,dfdx,aa)
     real dimension(n,m),depend(n,m) :: dfdx
     real dimension(n,n),depend(n,n) :: aa
 end subroutine nllsqu
+
+subroutine llsqu(f,a,n,m,c,ifail,b,pivot) ! in subs/lsqu.f
+    real dimension(m) :: f
+    real dimension(n,m),depend(m) :: a
+    integer optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+    integer optional,check(len(f)>=m),depend(f) :: m=len(f)
+    real intent(out),dimension(n),depend(n) :: c
+    integer intent(out) :: ifail
+    real dimension(n,n),depend(n,n) :: b
+    integer dimension(n),depend(n) :: pivot
+end subroutine llsqu

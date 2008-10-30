@@ -361,9 +361,9 @@ moderate accuracy only, e.g. good to a few seconds (I think?)."""
 
 # Wrapper around NLLSQU, the non-linear least squares solver
 
-def leastSquares (guess, neqn, func, derivative=None,
-                  maxIter=None, absCrit=None, relCrit=None,
-                  stepSizes=None, allowFail=False):
+def nlLeastSquares (guess, neqn, func, derivative=None,
+                    maxIter=None, absCrit=None, relCrit=None,
+                    stepSizes=None, allowFail=False):
     """Optimize parameters by performing a nonlinear least-squares fit.
 Parameters:
 
@@ -453,7 +453,7 @@ Implemented using the Miriad function NLLSQU.
     nunk = guess.size
 
     neqn = int (neqn)
-    if neqn <= nunk:
+    if neqn < nunk:
         raise RuntimeError ('Not enough equations to solve problem')
 
     if not callable (func):
@@ -514,3 +514,55 @@ Implemented using the Miriad function NLLSQU.
 
     rChiSq = (normResids**2).sum () / (neqn - nunk)
     return success, guess, normResids, rChiSq
+
+# Wrapper around LLSQU, the linear least-squares solver
+
+def linLeastSquares (coeffs, vals):
+    """Solve for parameters in a linear least-squares problem.
+The problem has neqn equations used to solve for nunk
+unknown paremeters.
+
+Parameters:
+
+    coeffs - A 2D array of shape (neqn, nunk). With "vals",
+             defines the linear equations specifying the
+             problem.
+      vals - A 1D array of size neqn.
+
+Returns: a 1D array of size nunk giving the parameters that
+yield the least-squares fit to the given equation. That is,
+the values give the best solution (in a least-squares sense)
+to the neqn equations. The i'th equation is
+
+vals[i] = coeffs[i,0] * retval[0] + ... +
+  coeffs[i,nunk-1] * retval[nunk-1]
+"""
+    
+    from _mirgood import llsqu
+    
+    coeffs = N.asarray (coeffs, dtype=N.float32, order='F')
+    if coeffs.ndim != 2:
+        raise ValueError ('"coeffs" must be a 2D array.')
+
+    nunk, neqn = coeffs.shape
+    
+    if neqn < nunk:
+        raise RuntimeError ('Not enough equations to solve problem')
+
+    vals = N.asarray (vals, dtype=N.float32, order='F')
+    if vals.ndim != 1:
+        raise ValueError ('"vals" must be a 1D array.')
+    if vals.size != neqn:
+        raise ValueError ('"vals" must be of size neqn')
+
+    b = N.ndarray ((nunk, nunk), dtype=N.float32, order='F')
+    pivot = N.ndarray ((nunk, ), dtype=N.int32, order='F')
+
+    # Do it!
+    
+    c, success = llsqu (vals, coeffs, b, pivot)
+
+    if success != 0:
+        raise RuntimeError ('Linear least-squares fit failed: singular matrix')
+
+    return c

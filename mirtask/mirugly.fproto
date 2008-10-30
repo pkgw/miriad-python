@@ -7245,16 +7245,6 @@ subroutine llsqusol(x,b,n,ifail,pivot) ! in subs/lsqu1.f
     integer :: ifail
     real dimension(n),depend(n) :: pivot
 end subroutine llsqusol
-subroutine llsqu(f,a,n,m,c,ifail,b,pivot) ! in subs/lsqu.f
-    real dimension(m) :: f
-    real dimension(n,m),depend(m) :: a
-    integer optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
-    integer optional,check(len(f)>=m),depend(f) :: m=len(f)
-    real dimension(n),depend(n) :: c
-    integer :: ifail
-    real dimension(n,n),depend(n,n) :: b
-    integer dimension(n),depend(n) :: pivot
-end subroutine llsqu
 subroutine linlsq(xarr,yarr,npnt,a1,b1,a2,b2,sigx,sigy,corr) ! in subs/lsqu.f
     real dimension(*) :: xarr
     real dimension(*) :: yarr
