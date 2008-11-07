@@ -35,6 +35,9 @@ class ArrayGrower (object):
         self.addLine (N.asarray (args, dtype=self.dtype))
 
 
+    def __len__ (self): return self._nextIdx
+
+
     def finish (self):
         if self._arr is None:
             ret = N.ndarray ((0, self.ncols), dtype=self.dtype)
@@ -71,6 +74,9 @@ class VectorGrower (object):
 
         self._vec[self._nextIdx] = val
         self._nextIdx += 1
+
+
+    def __len__ (self): return self._nextIdx
 
 
     def finish (self):
