@@ -283,49 +283,49 @@ class DataItem (object):
         """Read an array of bytes from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadb (self.itno, buf, offset, length)
 
     def readInts (self, buf, offset, length=None):
-        """Read an array of integers from the given location in the data
+        """Read an array of 32-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadi (self.itno, buf, offset, length)
 
     def readShorts (self, buf, offset, length=None):
         """Read an array of 16-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadj (self.itno, buf, offset, length)
 
     def readLongs (self, buf, offset, length=None):
         """Read an array of 64-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadl (self.itno, buf, offset, length)
 
     def readFloats (self, buf, offset, length=None):
         """Read an array of floats from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadr (self.itno, buf, offset, length)
 
     def readDoubles (self, buf, offset, length=None):
         """Read an array of doubles from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadd (self.itno, buf, offset, length)
 
     def readComplex (self, buf, offset, length=None):
         """Read an array of complexes from the given location in the data
         item. The default read length is the size of the array."""
 
-        if length is None: length = darray.size
+        if length is None: length = buf.size
         ll.hreadc (self.itno, buf, offset, length)
 
     # Writing

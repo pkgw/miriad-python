@@ -6,7 +6,7 @@ import lowlevel as ll
 import numpy as N
 from mirtask import MiriadError
 
-__all__ = [ 'GainsReader' ]
+__all__ = ['GainsReader', 'readBandpass' ]
 
 class GainsReader (object):
     """Read in gains from a Miriad data set. Code based on gplist.for."""
@@ -57,9 +57,9 @@ class GainsReader (object):
         gains = N.ndarray ((nsols, ngains), dtype=N.complex64)
         
         for i in xrange (0, nsols):
-            self.gitem.readDoubles (time[i:], offset, 8)
+            self.gitem.readDoubles (time[i:], offset, 1)
             offset += 8
-            self.gitem.readComplex (gains[pnt,:], offset, 8 * ngains)
+            self.gitem.readComplex (gains[pnt,:], offset, ngains)
             offset += 8 * ngains
             pnt += 1
 
@@ -79,11 +79,89 @@ class GainsReader (object):
         gains = N.ndarray (ngains, dtype=N.complex64)
         
         for i in xrange (0, nsols):
-            self.gitem.readDoubles (time, offset, 8)
+            self.gitem.readDoubles (time, offset, 1)
             offset += 8
-            self.gitem.readComplex (gains, offset, 8 * ngains)
+            self.gitem.readComplex (gains, offset, ngains)
             offset += 8 * ngains
 
             yield (time[0], gains)
 
         del self.gitem
+
+def readBandpass (dset):
+    """Read in the bandpass table from the given dataset.
+
+    Parameter: dset, an open Miriad dataset
+
+    Returns: (nschans, freqs, gains), where
+
+    nschans - A vector of 'nspect' integers, where nspect is the number
+              of spectral windows in this dataset. Each integer gives
+              the number of channels occupied by the window.
+    freqs   - A vector of 'nchan' doubles, giving the sky frequency
+              associated with each channel. nchan is the total number
+              of channels, equal to the sum of the elements of nschans.
+    gains   - A 3-D array of shape (nants, nfeeds, nchan) giving the
+              bandpass solution for each antenna and feed. nants is the
+              number of antennas allowed in the dataset -- though not
+              all antennas may be used (some may be flagged, etc.) nfeeds
+              is the number of feeds on each antenna: expected to be 1
+              or 2. nchan is as in freqs.
+    """
+    
+    if not dset.hasItem ('bandpass'):
+        raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.name)
+
+    # Prep counts and check sanity
+    
+    ngains = dset.getHeaderInt ('ngains', 0)
+    nfeeds = dset.getHeaderInt ('nfeeds', 1)
+    ntau = dset.getHeaderInt ('ntau', 0)
+    nchan0 = dset.getHeaderInt ('nchan0', 0)
+    nspect0 = dset.getHeaderInt ('nspect0', 0)
+
+    nants = ngains // (nfeeds + ntau)
+
+    if nfeeds < 1:
+        raise RuntimeError ('Bad number of feeds (%d) in UV dataset' % nfeeds)
+    if ngains < 1 or ngains != nants * (nfeeds + ntau):
+        raise RuntimeError ('Bad number of gains (%d; %d ants %d feeds %d taus) '
+                            'in UV dataset' % (ngains, nants, nfeeds, ntaus))
+    if ntau != 0:
+        raise RuntimeError ('Unhandled number of delays (%d) in UV dataset' % ntaus)
+    if nchan0 < 1:
+        raise RuntimeError ('Bad number of spectral channels (%d) in UV dataset' % nchan0)
+    if nspect0 < 1 or nspect0 > nchan0:
+        raise RuntimeError ('Bad number of spectral windows (%d) in UV dataset' % nspect0)
+
+    # Frequency table.
+
+    hdfreq = dset.getItem ('freqs', 'r')
+    freqs = N.ndarray (nchan0, dtype=N.double)
+    
+    n = 0
+    ofs = 8
+    nschans = N.ndarray (nspect0, dtype=N.int32)
+    freqbuf = N.ndarray (2, dtype=N.double)
+
+    for i in xrange (0, nspect0):
+        hdfreq.readInts (nschans[i:], ofs, 1)
+        ofs += 8
+        hdfreq.readDoubles (freqbuf, ofs)
+        ofs += 8 * 2
+
+        for j in xrange (0, nschans[i]):
+            freqs[n] = freqbuf[0] + j * freqbuf[1]
+            n += 1
+
+    del hdfreq
+
+    # Bandpass table
+
+    hdbpass = dset.getItem ('bandpass', 'r')
+    gains = N.ndarray ((nants, nfeeds, nchan0), dtype=N.complex64)
+    hdbpass.readComplex (gains, 8)
+
+    del hdbpass
+    
+    return nschans, freqs, gains

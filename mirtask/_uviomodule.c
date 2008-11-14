@@ -302,7 +302,7 @@ hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
 
     MTS_CHECK_BUG;
     hio_c (item, dowrite, type, PyArray_DATA (buf), (off_t) offset, 
-	   (size_t) length, &iostat);
+	   (size_t) length * objsize, &iostat);
     CHECK_IOSTAT(iostat);
 
     Py_RETURN_NONE;
@@ -319,12 +319,12 @@ static PyObject *py_hwrite##ident (PyObject *self, PyObject *args) \
 }
 
 MAKE_HIO(b, H_BYTE, HD_INTEGER, 1)
-MAKE_HIO(i, H_INT, HD_INTEGER, sizeof (int))
+MAKE_HIO(i, H_INT, HD_INTEGER, 4)
 MAKE_HIO(j, H_INT2, HD_INTEGER, 2)
 MAKE_HIO(l, H_INT8, HD_INTEGER, 8)
-MAKE_HIO(r, H_REAL, HD_FLOAT, sizeof (float))
-MAKE_HIO(d, H_DBLE, HD_FLOAT, sizeof (double))
-MAKE_HIO(c, H_CMPLX, HD_COMPLEX, 2 * sizeof (float))
+MAKE_HIO(r, H_REAL, HD_FLOAT, 4)
+MAKE_HIO(d, H_DBLE, HD_FLOAT, 8)
+MAKE_HIO(c, H_CMPLX, HD_COMPLEX, 8)
 
 /* headio */
 
