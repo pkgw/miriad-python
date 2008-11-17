@@ -127,8 +127,6 @@ def readBandpass (dset):
     if ngains < 1 or ngains != nants * (nfeeds + ntau):
         raise RuntimeError ('Bad number of gains (%d; %d ants %d feeds %d taus) '
                             'in UV dataset' % (ngains, nants, nfeeds, ntaus))
-    if ntau != 0:
-        raise RuntimeError ('Unhandled number of delays (%d) in UV dataset' % ntaus)
     if nchan0 < 1:
         raise RuntimeError ('Bad number of spectral channels (%d) in UV dataset' % nchan0)
     if nspect0 < 1 or nspect0 > nchan0:
@@ -150,10 +148,16 @@ def readBandpass (dset):
         hdfreq.readDoubles (freqbuf, ofs)
         ofs += 8 * 2
 
+        # This could be more efficient, but it's not a huge deal.
         for j in xrange (0, nschans[i]):
             freqs[n] = freqbuf[0] + j * freqbuf[1]
             n += 1
 
+    if nschans.sum () != nchan0:
+        raise RuntimeError ('Disagreeing number of channels and spectral window widths '
+                            'in UV dataset: sum(nschan) = %d, nchan0 = %d' % (nschans.sum (),
+                                                                              nchan0))
+    
     del hdfreq
 
     # Bandpass table
