@@ -20,6 +20,7 @@ class ArrayGrower (object):
 
 
     def addLine (self, line):
+        line = N.asarray (line, dtype=self.dtype)
         assert (line.size == self.ncols)
         
         if self._arr is None:
@@ -32,7 +33,7 @@ class ArrayGrower (object):
 
 
     def add (self, *args):
-        self.addLine (N.asarray (args, dtype=self.dtype))
+        self.addLine (args)
 
 
     def __len__ (self): return self._nextIdx
