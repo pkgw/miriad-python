@@ -674,6 +674,10 @@ class TaskImGen (TaskBase):
                'cell', 'radec', 'seed']
     _options = ['totflux']
 
+class TaskLinMos (TaskBase):
+    _params = ['in_', 'out', 'rms']
+    _options = ['taper', 'sensitivity', 'gain']
+
 # These functions operate on single images or single visibilities,
 # using several of the tasks defined above.
 
