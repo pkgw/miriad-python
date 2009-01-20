@@ -474,7 +474,7 @@ class TaskInvert (TaskBase):
 class TaskClean (TaskBase):
     _params = ['map', 'beam', 'out', 'niters', 'region',
                'gain', 'cutoff', 'phat', 'minpatch',
-               'speed', 'mode', 'clip']
+               'speed', 'mode', 'clip', 'model']
     _options = ['negstop', 'positive', 'asym', 'pad']
 
 class TaskRestore (TaskBase):
