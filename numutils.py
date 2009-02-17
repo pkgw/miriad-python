@@ -39,7 +39,7 @@ class ArrayGrower (object):
     def __len__ (self): return self._nextIdx
 
 
-    def finish (self):
+    def finish (self, trans=False):
         if self._arr is None:
             ret = N.ndarray ((0, self.ncols), dtype=self.dtype)
         else:
@@ -47,6 +47,8 @@ class ArrayGrower (object):
             ret = self._arr
 
         self.clear ()
+
+        if trans: ret = ret.T
 
         return ret
 
@@ -80,7 +82,7 @@ class VectorGrower (object):
     def __len__ (self): return self._nextIdx
 
 
-    def finish (self):
+    def finish (self, trans=False):
         if self._vec is None:
             ret = N.ndarray ((0, ), dtype=self.dtype)
         else:
@@ -89,6 +91,8 @@ class VectorGrower (object):
 
         self.clear ()
 
+        if trans: ret = ret.T
+        
         return ret
 
 
