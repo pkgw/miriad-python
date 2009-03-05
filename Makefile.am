@@ -1,5 +1,11 @@
 SUBDIRS = mirtask
 
+if BUILD_DOCS
+SUBDIRS += doc
+endif
+
+# Main modules ...
+
 python_PYTHON = miriad.py mirexec.py numutils.py
 
 bin_SCRIPTS = mirpyhelp.py mirpymodtask.py

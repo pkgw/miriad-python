@@ -1,0 +1,7 @@
+.. _index:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+Miriad-Python Manual
+====================
+
+This shit is bananas.

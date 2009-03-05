@@ -89,7 +89,7 @@ fi
 AM_CONDITIONAL([BUILD_DOCS], $BUILD_DOCS)
 
 if $BUILD_DOCS ; then
-   AC_CONFIG_FILES([doc/conf.py])
+   AC_CONFIG_FILES([doc/conf.py doc/Makefile])
 fi
 
 dnl Output
