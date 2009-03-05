@@ -4,4 +4,28 @@
 Miriad-Python Manual
 ====================
 
-This shit is bananas.
+Welcome to the *Miriad-Python* manual. If you're just getting
+started, how about looking at the :ref:`introduction <intro>`?
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 2
+
+   intro.txt
+
+Indices and Tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+Colophon
+========
+
+This documentation describes *miriad-python* version |version|,
+implementing version |release| of the API. It was generated on
+|today|. This documentation is created using `Sphinx
+<http://sphinx.pocoo.org/>`_.

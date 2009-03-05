@@ -1,5 +1,6 @@
 noinst_DATA = \
- index.txt
+ index.txt \
+ intro.txt
 
 SCANNEDPY = \
  $(top_srcdir)/miriad.py
