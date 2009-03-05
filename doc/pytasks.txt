@@ -1,0 +1,7 @@
+.. _writing:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+Writing Your Own MIRIAD Tasks
+=============================
+
+Blah blah.
