@@ -4,7 +4,11 @@ AC_CONFIG_MACRO_DIR(.)
 AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE
 
-AC_SUBST(ACLOCAL_AMFLAGS, ["-I ."]) 
+AC_SUBST(ACLOCAL_AMFLAGS, ["-I ."])
+
+dnl Used in doc/conf.py.in
+AC_SUBST([MIRPY_SHORTVERSION],[0.1])
+AC_SUBST([MIRPY_COPYRIGHT],["2008, Peter Williams"])
 
 dnl Miriad.
 
@@ -19,11 +23,13 @@ orig_CFLAGS="$CFLAGS"
 if test x"$with_miriad" = xnoextra ; then
   MIR_LIBS="-lmir -lmir_uvio -lmir_linpack -lpgplot"
   MIR_CFLAGS=""
+  miriad_loc="system search path"
 else
   MIR_LIBS="-L${with_miriad}/lib -lmir -lmir_uvio -lmir_linpack -lpgplot"
   MIR_CFLAGS="-I${with_miriad}/include/miriad-c"
   LIBS="-L${with_miriad}/lib $LIBS"
   CFLAGS="$MIR_CFLAGS $CFLAGS"
+  miriad_loc="$with_miriad"
 fi
 
 AC_CHECK_HEADER([miriad.h], failed=false, failed=true,
@@ -68,6 +74,24 @@ AM_CHECK_PYMOD(numpy,ndarray,,AC_MSG_ERROR([could not find Numpy module]))
 NUMPY_INCLUDEDIR=`python -c 'import numpy, os.path as p ; f = getattr (numpy, "__" + "file__") ; print p.join (p.dirname (f), "core", "include")'`
 AC_SUBST(NUMPY_INCLUDEDIR)
 
+dnl Check for Sphinx, used to create docs
+
+AC_PATH_PROG(SPHINXBUILD, sphinx-build, notfound)
+if test x"$SPHINXBUILD" = xnotfound ; then
+   AC_MSG_WARN([The program 'sphinx-build' wasn't found on your system! Documentation will not be built.])
+   BUILD_DOCS=false
+   DOCS_DESC="no; no 'sphinx-build' found"
+else
+   BUILD_DOCS=true
+   DOCS_DESC="yes"
+fi
+
+AM_CONDITIONAL([BUILD_DOCS], $BUILD_DOCS)
+
+if $BUILD_DOCS ; then
+   AC_CONFIG_FILES([doc/conf.py])
+fi
+
 dnl Output
 
 AC_CONFIG_FILES([
@@ -76,3 +100,10 @@ AC_CONFIG_FILES([
   mirtask/Makefile
 ])
 AC_OUTPUT
+
+dnl Summarize important configuration options
+
+echo "Configuration summary:"
+echo "   Install prefix:  " $prefix
+echo "   MIRIAD found in: " $miriad_loc
+echo "   Building docs?   " $DOCS_DESC
