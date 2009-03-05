@@ -1,0 +1,10 @@
+.. highlight:: python
+
+.. _intro:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+An Introduction to Miriad-Python
+================================
+
+This is some stuff.
+
