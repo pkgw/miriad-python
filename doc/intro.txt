@@ -11,6 +11,8 @@ An Introduction to Miriad-Python
 package via the `Python <http://www.python.org/>`_ programming 
 language. It offers three main groups of features:
 
-* Modules for executing existing MIRIAD tasks. 
-* Libraries for reading and using MIRIAD data files in Python.
-* Libraries for writing your own MIRIAD tasks in Python.
+* Modules for :ref:`executing existing MIRIAD tasks <executing`.
+* Libraries for :ref:`reading and using MIRIAD data files in Python <data>`.
+* Libraries for :ref:`writing your own MIRIAD tasks in Python <pytasks>`.
+
+And that's all of the introduction I can think of right now!

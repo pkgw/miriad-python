@@ -1,4 +1,4 @@
-.. _writing:
+.. _pytasks:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
 Writing Your Own MIRIAD Tasks
