@@ -27,6 +27,22 @@ __all__ = ['basicTrace', 'trace']
 # Fundamental MIRIAD data set object.
 
 class Data (object):
+    """:synopsis: Generic reference to MIRIAD datasets.
+:arg: basedata
+:type: anything upon which :func:`str` can be called
+
+The constructor returns a new instance that references a dataset with
+the filename *basedata*.
+
+The stringification of a :class:`Data` instance returns the filename
+of the underlying dataset.
+
+:class:`Data` implements equality testing and hashing. One dataset is
+equal to another if and only if both are instances of :class:`Data`
+*or any of its subclasses* and the :func:`os.path.realpath` of the
+filenames underlying both datasets are equal.
+"""
+
     def __init__ (self, basedata):
         self.base = str (basedata)
 
@@ -44,20 +60,33 @@ class Data (object):
         return isinstance (other, Data) and self.realPath () == other.realPath ()
 
     def __hash__ (self):
+        "Test documentation."""
         return hash (self.realPath ())
     
     # Low-level attributes
     
     @property
     def exists (self):
-        """True if the data specified by this class actually exists.
-        (If False, the data corresponding to this object will probably
-        be created by the execution of a command.)"""
+        """Read-only :class:`bool`. :const:`True` if the dataset specified
+        by this class actually exists. (If :const:`False`, the dataset
+        corresponding to this object can be created by the execution
+        of a command.)"""
         return os.path.exists (self.base)
 
     @property
     def mtime (self):
-        """The modification time of this dataset."""
+        """Read-only :class:`int`. The modification time of the
+history item of this dataset. Raises :class:`OSError` if the
+dataset does not exist. Useful for checking whether a dataset
+needs to be regenerated, in conjunction with the :attr:`umtime`
+attribute::
+
+  def maybeCat (src, dest, **params):
+    # If dest doesn't exist or src has been modified more
+    # recently than src, perform a uvcat.
+    if dest.umtime < src.mtime:
+       src.catTo (dest, **params)
+"""
         # Once the set is created, it can be modified without updating
         # the mtime of the directory. But, assuming normal Miriad operating
         # conditions, the history file should always be modified when the
@@ -66,8 +95,10 @@ class Data (object):
     
     @property
     def umtime (self):
-        """The "unconditional" modification time of this dataset --
-zero is returned if the dataset does not exist."""
+        """Read-only :class:`int`. The "unconditional" modification
+time of this dataset -- equivalent to :attr:`mtime`, but zero is
+returned if the dataset does not exist. See the example in
+:attr:`mtime` for potential uses."""
         try:
             return os.stat (join (self.base, 'history'))[ST_MTIME]
         except OSError, e:
@@ -75,16 +106,37 @@ zero is returned if the dataset does not exist."""
             raise e
     
     def checkExists (self):
+        """:rtype: :const:`None`
+
+Check if the :class:`~Data` exists on disk. If so, do nothing
+and return. If not, raise an :class:`Exception`."""
         if self.exists: return
 
         raise Exception ('Data set %s does not exist' % self.base)
 
     def realPath (self):
+        """:rtype: :class:`str`
+:returns: The real path (as defined by :func:`os.path.realpath`
+          to this dataset.
+"""
         return os.path.realpath (self.base)
     
     # Low-level operations
     
     def moveTo (self, dest):
+        """Move the dataset to a new location.
+
+:arg: dest
+:type: :class:`str`, or anything upon which :func:`str` can be called.
+:rtype: :class:`~Data`
+:returns: :const:`self`
+
+Renames this dataset to a new location on disk. The dataset
+must exist. Uses :func:`os.rename`, so renaming a dataset across
+devices will not work, but the rename is atomic. :func:`trace` is
+called with a "[rename]" operation.
+"""
+
         self.checkExists ()
         dest = str (dest)
         
@@ -97,6 +149,20 @@ zero is returned if the dataset does not exist."""
 
 
     def copyTo (self, dest):
+        """Copy the dataset to a new location.
+
+:arg: dest
+:type: :class:`str`, or anything upon which :func:`str` can be called.
+:rtype: :class:`~Data`
+:returns: :const:`self`
+
+Copies this dataset to a new location on disk. The dataset must
+exist. Approximately equivalent to :command:`cp -r $self
+$dest`. :func:`trace` is called with a "[copy]" operation.
+
+FIXME: Doesn't clean up correctly if an error occurs midway
+through the copy.
+"""
         self.checkExists ()
         dest = str (dest)
 
@@ -113,7 +179,16 @@ zero is returned if the dataset does not exist."""
 
     
     def delete (self):
-        # Silently not doing anything seems appropriate here.
+        """Delete the dataset.
+
+:rtype: :class:`~Data`
+:returns: :const:self
+
+Deletes the dataset from disk. If the dataset doesn't exist,
+silently does nothing. Approximately equivalent to
+:command:`rm -r $self`. If deletion occurs, :func:`trace` is called
+with a "[delete]" operation.
+"""
         if not self.exists: return
 
         trace (['[delete]', 'in=%s' % self])
@@ -125,9 +200,50 @@ zero is returned if the dataset does not exist."""
         return self
 
     def apply (self, task, **params):
+        """Configure a task to run on this dataset.
+
+:arg: task
+:type: :class:`~mirexec.TaskBase`
+:arg: params
+:type: Extra keyword parameters
+:rtype: :class:`~mirexec.TaskBase`
+:returns: *task*
+
+Set the appropriate input option ('vis' or 'in') of the
+:class:`mirexec.TaskBase` *task* to :const:`self`. Also apply any
+keywords in *params* to *task* via
+:meth:`mirexec.TaskBase.applyParams`. Returns *task* for easy
+chaining::
+
+  import miriad
+  from mirtask import TaskUVFlag
+  v = miriad.VisData ('dataset')
+  v.apply (TaskUVFlag (), flagval='f', select='ant(1)').run ()
+
+  # The above example could also be written:
+
+  TaskUVFlag (vis=v, flagval='f', select='ant(1)').run ()
+
+This function isn't implemented in the generic :class:`Data`
+class. The subclasses :class:`VisData` and :class:`ImData` override it
+to set the appropriate task input keyword.
+"""
         raise NotImplementedError ()
 
     def xapply (self, task, **params):
+        """Configure a task to run verbosely on this dataset.
+
+:arg: task
+:type: :class:`~mirexec.TaskBase`
+:arg: params
+:type: Extra keyword parameters
+:rtype: :class:`~mirexec.TaskBase`
+:returns: *task*
+
+Identical to :meth:`apply`, but also sets the
+:attr:`~mirexec.TaskBase.xint` attribute of the *task* to
+:const:`True`, causing the task to run verbosely.
+"""
         self.apply (task, **params)
         task.xint = True
         return task

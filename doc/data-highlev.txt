@@ -87,10 +87,13 @@ The main classes provided by :mod:`miriad` let you access MIRIAD
 datasets.
 
 .. autoclass:: Data
+   :members:
 
 .. autoclass:: VisData
+   :members:
 
 .. autoclass:: ImData
+   :members:
 
 Tracing Task Execution
 ----------------------
