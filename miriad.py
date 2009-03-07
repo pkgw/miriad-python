@@ -61,7 +61,8 @@ class Data (object):
 The constructor returns a new instance that references a dataset with
 the filename ``str(basedata)``. However, you should create
 :class:`VisData` and :class:`ImData` instances rather than generic
-:class:`Data` instances whenever possible.
+:class:`Data` instances whenever possible, to take advantage of the
+more-specialized functionality they offer.
 
 The stringification of a :class:`Data` instance returns the filename
 of the underlying dataset.

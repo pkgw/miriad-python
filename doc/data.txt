@@ -16,7 +16,7 @@ understand the high-level :class:`miriad.Data` class but not necessary
 to read about the low-level :mod:`mirtask` module just yet.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    data-highlev.txt
    data-lowlev.txt

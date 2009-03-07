@@ -21,10 +21,15 @@ a filename as an argument::
   vis = VisData ('./fx64c-3c147-1400')
   im = ImData ('./residual.rm')
 
-Both :class:`~VisData` and :class:`~ImData` are
-subclasses of a more generic class, :class:`~Data`, which
-provides common functions. You can check basic properties of a
-dataset:
+It's important to understand that these objects are *references* to
+datasets, and as such the underlying file doesn't have to exist when
+you create the object. Also, creating one of these objects is a very
+lightweight operation.
+
+Both :class:`~VisData` and :class:`~ImData` are subclasses of a more
+generic class, :class:`~Data`, which provides common
+functionality. One set of functionality is checking basic properties
+of the dataset on disk:
 
 * :attr:`~Data.exists` to see if it exists on disk.
 * :attr:`~Data.mtime` to check when it was last modified.
@@ -33,10 +38,11 @@ dataset:
 
 You can also perform some basic operations:
 
-* :meth:`~Data.moveTo` to rename a dataset.
-* :meth:`~Data.copyTo` to copy it.
-* :meth:`~Data.delete` to delete it.
-* :meth:`~Data.apply` to run a MIRIAD task on this dataset
+* :meth:`~Data.moveTo` renames a dataset.
+* :meth:`~Data.copyTo` copies it.
+* :meth:`~Data.delete` deletes it.
+* :meth:`~Data.apply` configures a MIRIAD task object
+* (:class:`mirexec.TaskBase`) to run on this dataset
   via the :mod:`mirexec` subsystem. See :ref:`executing` for more
   information. See also the verbose variant
   :meth:`~Data.xapply`.
@@ -44,10 +50,10 @@ You can also perform some basic operations:
 You can create more :class:`~Data` instances with filenames
 similar to existing ones:
 
-* :meth:`~Data.vvis` to create a new :class:`VisData`
-  instance with a similar name.
-* :meth:`~Data.vim` to create a new :class:`ImData`
-  instance with a similar name.
+* :meth:`~Data.vvis` creates a new :class:`VisData`
+  instance referencing a similar filename.
+* :meth:`~Data.vim` creates a new :class:`ImData`
+  instance referencing a similar filename.
 
 And you can open the dataset with :meth:`~Data.open` to get
 access to its contents. See :ref:`datalowlev` for more information.
@@ -66,7 +72,7 @@ additional routines specifically useful for UV data:
 * :meth:`~VisData.catTo` runs :command:`uvcat` on a dataset
   to produce a copy of it.
 * :meth:`~VisData.averTo` runs :command:`uvaver` on a datset
-  to produce and averaged copy of it.
+  to produce an averaged copy of it.
 * :meth:`~VisData.readLowlevel` opens the dataset directly
   for lowlevel access to the visibility data.
 
@@ -86,14 +92,14 @@ always create a :class:`~ImData` instance when you know that
 you're referring to an image dataset.
 
 :mod:`miriad` API Reference
-===========================
+---------------------------
 .. _miriadapiref:
 
 This section presents a detailed API reference for the :mod:`miriad`
 module.
 
 Dataset Classes
----------------
+^^^^^^^^^^^^^^^
 
 .. autoclass:: Data
    :members:
@@ -105,7 +111,7 @@ Dataset Classes
    :members:
 
 Tracing Task Execution
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 The :mod:`miriad` module also provides infrastructure for tracing task
 execution and operations on datasets.
