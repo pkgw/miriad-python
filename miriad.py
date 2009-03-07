@@ -2,6 +2,7 @@ import sys, os
 from os.path import join
 from stat import ST_MTIME
 
+
 # Tracing of MIRIAD operations. Almost always used for mirexec
 # functions, but we also record delete/copy/rename in Data.
 
@@ -21,6 +22,7 @@ def trace (cmd):
         launchTrace (cmd)
 
 __all__ = ['basicTrace', 'trace']
+
 
 # Fundamental MIRIAD data set object.
 
