@@ -10,7 +10,7 @@
 
 On the commandline, you refer to datasets by their filenames. The
 :mod:`miriad` module provides two fundamental dataset classes,
-:class:`~miriad.VisData` and :class:`~miriad.ImData`, which
+:class:`~VisData` and :class:`~ImData`, which
 essentially wrap around filenames. They make it convenient to do
 common tasks with datasets in Python.
 
@@ -21,70 +21,79 @@ a filename as an argument::
   vis = VisData ('./fx64c-3c147-1400')
   im = ImData ('./residual.rm')
 
-Both :class:`~miriad.VisData` and :class:`~miriad.ImData` are
-subclasses of a more generic class, :class:`~miriad.Data`, which
+Both :class:`~VisData` and :class:`~ImData` are
+subclasses of a more generic class, :class:`~Data`, which
 provides common functions. You can check basic properties of a
 dataset:
 
-* :attr:`~miriad.Data.exists` to see if it exists on disk
-* :attr:`~miriad.Data.mtime` to check when it was last modified.
-  (See also the variant attribute :attr:`~miriad.Data.umtime`.)
-* :meth:`~miriad.Data.realPath` to get its canonical filename
+* :attr:`~Data.exists` to see if it exists on disk.
+* :attr:`~Data.mtime` to check when it was last modified.
+  (See also the variant attribute :attr:`~Data.umtime`.)
+* :meth:`~Data.realPath` to get its canonical filename.
 
 You can also perform some basic operations:
 
-* :meth:`~miriad.Data.moveTo` to rename a dataset
-* :meth:`~miriad.Data.copyTo` to copy it
-* :meth:`~miriad.Data.delete` to delete it
-* :meth:`~miriad.Data.apply` to run a MIRIAD task on this dataset
-  via the :mod:`mirexec` subsystem. See `executing` for more
+* :meth:`~Data.moveTo` to rename a dataset.
+* :meth:`~Data.copyTo` to copy it.
+* :meth:`~Data.delete` to delete it.
+* :meth:`~Data.apply` to run a MIRIAD task on this dataset
+  via the :mod:`mirexec` subsystem. See :ref:`executing` for more
   information. See also the verbose variant
-  :meth:`~miriad.Data.xapply`.
+  :meth:`~Data.xapply`.
 
-You can create more :class:`~miriad.Data` instances with filenames
+You can create more :class:`~Data` instances with filenames
 similar to existing ones:
 
-* :meth:`~miriad.Data.vvis` to create a new :class:`miriad.VisData`
+* :meth:`~Data.vvis` to create a new :class:`VisData`
   instance with a similar name.
-* :meth:`~miriad.Data.vim` to create a new :class:`miriad.ImData`
+* :meth:`~Data.vim` to create a new :class:`ImData`
   instance with a similar name.
 
-And you can open the dataset with :meth:`~miriad.Data.open` to get
+And you can open the dataset with :meth:`~Data.open` to get
 access to its contents. See :ref:`datalowlev` for more information.
-There are a few more rarely-used members of :class:`~miriad.Data` not
-mentioned here that are documented in the API reference below.
+
+You may also wish to enable tracing of MIRIAD task execution in
+*Miriad-Python* by calling :func:`basicTrace`. There are a few more
+rarely-used members of :class:`~Data` not mentioned here that are
+documented in the :ref:`API reference <miriadapiref>` below.
 
 Visibility Datasets
 -------------------
 
-The :class:`~miriad.VisData` subclass of :class:`~miriad.Data` has
+The :class:`~VisData` subclass of :class:`~Data` has
 additional routines specifically useful for UV data:
 
-* :meth:`~miriad.VisData.catTo` runs :command:`uvcat` on a dataset
+* :meth:`~VisData.catTo` runs :command:`uvcat` on a dataset
   to produce a copy of it.
-* :meth:`~miriad.VisData.averTo` runs :command:`uvaver` on a datset
+* :meth:`~VisData.averTo` runs :command:`uvaver` on a datset
   to produce and averaged copy of it.
+* :meth:`~VisData.readLowlevel` opens the dataset directly
+  for lowlevel access to the visibility data.
 
-Besides these routines, the :class:`~miriad.VisData` subclass
-implements several generic methods specified in :class:`~miriad.Data`,
-so you should always create a :class:`~miriad.VisData` instance when
+Besides these routines, the :class:`~VisData` subclass
+implements several generic methods specified in :class:`~Data`,
+so you should always create a :class:`~VisData` instance when
 you know that you're referring to a visibility dataset.
 
 Image Datasets
 --------------
 
-The :class:`~miriad.ImData` subclass of :class:`~miriad.Data` is used
+The :class:`~ImData` subclass of :class:`~Data` is used
 for referencing image data. It currently does not have any routines
 specifically applicable to image data, but it implements
-several of the :class:`~miriad.Data` methods correctly, so you should
-always create a :class:`~miriad.ImData` instance when you know that
+several of the :class:`~Data` methods correctly, so you should
+always create a :class:`~ImData` instance when you know that
 you're referring to an image dataset.
 
 :mod:`miriad` API Reference
 ===========================
+.. _miriadapiref:
 
-The main classes provided by :mod:`miriad` let you access MIRIAD
-datasets.
+This section presents a detailed API reference for the :mod:`miriad`
+module.
+
+Dataset Classes
+---------------
 
 .. autoclass:: Data
    :members:
@@ -101,9 +110,22 @@ Tracing Task Execution
 The :mod:`miriad` module also provides infrastructure for tracing task
 execution and operations on datasets.
 
+
+.. data:: launchTrace
+
+   Traces the execution of commands.
+
+   Should be a callable or :const:`None`. Will be called by
+   :func:`trace`, which is invoked every time a MIRIAD task is
+   executed via :mod:`mirexec` or a dataset is renamed, copied, or
+   deleted. *launchTrace* should take one argument, which will be a
+   list of strings representing the commandline that is being invoked.
+   If none, :func:`trace` has no effect.
+
+   The function :func:`basicTrace` sets *launchTrace* to a simple
+   default.
+
 .. autofunction:: trace
 
-
 .. autofunction:: basicTrace
-
 
