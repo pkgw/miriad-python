@@ -14,8 +14,8 @@ Contents
    :maxdepth: 2
 
    intro.txt
-   executing.txt
    data.txt
+   executing.txt
    pytasks.txt
 
 Indices and Tables

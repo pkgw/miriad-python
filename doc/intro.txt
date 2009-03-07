@@ -9,10 +9,10 @@ An Introduction to Miriad-Python
 *Miriad-Python* is a framework for interacting with the 
 `MIRIAD <http://bima.astro.umd.edu/miriad/>`_ radio interferometry 
 package via the `Python <http://www.python.org/>`_ programming 
-language. It offers three main groups of features:
+language. It offers three main groups of tools, used for:
 
-* Modules for :ref:`executing existing MIRIAD tasks <executing`.
-* Libraries for :ref:`reading and using MIRIAD data files in Python <data>`.
-* Libraries for :ref:`writing your own MIRIAD tasks in Python <pytasks>`.
+* :ref:`reading and using MIRIAD data files in Python <data>`.
+* :ref:`executing existing MIRIAD tasks <executing>`.
+* :ref:`writing your own MIRIAD tasks in Python <pytasks>`.
 
 And that's all of the introduction I can think of right now!

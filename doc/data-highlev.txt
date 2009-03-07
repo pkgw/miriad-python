@@ -1,0 +1,106 @@
+.. _datahighlev:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+:mod:`miriad` --- High-Level Access to MIRIAD Data
+==================================================
+
+.. module:: miriad
+   :synopsis: Talk about MIRIAD datasets naturally in Python. 
+.. moduleauthor:: Peter Williams <peter@newton.cx>
+
+On the commandline, you refer to datasets by their filenames. The
+:mod:`miriad` module provides two fundamental dataset classes,
+:class:`~miriad.VisData` and :class:`~miriad.ImData`, which
+essentially wrap around filenames. They make it convenient to do
+common tasks with datasets in Python.
+
+To instantiate one of these classes, just call the constructor with
+a filename as an argument::
+
+  from miriad import VisData, ImData
+  vis = VisData ('./fx64c-3c147-1400')
+  im = ImData ('./residual.rm')
+
+Both :class:`~miriad.VisData` and :class:`~miriad.ImData` are
+subclasses of a more generic class, :class:`~miriad.Data`, which
+provides common functions. You can check basic properties of a
+dataset:
+
+* :attr:`~miriad.Data.exists` to see if it exists on disk
+* :attr:`~miriad.Data.mtime` to check when it was last modified.
+  (See also the variant attribute :attr:`~miriad.Data.umtime`.)
+* :meth:`~miriad.Data.realPath` to get its canonical filename
+
+You can also perform some basic operations:
+
+* :meth:`~miriad.Data.moveTo` to rename a dataset
+* :meth:`~miriad.Data.copyTo` to copy it
+* :meth:`~miriad.Data.delete` to delete it
+* :meth:`~miriad.Data.apply` to run a MIRIAD task on this dataset
+  via the :mod:`mirexec` subsystem. See `executing` for more
+  information. See also the verbose variant
+  :meth:`~miriad.Data.xapply`.
+
+You can create more :class:`~miriad.Data` instances with filenames
+similar to existing ones:
+
+* :meth:`~miriad.Data.vvis` to create a new :class:`miriad.VisData`
+  instance with a similar name.
+* :meth:`~miriad.Data.vim` to create a new :class:`miriad.ImData`
+  instance with a similar name.
+
+And you can open the dataset with :meth:`~miriad.Data.open` to get
+access to its contents. See :ref:`datalowlev` for more information.
+There are a few more rarely-used members of :class:`~miriad.Data` not
+mentioned here that are documented in the API reference below.
+
+Visibility Datasets
+-------------------
+
+The :class:`~miriad.VisData` subclass of :class:`~miriad.Data` has
+additional routines specifically useful for UV data:
+
+* :meth:`~miriad.VisData.catTo` runs :command:`uvcat` on a dataset
+  to produce a copy of it.
+* :meth:`~miriad.VisData.averTo` runs :command:`uvaver` on a datset
+  to produce and averaged copy of it.
+
+Besides these routines, the :class:`~miriad.VisData` subclass
+implements several generic methods specified in :class:`~miriad.Data`,
+so you should always create a :class:`~miriad.VisData` instance when
+you know that you're referring to a visibility dataset.
+
+Image Datasets
+--------------
+
+The :class:`~miriad.ImData` subclass of :class:`~miriad.Data` is used
+for referencing image data. It currently does not have any routines
+specifically applicable to image data, but it implements
+several of the :class:`~miriad.Data` methods correctly, so you should
+always create a :class:`~miriad.ImData` instance when you know that
+you're referring to an image dataset.
+
+:mod:`miriad` API Reference
+===========================
+
+The main classes provided by :mod:`miriad` let you access MIRIAD
+datasets.
+
+.. autoclass:: Data
+
+.. autoclass:: VisData
+
+.. autoclass:: ImData
+
+Tracing Task Execution
+----------------------
+
+The :mod:`miriad` module also provides infrastructure for tracing task
+execution and operations on datasets.
+
+.. autofunction:: trace
+
+
+.. autofunction:: basicTrace
+
+

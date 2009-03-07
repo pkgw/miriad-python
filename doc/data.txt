@@ -4,4 +4,19 @@
 Loading and Processing MIRIAD Data
 ==================================
 
-Blah blah.
+*Miriad-Python* deals with MIRIAD data on two levels:
+
+* To refer to datasets abstractly, check whether they exist, rename them,
+  *etc.*, there is the high-level :class:`miriad.Data` class.
+* For opening up datasets and actually getting at their contents,
+  you can use routines inside the :mod:`mirtask` module.
+
+If you're just getting started with *Miriad-Python*, it's important to
+understand the high-level :class:`miriad.Data` class but not necessary
+to read about the low-level :mod:`mirtask` module just yet.
+
+.. toctree::
+   :maxdepth: 2
+
+   data-highlev.txt
+   data-lowlev.txt

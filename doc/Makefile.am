@@ -1,5 +1,7 @@
 noinst_DATA = \
  data.txt \
+ data-highlev.txt \
+ data-lowlev.txt \
  executing.txt \
  index.txt \
  intro.txt \
