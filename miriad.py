@@ -28,7 +28,7 @@ __all__ = ['basicTrace', 'trace']
 
 class Data (object):
     def __init__ (self, basedata):
-        self.base = basedata
+        self.base = str (basedata)
 
     def __str__ (self):
         return self.base
@@ -93,6 +93,9 @@ zero is returned if the dataset does not exist."""
         os.rename (self.base, dest)
         self.base = dest
 
+        return self
+
+
     def copyTo (self, dest):
         self.checkExists ()
         dest = str (dest)
@@ -105,6 +108,9 @@ zero is returned if the dataset does not exist."""
 
         for f in os.listdir (self.base):
             copy (join (self.base, f), join (dest, f))
+
+        return self
+
     
     def delete (self):
         # Silently not doing anything seems appropriate here.
@@ -116,9 +122,15 @@ zero is returned if the dataset does not exist."""
             os.remove (join (self.base, e))
         os.rmdir (self.base)
 
-        # Wipe out this info.
-        
-        self._mutations = None
+        return self
+
+    def apply (self, task, **params):
+        raise NotImplementedError ()
+
+    def xapply (self, task, **params):
+        self.apply (task, **params)
+        task.xint = True
+        return task
 
     # Programming-related helpers.
     
@@ -190,12 +202,6 @@ class VisData (Data):
         task.setArgs (**params)
         return task
 
-    def xapply (self, task, **params):
-        task.vis = self
-        task.xint = True
-        task.setArgs (**params)
-        return task
-
     def catTo (self, dest, **params):
         self.checkExists ()
 
@@ -221,12 +227,6 @@ class ImData (Data):
 
     def apply (self, task, **params):
         task.in_ = self
-        task.setArgs (**params)
-        return task
-
-    def xapply (self, task, **params):
-        task.in_ = self
-        task.xint = True
         task.setArgs (**params)
         return task
 
