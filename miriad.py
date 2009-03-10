@@ -506,7 +506,7 @@ equivalent to executing :command:`uvcat vis={self} out={dest}
         self.checkExists ()
 
         from mirexec import TaskUVCat
-        self.apply (TaskUVCat, out=dest, **params).run ()
+        self.apply (TaskUVCat (), out=dest, **params).run ()
 
     def averTo (self, dest, interval, **params):
         """:command:`uvaver` this dataset to *dest*.
@@ -528,7 +528,7 @@ interval={interval} {params...}`.
         self.checkExists ()
 
         from mirexec import TaskUVAver
-        self.apply (TaskUVAver, out=dest, interval=interval,
+        self.apply (TaskUVAver (), out=dest, interval=interval,
                     **params).run ()
 
 
