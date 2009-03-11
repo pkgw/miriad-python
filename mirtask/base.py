@@ -411,10 +411,12 @@ __all__ += ['UserDataSet']
 
 class UVDataSet (DataSet):
     def __init__ (self, refobj, mode):
-        if mode == 'r': modestr = 'old'
-        elif mode == 'w': modestr = 'new'
+        # Technically, 'old' mode is read-only with regard to the
+        # UV data, but you can still write non-UV header variables.
+        if mode == 'rw': modestr = 'old'
+        elif mode == 'c': modestr = 'new'
         elif mode == 'a': modestr = 'append'
-        else: raise ValueError ('Unexpected mode string ' + mode)
+        else: raise ValueError ('Unsupported mode "%s"; "rw", "c", and "a" are allowed' % mode)
 
         self.tno = ll.uvopen (refobj.base, modestr)
         self.refobj = refobj
