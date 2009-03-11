@@ -283,6 +283,7 @@ class DataItem (object):
         """Read an array of bytes from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
         ll.hreadb (self.itno, buf, offset, length)
 
@@ -290,6 +291,7 @@ class DataItem (object):
         """Read an array of 32-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.int)
         if length is None: length = buf.size
         ll.hreadi (self.itno, buf, offset, length)
 
@@ -297,6 +299,7 @@ class DataItem (object):
         """Read an array of 16-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.short)
         if length is None: length = buf.size
         ll.hreadj (self.itno, buf, offset, length)
 
@@ -304,6 +307,7 @@ class DataItem (object):
         """Read an array of 64-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.long)
         if length is None: length = buf.size
         ll.hreadl (self.itno, buf, offset, length)
 
@@ -311,6 +315,7 @@ class DataItem (object):
         """Read an array of floats from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.float)
         if length is None: length = buf.size
         ll.hreadr (self.itno, buf, offset, length)
 
@@ -318,6 +323,7 @@ class DataItem (object):
         """Read an array of doubles from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
         ll.hreadd (self.itno, buf, offset, length)
 
@@ -325,6 +331,7 @@ class DataItem (object):
         """Read an array of complexes from the given location in the data
         item. The default read length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
         ll.hreadc (self.itno, buf, offset, length)
 
@@ -334,6 +341,7 @@ class DataItem (object):
         """Write an array of bytes to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
         ll.hwriteb (self.itno, buf, offset, length)
 
@@ -341,6 +349,7 @@ class DataItem (object):
         """Write an array of integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.int)
         if length is None: length = buf.size
         ll.hwritei (self.itno, buf, offset, length)
 
@@ -348,6 +357,7 @@ class DataItem (object):
         """Write an array of 16-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.short)
         if length is None: length = buf.size
         ll.hwritej (self.itno, buf, offset, length)
 
@@ -355,6 +365,7 @@ class DataItem (object):
         """Write an array of 64-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.long)
         if length is None: length = buf.size
         ll.hwritel (self.itno, buf, offset, length)
 
@@ -362,6 +373,7 @@ class DataItem (object):
         """Write an array of floats to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.float)
         if length is None: length = buf.size
         ll.hwriter (self.itno, buf, offset, length)
 
@@ -369,6 +381,7 @@ class DataItem (object):
         """Write an array of doubles to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
         ll.hwrited (self.itno, buf, offset, length)
 
@@ -376,6 +389,7 @@ class DataItem (object):
         """Write an array of complexes to the given location in the data
         item. The default write length is the size of the array."""
 
+        buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
         ll.hwritec (self.itno, buf, offset, length)
 
