@@ -362,7 +362,7 @@ end subroutine uvdatgti
 
 subroutine uvdatgtr(object,rval) ! in subs/uvdat.f
     character*(*) :: object
-    real :: rval
+    real intent(out):: rval
     character*32 :: line
     character*32 :: ref
     character*maxnam :: inbuf

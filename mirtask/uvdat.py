@@ -154,15 +154,6 @@ def _getOneInt (kw):
     ll.uvdatgti (kw, a)
     return a[0]
 
-def _getOneFloat (kw):
-    a = N.zeros (1, dtype=N.float32)
-    ll.uvdatgtr (kw, a)
-    return a[0]
-
-def _getOneString (kw):
-    # This is wrapped in lowlevel.
-    return ll.uvdatgta (kw)
-
 def getNPol ():
     """Return the number of simultaneous polarizations being returned by readData.
 Zero indicates that this number could not be determined.
@@ -202,16 +193,16 @@ def getVisNum ():
 
 def getVariance ():
     """Return the variance of the current visibility."""
-    return _getOneFloat ('variance')
+    return ll.uvdatgtr ('variance')
 
 def getJyPerK ():
     """Return the Jansky-per-Kelvin value of the current visibility."""
-    return _getOneFloat ('jyperk')
+    return ll.uvdatgtr ('jyperk')
 
 def getCurrentName ():
     """Return the name of the file currently being processed."""
-    return _getOneString ('name')
+    return ll.uvdatgta ('name')
 
 def getLinetype ():
     """Return the linetype of the current visibility."""
-    return _getOneString ('ltype')
+    return ll.uvdatgta ('ltype')
