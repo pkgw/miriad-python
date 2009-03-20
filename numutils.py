@@ -131,6 +131,40 @@ class StatsAccumulator (object):
 
 __all__.append ('StatsAccumulator')
 
+class WeightAccumulator (object):
+    """Standard stastical weighting is wt_i = sigma_i**-2
+We don't need the 'n' variable to do any stats, but it can
+be nice to have that information.
+"""
+
+    __slots__ = ['xwtot', 'wtot', 'n']
+
+    def __init__ (self):
+        self.clear ()
+
+    def clear (self):
+        self.xwtot = 0.
+        self.wtot = 0.
+        self.n = 0
+
+    def add (self, x, wt):
+        self.xwtot += x * wt
+        self.wtot += wt
+        self.n += 1
+
+    def num (self): return self.n
+
+    def wtavg (self): return self.xwtot / self.wtot
+
+    def var (self):
+        """Assumes wt_i = sigma_i**-2"""
+        return 1. / self.wtot
+
+    def std (self):
+        return N.sqrt (self.var ())
+
+__all__.append ('WeightAccumulator')
+
 class AccDict (dict):
     """An accumulating dictionary."""
 
