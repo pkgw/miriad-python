@@ -53,6 +53,13 @@ AC_SUBST(MIR_CFLAGS)
 
 dnl Checks
 
+dnl We use this in the doc/ install rule. On my Fedora 10 computers this
+dnl subst wasn't needed but on a SuSE 10.2 it was -- I think that older
+dnl (<=1.9) automakes don't define this automatically whereas newer ones
+dnl do.
+AC_PROG_MKDIR_P
+AC_SUBST([MKDIR_P])
+
 AM_PROG_LIBTOOL
 AM_PATH_PYTHON(2.3.5)
 AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
