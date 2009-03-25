@@ -9,10 +9,10 @@ High-Level Access to MIRIAD Data: :mod:`miriad`
 .. moduleauthor:: Peter Williams <peter@newton.cx>
 
 On the commandline, you refer to datasets by their filenames. The
-:mod:`miriad` module provides two fundamental dataset classes,
-:class:`~VisData` and :class:`~ImData`, which
-essentially wrap around filenames. They make it convenient to do
-common tasks with datasets in Python.
+:mod:`miriad` module provides two fundamental classes,
+:class:`~VisData` and :class:`~ImData`, which perform a similar
+service in *Miriad-Python*. They make it convenient to manipulate
+datasets in your software.
 
 To instantiate one of these classes, just call the constructor with
 a filename as an argument::
@@ -27,22 +27,25 @@ you create the object. Also, creating one of these objects is a very
 lightweight operation.
 
 Both :class:`~VisData` and :class:`~ImData` are subclasses of a more
-generic class, :class:`~Data`, which provides common
-functionality. One set of functionality is checking basic properties
-of the dataset on disk:
+generic class, :class:`~Data`. Instances of this class have methods
+and properties that provide common functionality regarding MIRIAD
+datasets. One set of functionality is checking basic properties of the
+dataset on disk:
 
-* :attr:`~Data.exists` to see if it exists on disk.
-* :attr:`~Data.mtime` to check when it was last modified.
-  (See also the variant attribute :attr:`~Data.umtime`.)
-* :meth:`~Data.realPath` to get its canonical filename.
+* :attr:`Data.exists` to see if it exists on disk.
+* :attr:`Data.mtime` to check when it was last modified. This requires
+  that the dataset exists; the variant attribute :attr:`~Data.umtime`
+  returns unconditionally. (Hence the "u" prefix to its name.)
+* :meth:`Data.realPath` to get its canonical filename.
 
-You can also perform some basic operations:
+You can also perform some basic operations. (From here on out, we will
+drop the ''Data'' prefix in the names we show.)
 
 * :meth:`~Data.moveTo` renames a dataset.
 * :meth:`~Data.copyTo` copies it.
 * :meth:`~Data.delete` deletes it.
 * :meth:`~Data.apply` configures a MIRIAD task object
-* (:class:`mirexec.TaskBase`) to run on this dataset
+  (:class:`mirexec.TaskBase`) to run on this dataset
   via the :mod:`mirexec` subsystem. See :ref:`executing` for more
   information. See also the verbose variant
   :meth:`~Data.xapply`.
@@ -71,7 +74,7 @@ additional routines specifically useful for UV data:
 
 * :meth:`~VisData.catTo` runs :command:`uvcat` on a dataset
   to produce a copy of it.
-* :meth:`~VisData.averTo` runs :command:`uvaver` on a datset
+* :meth:`~VisData.averTo` runs :command:`uvaver` on a dataset
   to produce an averaged copy of it.
 * :meth:`~VisData.readLowlevel` opens the dataset directly
   for lowlevel access to the visibility data.
