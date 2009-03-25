@@ -4,4 +4,4 @@
 Low-Level Access to MIRIAD Data
 ================================
 
-Is awesome.
+Is awesome. But the documentation will be written a bit later.

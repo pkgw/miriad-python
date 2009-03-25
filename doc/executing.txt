@@ -1,7 +1,81 @@
 .. _executing:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
-Executing Existing MIRIAD Tasks
-===============================
+Executing Existing MIRIAD Tasks: :mod:`mirexec`
+===============================================
 
-Blah blah.
+.. module:: mirexec
+   :synopsis: Execute existing MIRIAD tasks in Python.
+.. moduleauthor:: Peter Williams <peter@newton.cx>
+
+Here is where we document :mod:`mirexec`.
+
+:mod:`mirexec` API Reference
+-----------------------------
+.. _mirexecapiref:
+
+This section presents a detailed API reference for the :mod:`mirexec`
+module.
+
+Task Classes
+^^^^^^^^^^^^
+
+.. autoclass:: TaskBase
+   :members:
+
+.. here we go....
+
+.. autoclass:: TaskCgDisp
+.. autoclass:: TaskUVList
+.. autoclass:: TaskUVPlot
+.. autoclass:: TaskInvert
+.. autoclass:: TaskClean
+.. autoclass:: TaskRestore
+.. autoclass:: TaskImStat
+.. autoclass:: TaskImHead
+.. autoclass:: TaskIMom
+.. autoclass:: TaskImFit
+.. autoclass:: TaskUVAver
+.. autoclass:: TaskGPCopy
+.. autoclass:: TaskMSelfCal
+.. autoclass:: TaskSelfCal
+.. autoclass:: TaskPutHead
+.. autoclass:: TaskGPPlot
+.. autoclass:: TaskPrintHead
+.. autoclass:: TaskClosure
+.. autoclass:: TaskUVFlag
+.. autoclass:: TaskUVSpec
+.. autoclass:: TaskUVSort
+.. autoclass:: TaskMfCal
+.. autoclass:: TaskUVIndex
+.. autoclass:: TaskUVCat
+.. autoclass:: SmaUVPlot
+.. autoclass:: SmaUVSpec
+.. autoclass:: TaskUVGen
+.. autoclass:: TaskUVGen2
+.. autoclass:: TaskUVCal
+.. autoclass:: TaskUVFlux
+.. autoclass:: TaskUVFit
+.. autoclass:: SmaMfCal
+.. autoclass:: TaskMaths
+.. autoclass:: TaskImGen
+.. autoclass:: TaskLinMos
+
+Setting up Subprocess Environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: addEnvironmentClassic
+
+.. autofunction:: addEnvironmentAutotools
+
+Utility Classes
+^^^^^^^^^^^^^^^
+
+.. autoclass:: DefaultedTaskType
+   :members:
+
+.. autoclass:: Holder
+   :members:
+
+.. autoclass:: Options
+   :members:

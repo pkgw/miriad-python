@@ -1,8 +1,8 @@
 .. _datahighlev:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
-:mod:`miriad` --- High-Level Access to MIRIAD Data
-==================================================
+High-Level Access to MIRIAD Data: :mod:`miriad`
+===============================================
 
 .. module:: miriad
    :synopsis: Talk about MIRIAD datasets naturally in Python. 
