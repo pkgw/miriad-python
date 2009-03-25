@@ -8,7 +8,7 @@ AC_SUBST(ACLOCAL_AMFLAGS, ["-I ."])
 
 dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[0.1])
-AC_SUBST([MIRPY_COPYRIGHT],["2008, Peter Williams"])
+AC_SUBST([MIRPY_COPYRIGHT],["2009, Peter Williams"])
 
 dnl Miriad.
 
