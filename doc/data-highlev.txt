@@ -10,9 +10,10 @@ High-Level Access to MIRIAD Data: :mod:`miriad`
 
 On the commandline, you refer to datasets by their filenames. The
 :mod:`miriad` module provides two fundamental classes,
-:class:`~VisData` and :class:`~ImData`, which perform a similar
-service in *Miriad-Python*. They make it convenient to manipulate
-datasets in your software.
+:class:`~VisData` and :class:`~ImData`, which analogously let you
+refer to datasets in a Python program. Instances of these class are
+lightweight and provide features to make it easy to perform common
+operations on your data.
 
 To instantiate one of these classes, just call the constructor with
 a filename as an argument::
@@ -24,10 +25,10 @@ a filename as an argument::
 It's important to understand that these objects are *references* to
 datasets, and as such the underlying file doesn't have to exist when
 you create the object. Also, creating one of these objects is a very
-lightweight operation.
+cheap operation.
 
-Both :class:`~VisData` and :class:`~ImData` are subclasses of a more
-generic class, :class:`~Data`. Instances of this class have methods
+Both :class:`miriad.VisData` and :class:`miriad.ImData` are subclasses of a more
+generic class, :class:`miriad.Data`. Instances of this class have methods
 and properties that provide common functionality regarding MIRIAD
 datasets. One set of functionality is checking basic properties of the
 dataset on disk:
@@ -39,7 +40,9 @@ dataset on disk:
 * :meth:`Data.realPath` to get its canonical filename.
 
 You can also perform some basic operations. (From here on out, we will
-drop the ''Data'' prefix in the names we show.)
+drop the ''Data'' prefix in the names we show. Also, note that you can
+click on the link associated with all of these function or property
+names to access the more detailed reference documentation for that item.)
 
 * :meth:`~Data.moveTo` renames a dataset.
 * :meth:`~Data.copyTo` copies it.

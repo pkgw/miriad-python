@@ -15,4 +15,7 @@ language. It offers three main groups of tools, used for:
 * :ref:`executing existing MIRIAD tasks <executing>`.
 * :ref:`writing your own MIRIAD tasks in Python <pytasks>`.
 
+You should get started by reading about :ref:`high-level access to
+datasets <datahighlev>`.
+
 And that's all of the introduction I can think of right now!

@@ -187,8 +187,8 @@ called with a "[rename]" operation.
 :returns: :const:`self`
 
 Copies this dataset to a new location on disk. The dataset must
-exist. Approximately equivalent to :command:`cp -r {self}
-{dest}`. :func:`trace` is called with a "[copy]" operation.
+exist. Approximately equivalent to the shell command :command:`cp -r
+{self} {dest}`. :func:`trace` is called with a "[copy]" operation.
 
 FIXME: Doesn't clean up correctly if an error occurs midway
 through the copy.
@@ -215,7 +215,7 @@ through the copy.
 :returns: :const:`self`
 
 Deletes the dataset from disk. If the dataset doesn't exist,
-silently does nothing. Approximately equivalent to
+silently does nothing. Approximately equivalent to the shell command
 :command:`rm -r {self}`. If deletion occurs, :func:`trace` is called
 with a "[delete]" operation.
 """
@@ -501,7 +501,7 @@ specified arguments.
 Invokes the task :command:`uvcat` via
 :class:`mirexec.TaskUVCat`. Checks if the source dataset exists
 but does no checking on the destination dataset. Approximately
-equivalent to executing :command:`uvcat vis={self} out={dest}
+equivalent to the shell command :command:`uvcat vis={self} out={dest}
 {params...}`.
 """
 
@@ -524,7 +524,7 @@ equivalent to executing :command:`uvcat vis={self} out={dest}
 Invokes the task :command:`uvaver` via
 :class:`mirexec.TaskUVAver`. Checks if the source dataset exists
 but does no checking on the destination dataset. Approximately
-equivalent to executing :command:`uvaver vis={self} out={dest}
+equivalent to the shell command :command:`uvaver vis={self} out={dest}
 interval={interval} {params...}`.
 """
         self.checkExists ()

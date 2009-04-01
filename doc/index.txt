@@ -28,7 +28,7 @@ Indices and Tables
 Colophon
 ========
 
-This documentation describes *miriad-python* version |version|,
-implementing version |release| of the API. It was generated on
+This documentation describes *miriad-python* version |release|,
+implementing version |version| of the API. It was generated on
 |today|. This documentation is created using `Sphinx
 <http://sphinx.pocoo.org/>`_.
