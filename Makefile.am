@@ -14,3 +14,7 @@ bin_SCRIPTS = mirpyhelp.py mirpymodtask.py
 
 pcdir = $(libdir)/pkgconfig
 pc_DATA = miriad-python.pc
+
+# Distributing
+
+DISTCHECK_CONFIGURE_FLAGS = @MIR_DISTCHECK_CONFARG@

@@ -23,10 +23,12 @@ orig_CFLAGS="$CFLAGS"
 if test x"$with_miriad" = xnoextra ; then
   MIR_LIBS="-lmir -lmir_uvio -lmir_linpack -lpgplot"
   MIR_CFLAGS=""
+  MIR_DISTCHECK_CONFARG=""
   miriad_loc="system search path"
 else
   MIR_LIBS="-L${with_miriad}/lib -lmir -lmir_uvio -lmir_linpack -lpgplot"
   MIR_CFLAGS="-I${with_miriad}/include/miriad-c"
+  MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
   LIBS="-L${with_miriad}/lib $LIBS"
   CFLAGS="$MIR_CFLAGS $CFLAGS"
   miriad_loc="$with_miriad"
@@ -50,6 +52,7 @@ fi
 
 AC_SUBST(MIR_LIBS)
 AC_SUBST(MIR_CFLAGS)
+AC_SUBST(MIR_DISTCHECK_CONFARG)
 
 dnl Checks
 
