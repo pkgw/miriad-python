@@ -1,4 +1,4 @@
-noinst_DATA = \
+dist_noinst_DATA = \
  data.txt \
  data-highlev.txt \
  data-lowlev.txt \
@@ -6,6 +6,9 @@ noinst_DATA = \
  index.txt \
  intro.txt \
  pytasks.txt
+
+# Temp hack: make sure the 'static' directory gets created
+EXTRA_DIST = static/.gitignore
 
 SCANNEDPY = \
  $(top_srcdir)/miriad.py
