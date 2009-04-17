@@ -96,6 +96,32 @@ class VectorGrower (object):
 
 __all__.append ('VectorGrower')
 
+
+def growarr (itre, dtype=N.float, chunkSize=128):
+    g = None
+
+    for item in itre:
+        item = N.asarray (item)
+
+        if g is None:
+            isVec = item.shape == ()
+            g = ArrayGrower (item.size, dtype=dtype, chunkSize=chunkSize)
+
+        g.addLine (item)
+
+    if g is None:
+        return N.empty ((0,0), dtype=dtype)
+
+    v = g.finish ()
+
+    if isVec: v = v.squeeze ()
+
+    return v
+
+
+__all__.append ('growarr')
+
+
 class StatsAccumulator (object):
     # FIXME: I worry about loss of precision when n gets very
     # large: we'll be adding a tiny number to a large number.
