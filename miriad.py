@@ -533,6 +533,55 @@ interval={interval} {params...}`.
         self.apply (TaskUVAver (), out=dest, interval=interval,
                     **params).run ()
 
+    def lwcpTo (self, dest):
+        """Make a lightweight copy of this dataset in *dest*.
+
+:arg dest: the destination dataset
+:type dest: :class:`Data`, str, or any other stringable
+:rtype: :const:`None`
+
+Creates a "lightweight" copy of the source dataset. This
+is a clone of the original dataset in which all of the header items
+are copied except for the "visdata" item, which is instead
+symbolically linked back to the original dataset. This item is
+usually by far the largest component of a UV dataset and is also
+not modified during most analysis operations. Checks if the source
+dataset exists and deletes the destination if it already exists.
+
+The implementation of the copy is simple: every regular file in
+the source dataset is copied to the destination directory, except
+for 'visdata' which is handled as described above. Other items
+are ignored. If any errors occur, the function attempts to delete
+the destination dataset.
+"""
+        import shutil
+        self.checkExists ()
+
+        if not isinstance (dest, Data):
+            dest = VisData (str (dest))
+
+        dest.delete ()
+
+        try:
+            success = False
+            os.mkdir (dest.base)
+
+            for fn in os.listdir (self.base):
+                # We use realPath to prevent confusion
+                # arising from relative symlinks.
+                sfn = join (self.realPath (), fn)
+                dfn = join (dest.base, fn)
+
+                if fn == 'visdata':
+                    os.symlink (sfn, dfn)
+                elif os.path.isfile (sfn):
+                    shutil.copy (sfn, dfn)
+
+            success = True
+        finally:
+            if not success:
+                dest.delete ()
+
 
 __all__ += ['VisData']
 
