@@ -24,11 +24,11 @@ libmirtasksupport_la_SOURCES = \
   mirtasksupport.c mirtasksupport.h
 
 _uvio_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_uvio
-_uvio_la_LIBADD = libmirtasksupport.la
+_uvio_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
 _uvio_la_SOURCES = _uviomodule.c
 
 _mirgood_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirgood
-_mirgood_la_LIBADD = libmirtasksupport.la
+_mirgood_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
 _mirgood_la_SOURCES = _mirgoodmodule.c _mirgood-f2pywrappers.f
 
 #_mirugly_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirugly
