@@ -547,6 +547,8 @@ symbolically linked back to the original dataset. This item is
 usually by far the largest component of a UV dataset and is also
 not modified during most analysis operations. Checks if the source
 dataset exists and deletes the destination if it already exists.
+If the copy succeeds, :func:`trace` is called with a "[lwcp]"
+operation.
 
 The implementation of the copy is simple: every regular file in
 the source dataset is copied to the destination directory, except
@@ -577,6 +579,7 @@ the destination dataset.
                 elif os.path.isfile (sfn):
                     shutil.copy (sfn, dfn)
 
+            trace (['[lwcp]', 'vis=%s' % self, 'out=%s' % dest])
             success = True
         finally:
             if not success:
