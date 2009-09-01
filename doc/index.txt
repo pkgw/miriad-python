@@ -4,8 +4,9 @@
 Miriad-Python Manual
 ====================
 
-Welcome to the *Miriad-Python* manual. If you're just getting
-started, how about looking at the :ref:`introduction <intro>`?
+Welcome to the *Miriad-Python* manual. If you're unfamiliar with how
+*Miriad-Python* works or what it's for, try starting at the
+:ref:`introduction <intro>`.
 
 Contents
 ========

@@ -17,5 +17,3 @@ language. It offers three main groups of tools, used for:
 
 You should get started by reading about :ref:`high-level access to
 datasets <datahighlev>`.
-
-And that's all of the introduction I can think of right now!

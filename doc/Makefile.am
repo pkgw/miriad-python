@@ -19,7 +19,7 @@ HTML_STAMP = sphinx-html.stamp
 
 all-local: $(HTML_STAMP)
 
-$(HTML_STAMP): $(noinst_DATA) $(SCANNEDPY)
+$(HTML_STAMP): $(dist_noinst_DATA) $(SCANNEDPY)
 	$(MKDIR_P) html doctrees
 	$(BUILD) -b html $(srcdir) html
 	touch $@

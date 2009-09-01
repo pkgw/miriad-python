@@ -79,6 +79,9 @@ additional routines specifically useful for UV data:
   to produce a copy of it.
 * :meth:`~VisData.averTo` runs :command:`uvaver` on a dataset
   to produce an averaged copy of it.
+* :meth:`~VisData.lwcpTo` creates a "lightweight copy" of a
+  dataset, duplicating its metadata but not the visibilities,
+  which makes certain common operations much faster.
 * :meth:`~VisData.readLowlevel` opens the dataset directly
   for lowlevel access to the visibility data.
 
