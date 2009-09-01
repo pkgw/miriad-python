@@ -42,12 +42,15 @@ if $failed ; then
 fi
 
 AC_CHECK_LIB([mir], [wrhda_], failed=false, failed=true, [-lmir_uvio -lmir_linpack -lpgplot])
+AC_CHECK_LIB([mir], [bugrecover_c], nobrc=false, nobrc=true, [-lmir_uvio -lmir_linpack -lpgplot])
 
 LIBS="$orig_LIBS"
 CFLAGS="$orig_CFLAGS"
 
 if $failed ; then
   AC_MSG_ERROR([Couldn't find Miriad libraries. Try the --with-miriad argument.])
+elif $nobrc ; then
+  AC_MSG_ERROR([Miriad libraries too old; see README on bugrecover_c])
 fi
 
 AC_SUBST(MIR_LIBS)
