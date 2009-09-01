@@ -12,11 +12,8 @@ jmp_buf mts_bug_recover;
 static char bug_msg[BUFSZ];
 
 static void
-bug_handler (void)
+bug_handler (char sev, const char *msg)
 {
-    char sev = bugseverity_c ();
-    char *msg = bugmessage_c ();
-
     if (sev == 'f') {
 	strcpy (bug_msg, msg);
 	longjmp (mts_bug_recover, 1);
@@ -44,7 +41,7 @@ void
 mts_setup (char *classname)
 {
     mts_exc_miriad_err = PyErr_NewException (classname, NULL, NULL);
-    bugrecover_c (bug_handler);
+    bughandler_c (bug_handler);
 
     import_array ();
 }
