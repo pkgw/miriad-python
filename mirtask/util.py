@@ -571,3 +571,45 @@ vals[i] = coeffs[i,0] * retval[0] + ... +
         raise RuntimeError ('Linear least-squares fit failed: singular matrix')
 
     return c
+
+
+# Coordinate foo
+
+def precess (jd1, ra1, dec1, jd2):
+    """Precess a coordinate from one Julian Date to another.
+
+Arguments:
+jd1  - The JD of the input coordinates
+ra1  - The input RA in radians
+dec1 - The input dec in radians
+jd2  - The JD to precess to
+
+Returns: (ra2, dec2), where
+ra2  - The output RA in radians
+dec2 - The output dec in radians
+
+Claimed accuracy is 0.3 arcsec over 50 years. Based on the
+algorithm described in the Explanatory Supplement to the
+Astronomical Almanac, 1993, pp 105-106. Does not account
+for atmospheric refraction, nutation, aberration, or
+gravitational deflection.
+"""
+    return ll.precess (jd1, ra1, dec1, jd2)
+
+def equToHorizon (ra, dec, lst, lat):
+    """Convert equatorial coordinates to horizon coordinates.
+
+Arguments:
+ra  - The apparent RA in radians
+dec - The apparent dec in radians
+lst - The local sidereal time in radians
+lat - The geodetic latitude of the observatory in radians
+
+Returns: (az, el), where
+az - The azimuth coordinate in radians
+el - The elevation coordinate in radians
+
+If available, this should be superseded by the RALP/NOVAS conversion
+function, which I suspect will be superior to the MIRIAD function.
+"""
+    return ll.azel (ra, dec, lst, lat)
