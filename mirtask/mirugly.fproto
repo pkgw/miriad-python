@@ -3086,22 +3086,6 @@ subroutine prerotat(jday,ra,dec,jout,theta) ! in subs/ephem.f
     double precision :: jout
     double precision :: theta
 end subroutine prerotat
-subroutine precess(jday1,ra1,dec1,jday2,ra2,dec2) ! in subs/ephem.f
-    double precision :: jday1
-    double precision :: ra1
-    double precision :: dec1
-    double precision :: jday2
-    double precision :: ra2
-    double precision :: dec2
-end subroutine precess
-subroutine azel(obsra,obsdec,lst,latitude,az,el) ! in subs/ephem.f
-    double precision :: obsra
-    double precision :: obsdec
-    double precision :: lst
-    double precision :: latitude
-    double precision :: az
-    double precision :: el
-end subroutine azel
 subroutine parang(obsra,obsdec,lst,latitude,chi) ! in subs/ephem.f
     double precision :: obsra
     double precision :: obsdec
