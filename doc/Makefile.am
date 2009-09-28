@@ -27,3 +27,11 @@ $(HTML_STAMP): $(dist_noinst_DATA) $(SCANNEDPY)
 clean-local:
 	-rm -rf doctrees html
 	-rm -f $(HTML_STAMP)
+
+# Helper target to upload the docs to the website
+
+websitedir = $(HOME)/public_html/miriad-python/docs
+
+push: $(HTML_STAMP)
+	rm -rf $(websitedir)/*
+	cp -a html/* $(websitedir)
