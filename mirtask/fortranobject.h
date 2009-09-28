@@ -1,3 +1,12 @@
+/* This file was copied from Numpy. It is required to link the code generated
+ * by f2py.
+ *
+ * Copyright 2005 Pearu Peterson
+ *
+ * Numpy is licensed under a 3-clause BSD license. See the file LICENSE for
+ * more information.
+ */
+
 #ifndef Py_FORTRANOBJECT_H
 #define Py_FORTRANOBJECT_H
 #ifdef __cplusplus

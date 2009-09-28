@@ -1,4 +1,12 @@
 dnl Copied from pygtk SVN HEAD, directory m4, 1/16/2007.
+dnl
+dnl It looks like the file originated with Johan Dahlin, but it does not
+dnl contain a copyright notice.
+dnl
+dnl The license of PyGTK is the GNU Lesser General Public License,
+dnl version 2.1. We assume that this file is licensed under those
+dnl terms. That file is included with this software in the file 
+dnl LICENSE.LGPLv2.1.
 
 ## this one is commonly used with AM_PATH_PYTHONDIR ...
 dnl AM_CHECK_PYMOD(MODNAME [,SYMBOL [,ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND]]])

@@ -1,5 +1,14 @@
 #include "mirtasksupport.h"
 
+/* This file was copied from Numpy. It is required to link the code generated
+ * by f2py.
+ *
+ * Copyright 2005 Pearu Peterson
+ *
+ * Numpy is licensed under a 3-clause BSD license. See the file LICENSE for
+ * more information.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1,3 +1,23 @@
+## Copyright 2009 Peter Williams
+##
+## This file is part of miriad-python.
+##
+## Miriad-python is free software: you can redistribute it and/or
+## modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the
+## License, or (at your option) any later version.
+##
+## Miriad-python is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+##
+## (This copyright notice is delimited with double hashes to prevent it
+## from being confusingly included in Makefile.in by automake.)
+
 mtpydir = $(pythondir)/mirtask
 mtpyexecdir = $(pyexecdir)/mirtask
 
@@ -35,5 +55,23 @@ _mirgood_la_SOURCES = _mirgoodmodule.c _mirgood-f2pywrappers.f
 #_mirugly_la_LIBADD = libmirtasksupport.la
 #_mirugly_la_SOURCES = _miruglymodule.c _mirugly-f2pywrappers.f
 
-_%module.c _%-f2pywrappers.f: %.fproto
+# f2py doesn't specify what license(s) may be applied to the files
+# it generates. These generated files are distributed, however, so 
+# they should have copyright notices applied. Manually munge in a
+# statement saying that the status is unclear but that the license
+# is speculatively GPLv3+.
+
+_%module.c _%-f2pywrappers.f: %.fproto $(top_srcdir)/f2py-copynotice.txt
 	$(F2PY) -m _$* $<
+	mv _$*module.c _$*moduletmp.c ; \
+	sed -e 's|%START|/*|' -e 's|%IN| *|' -e 's|%END|*/|' \
+	  <$(top_srcdir)/f2py-copynotice.txt \
+	  >_$*module.c ; \
+	cat _$*moduletmp.c >>_$*module.c ; \
+	rm -f _$*moduletmp.c
+	mv _$*-f2pywrappers.f _$*-f2pywrapperstmp.f ; \
+	sed -e 's|%START|c     |' -e 's|%IN|c    |' -e 's|%END|c     |' \
+	  <$(top_srcdir)/f2py-copynotice.txt \
+	  >_$*-f2pywrappers.f ; \
+	cat _$*-f2pywrapperstmp.f >>_$*-f2pywrappers.f ; \
+	rm -f _$*-f2pywrapperstmp.f

@@ -1,8 +1,27 @@
 #! /bin/sh
 #mirpymodtask
 #
-# The above line is a code used by mirpyhelp.py to detect
-# tasks that are implemented as modules. Keep it within the
+# Copyright 2009 Peter Williams
+#
+# This file is part of miriad-python.
+#
+# Miriad-python is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Miriad-python is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+#
+# -------------
+#
+# The second line in this file is a code used by mirpyhelp.py to
+# detect tasks that are implemented as modules. Keep it within the
 # first 32 bytes of the file.
 #
 # This is a wrapper script for Miriad-Python tasks that are

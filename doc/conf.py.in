@@ -3,6 +3,12 @@
 # miriad-python documentation build configuration file. Based off of
 # the one used in OmegaPlot at the time.
 #
+# Copyright 2008 the Sphinx Team
+#
+# This file is a nearly-verbatim copy of one provided with Sphinx.
+# Sphinx is distributed under the 2-clause BSD license. See the file
+# LICENSE for more information.
+
 # This file is execfile()d with the current directory set to its
 # containing dir.
 #

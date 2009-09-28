@@ -16,3 +16,11 @@ never made.) The particular error is a lack of the bugrecover_c
 function, which should be found in the libmir_uvio library. Consult
 your local Miriad-installation guru for more help if you're not sure
 how to react to this situation.
+
+Copyright Notice
+================
+
+Copyright 2009 Peter Williams
+
+This file is free documentation; the copyright holder gives unlimited
+permission to copy, distribute, and modify it.

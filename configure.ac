@@ -1,3 +1,20 @@
+dnl Copyright 2009 Peter Williams
+dnl
+dnl This file is part of miriad-python.
+dnl
+dnl Miriad-python is free software: you can redistribute it and/or
+dnl modify it under the terms of the GNU General Public License as
+dnl published by the Free Software Foundation, either version 3 of the
+dnl License, or (at your option) any later version.
+dnl
+dnl Miriad-python is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
 AC_INIT([miriad-python], [0.1.0])
 AC_CONFIG_SRCDIR([mirtask/_uviomodule.c])
 AC_CONFIG_MACRO_DIR(.)
