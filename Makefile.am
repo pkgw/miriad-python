@@ -28,7 +28,7 @@ endif
 
 python_PYTHON = miriad.py mirexec.py numutils.py
 
-dist_bin_SCRIPTS = mirpyhelp.py mirpymodtask.py
+dist_bin_SCRIPTS = mirpyhelp.py mirpymodtask
 
 # pkg-config
 
