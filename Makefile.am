@@ -38,4 +38,9 @@ pc_DATA = miriad-python.pc
 # Distributing
 
 DISTCHECK_CONFIGURE_FLAGS = @MIR_DISTCHECK_CONFARG@
-EXTRA_DIST = LICENSE LICENSE.GPLv3 LICENSE.LGPLv21 f2py-copynotice.txt
+EXTRA_DIST = \
+ LICENSE \
+ LICENSE.GPLv3 \
+ LICENSE.LGPLv21 \
+ NEWS \
+ f2py-copynotice.txt

@@ -1,7 +1,34 @@
-This is a package letting you write Miriad tasks in Python. Oh yes.
+Miriad-Python 0.1.0
+===================
+
+Miriad-Python is a bridge between the MIRIAD radio analysis package and
+the Python programming language. It allows you to:
+
+* read and write MIRIAD datasets in Python,
+* execute MIRIAD tasks from Python, and
+* write MIRIAD tasks in Python.
+
+For more information, see
+http://astro.berkeley.edu/~pkwill/miriad-python/ .  For helpful but
+generic installation instructions, see the file INSTALL. For a few
+more hints, see the website. For documentation, see the doc/
+subdirectory; documentation files are processed using the program
+Sphinx. If it's not available on your system, an up-to-date online
+copy of the Miriad-Python documentation can be found on the
+website. For changes from the previous release, see the file NEWS.
+
+Miriad-Python is primarily written by Peter Williams,
+pwilliams@astro.berkeley.edu . This is an early public release with
+documentation that's somewhat preliminary, so feel free to get in touch
+with him if you have any questions, particularly if you have trouble
+installing or using Miriad-Python.
+
 
 bugrecover_c
 ============
+
+(This section documents an error that may be reported by the 'configure'
+script in certain conditions.)
 
 First of all, sorry for the terse error message produced by the
 'configure' program -- the tools we use make it really hard to produce
@@ -16,6 +43,7 @@ never made.) The particular error is a lack of the bugrecover_c
 function, which should be found in the libmir_uvio library. Consult
 your local Miriad-installation guru for more help if you're not sure
 how to react to this situation.
+
 
 Copyright Notice
 ================
