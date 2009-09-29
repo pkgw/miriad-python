@@ -1,7 +1,4 @@
-"""Python wrappers for the uvdat* routines, a standardized way of accessing
-UV data for Miriad tasks. Not implemented as an object, because the uvdat
-routines maintain state within the Miriad libraries.
-"""
+'''mirtask.uvdat - wrappers for the MIRIAD UV-data streaming API'''
 
 # Copyright 2009 Peter Williams
 #

@@ -1,3 +1,5 @@
+'''miriad - highlevel access to MIRIAD data'''
+
 # Copyright 2009 Peter Williams
 #
 # This file is part of miriad-python.

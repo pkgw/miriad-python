@@ -1,4 +1,4 @@
-"""Miscellaneous utility MIRIAD subroutines."""
+'''mirtask.util - miscellaneous utility subroutines for MIRIAD tasks'''
 
 # Copyright 2009 Peter Williams
 #

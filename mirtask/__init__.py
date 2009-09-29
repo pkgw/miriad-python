@@ -1,6 +1,4 @@
-"""This module exposes the Miriad subroutine library in a Pythonic
-manner, allowing you to write Miriad tasks in Python.
-"""
+'''mirtask - code for writing MIRIAD tasks in Python'''
 
 # Copyright 2009 Peter Williams
 #

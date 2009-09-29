@@ -1,6 +1,4 @@
-"""A module that provides an object that reads a UV data set's
-gains table conveniently.
-"""
+'''mirtask.readgains - convenient reading of the gains tables in UV datasets'''
 
 # Copyright 2009 Peter Williams
 #

@@ -1,10 +1,4 @@
-"""Low-level Miriad routines.
-
-The exposed routines mirror the Miriad Fortran and C API as
-closely as possible, with little or no glue on top of them.
-Should be avoided in favor of higher-level, more Pythonic
-APIs, if possible.
-"""
+'''mirtask.lowlevel - low-level exposure of MIRIAD subroutine APIs'''
 
 # Copyright 2009 Peter Williams
 #

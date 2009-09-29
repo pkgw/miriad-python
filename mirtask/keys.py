@@ -1,12 +1,3 @@
-"""Python wrappers for the MIRIAD keyword handline routines. Routines:
-
-keyword  - Register a keyword
-keymatch - Register a keymatch keyword (like an enumeration)
-option   - Register an option
-init     - Tell the keyword routines what our arguments were.
-process  - Process keywords and return an object with the arguments.
-"""
-
 # Copyright 2009 Peter Williams
 #
 # This file is part of miriad-python.
@@ -23,6 +14,18 @@ process  - Process keywords and return an object with the arguments.
 #
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
+'''mirtask.keys - wrappers for the MIRIAD keyword handline routines
+
+Public routines are:
+
+keyword  - Register a keyword
+keymatch - Register a keymatch keyword (like an enumeration)
+option   - Register an option
+init     - Tell the keyword routines what our arguments were.
+process  - Process keywords and return an object with the arguments.
+'''
+
 
 import sys
 import lowlevel as ll

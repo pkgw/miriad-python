@@ -1,4 +1,4 @@
-"""Some useful classes for numerical work."""
+'''numutils - utility classes for working with Numpy arrays'''
 
 # Copyright 2009 Peter Williams
 #

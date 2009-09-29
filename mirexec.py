@@ -1,4 +1,4 @@
-# Wrapper for invoking MIRIAD scripts
+'''mirexec - classes for executing MIRIAD tasks'''
 
 # Copyright 2009 Peter Williams
 #
@@ -55,8 +55,7 @@ for (key, val) in os.environ.iteritems ():
 
 del var
 
-def addEnvironmentClassic (home='/indirect/hp/wright/miriad/mir4',
-                           hosttype='linux'):
+def addEnvironmentClassic (home, hosttype):
     global _bindir, _childenv
     
     #home = '/linux-apps4/miriad3'
@@ -85,7 +84,7 @@ def addEnvironmentClassic (home='/indirect/hp/wright/miriad/mir4',
 
     _childenv['LD_LIBRARY_PATH'] = childenv['MIRLIB']
 
-def addEnvironmentAutotools (home='/l/pkwill/opt/miriad-x86_64-Linux-suse10.1'):
+def addEnvironmentAutotools (home):
     global _bindir, _childenv
     
     #home = '/linux-apps4/miriad3'

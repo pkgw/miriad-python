@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- python -*-
 
 # Copyright 2009 Peter Williams
 #

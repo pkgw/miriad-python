@@ -1,6 +1,4 @@
-"""A module that provides an object that reads a UV data set's
-gains table conveniently.
-"""
+'''mirtask.base - basic classes for implementing MIRIAD tasks in Python'''
 
 # Copyright 2009 Peter Williams
 #
