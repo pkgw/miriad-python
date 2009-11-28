@@ -1402,6 +1402,159 @@ py_uvputvrd (PyObject *self, PyObject *args)
 
 /* maskio */
 
+static PyObject *
+py_mkopen (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *name, *status, *handle;
+    long handint;
+
+    if (!PyArg_ParseTuple (args, "iss", &tno, &name, &status))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    handle = mkopen_c (tno, name, status);
+    if (handle == NULL) {
+	PyErr_Format (PyExc_IOError, "Failed to open mask item \"%s\"", name);
+	return NULL;
+    }
+
+    handint = (long) handle;
+
+    return Py_BuildValue ("l", handint);
+}
+
+
+static PyObject *
+py_mkclose (PyObject *self, PyObject *args)
+{
+    long handint;
+    char *handle;
+
+    if (!PyArg_ParseTuple (args, "l", &handint))
+	return NULL;
+
+    handle = (char *) handint;
+
+    MTS_CHECK_BUG;
+    mkclose_c (handle);
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mkread (PyObject *self, PyObject *args)
+{
+    long handint;
+    char *handle;
+    int mode, offset, n, nread, nsize;
+    PyObject *flags;
+
+    if (!PyArg_ParseTuple (args, "liO!ii", &handint, &mode, &PyArray_Type,
+			   &flags, &offset, &n))
+	return NULL;
+
+    handle = (char *) handint;
+
+    if (!PyArray_ISINTEGER (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags ndarray must be integer");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (flags) != sizeof (int)) {
+	PyErr_SetString (PyExc_TypeError, "flags ndarray must have integer itemsize");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
+	return NULL;
+    }
+
+    nsize = PyArray_SIZE (flags);
+
+    /* handle: handle to flags state item
+     * mode: flag storage mode: MK_FLAGS = 1 (expanded) or MK_RUNS = 2 (RLE)
+     * flags: integer array in which to store flags
+     * offset: offset into the file at which to read; counted in bits
+     * n: number of flag bits to read
+     * nsize: size of flag buffer
+     * return value: number of flag items read
+     */
+
+    MTS_CHECK_BUG;
+    nread = mkread_c (handle, mode, PyArray_DATA (flags), offset, n, nsize);
+
+    return Py_BuildValue ("i", nread);
+}
+
+
+static PyObject *
+py_mkwrite (PyObject *self, PyObject *args)
+{
+    long handint;
+    char *handle;
+    int mode, offset, n, nsize;
+    PyObject *flags;
+
+    if (!PyArg_ParseTuple (args, "liO!ii", &handint, &mode, &PyArray_Type,
+			   &flags, &offset, &n))
+	return NULL;
+
+    handle = (char *) handint;
+
+    if (!PyArray_ISINTEGER (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags ndarray must be integer");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (flags) != sizeof (int)) {
+	PyErr_SetString (PyExc_TypeError, "flags ndarray must have integer itemsize");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (flags)) {
+	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
+	return NULL;
+    }
+
+    nsize = PyArray_SIZE (flags);
+
+    /* handle: handle to flags state item
+     * mode: flag storage mode: MK_FLAGS = 1 (expanded) or MK_RUNS = 2 (RLE)
+     * flags: integer array in which to store flags
+     * offset: offset into the file at which to read; counted in bits
+     * n: number of flag bits to read
+     * nsize: size of flag buffer; if MK_RUNS, should be set such that decoding
+     *  @nsize items will result in @n flag values.
+     */
+
+    MTS_CHECK_BUG;
+    mkwrite_c (handle, mode, PyArray_DATA (flags), offset, n, nsize);
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mkflush (PyObject *self, PyObject *args)
+{
+    long handint;
+    char *handle;
+
+    if (!PyArg_ParseTuple (args, "l", &handint))
+	return NULL;
+
+    handle = (char *) handint;
+
+    MTS_CHECK_BUG;
+    mkflush_c (handle);
+
+    Py_RETURN_NONE;
+}
+
+
 /* xyzio */
 
 /* bug */
@@ -1862,6 +2015,12 @@ static PyMethodDef uvio_methods[] = {
     /* xyio */
 
     /* maskio */
+
+    DEF(mkopen, "(int tno, str name, str status) => int handle"),
+    DEF(mkclose, "(int handle) => void"),
+    DEF(mkread, "(int handle, int mode, int-ndarray flags, int offset, int n) => int nread"),
+    DEF(mkwrite, "(int handle, int mode, int-ndarray flags, int offset, int n) => void"),
+    DEF(mkflush, "(int handle) => void"),
 
     /* xyzio */
 
