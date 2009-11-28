@@ -757,3 +757,53 @@ class UVVarTracker (object):
         return bool (ll.uvvarupd (self.vhnd))
 
 __all__ += ['UVDataSet', 'UVVarTracker']
+
+MASK_MODE_FLAGS = 1
+MASK_MODE_RUNS = 2
+_maskModes = set ((MASK_MODE_FLAGS, MASK_MODE_RUNS))
+
+class MaskItem (object):
+    """A 'mask' item contained within a Miriad dataset."""
+
+    def __init__ (self, dataset, keyword, mode):
+        self.dataset = dataset
+        self.refobj = dataset.refobj
+        self.name = keyword
+        self.handle = None
+
+        if mode == 'rw': modestr = 'old'
+        elif mode == 'c': modestr = 'new'
+        else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
+
+        self.handle = ll.mkopen (dataset.tno, keyword, modestr)
+
+
+    def read (self, mode, flags, offset, n):
+        if mode not in _maskModes:
+            raise ValueError ('Unexpected mask mode %d' % mode)
+        return ll.mkread (self.handle, mode, flags, offset, n)
+
+
+    def write (self, mode, flags, offset, n):
+        if mode not in _maskModes:
+            raise ValueError ('Unexpected mask mode %d' % mode)
+        ll.mkwrite (self.handle, mode, flags, offset, n)
+
+
+    def flush (self):
+        ll.mkflush (self.handle)
+
+
+    def close (self):
+        ll.mkclose (self.handle)
+        self.handle = None
+
+
+    def __del__ (self):
+        if ll is None or self.handle is None:
+            return
+
+        self.close ()
+
+
+__all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
