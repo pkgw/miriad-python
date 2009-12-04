@@ -256,11 +256,17 @@ class DataItem (object):
         self.itno = ll.haccess (dataset.tno, keyword, modestr)
 
     def __del__ (self):
-        # itno can be None if we got an exception inside hopen.
+        # itno can be None if we got an exception inside haccess.
 
         if ll is None or not hasattr (self, 'itno'): return
+        self.close ()
 
+    def close (self):
         ll.hdaccess (self.itno)
+        del self.itno
+
+    def isOpen (self):
+        return hasattr (self, 'itno')
 
     def getSize (self):
         """Return the size of this data item."""
