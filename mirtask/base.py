@@ -29,12 +29,14 @@ __all__ = []
 class DataSet (object):
     """A generic Miriad data-set. Subclasses must implement a _close()
     method."""
+
+    tno = None
     
     def __del__ (self):
         # tno can be None if we got an exception inside hopen,
         # or if we are deleteAll'ed
 
-        if ll is None or not hasattr (self, 'tno'): return
+        if ll is None or self.tno is None: return
 
         self._close ()
         
@@ -45,37 +47,53 @@ class DataSet (object):
 
     def __str__ (self):
         if hasattr (self, 'name'):
-            return '<DataSet \"%s\" handle %d>' % (self.name, self.tno)
-        return '<DataSet [unknown filename] handle %d>' % (self.tno, )
+            nstr = '\"%s\"' % (self.name, )
+        else:
+            nstr = '[unknown filename]'
+
+        if self.tno is not None:
+            hstr = 'handle %d' % self.tno
+        else:
+            hstr = 'not currently open'
+
+        return '<DataSet %s %s>' % (nstr, hstr)
 
     def isOpen (self):
-        return hasattr (self, 'tno')
-    
+        return self.tno is not None
+
+    def _checkOpen (self):
+        if self.tno is not None:
+            return
+        raise RuntimeError ('Illegal operation on a closed dataset')
+
     def close (self):
         """Close the dataset."""
 
-        if not hasattr (self, 'tno'): raise RuntimeError ('Trying to re-close a dataset')
+        self._checkOpen ()
 
         if self._histOpen: self.closeHistory ()
         
         self._close ()
-        delattr (self, 'tno')
+        self.tno = None
     
     def flush (self):
         """Write any changed items in the data set out to disk."""
         
+        self._checkOpen ()
         ll.hflush (self.tno)
 
     def deleteAll (self):
         """Completely delete this data set. After calling this function,
         this object cannot be used."""
         
+        self._checkOpen ()
         ll.hrm (self.tno)
-        delattr (self, 'tno') # make any further use of this item fail
+        self.tno = None
         
     def deleteItem (self, name):
         """Delete an item from this data-set."""
 
+        self._checkOpen ()
         ll.hdelete (self.tno, name)
     
     MODE_UNKNOWN, MODE_RD, MODE_RDWR = range (0, 3)
@@ -85,6 +103,7 @@ class DataSet (object):
         read-write. See the MODE_X fields of this class for possible
         return values."""
         
+        self._checkOpen ()
         mode = ll.hmode (self.tno)
 
         if mode == '': return self.MODE_UNKNOWN
@@ -98,6 +117,7 @@ class DataSet (object):
     def hasItem (self, name):
         """Return whether this data-set contains an item with the given name."""
         
+        self._checkOpen ()
         return ll.hexists (self.tno, name)
 
     def getItem (self, keyword, mode):
@@ -121,7 +141,7 @@ class DataSet (object):
         while ilist.getPosition () < s:
             yield ilist.seqReadString ()
 
-        del ilist
+        ilist.close ()
 
     # History
 
@@ -138,12 +158,14 @@ class DataSet (object):
         elif mode == 'a': modestr = 'append'
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
+        self._checkOpen ()
         ll.hisopen (self.tno, modestr)
         self._histOpen = True
 
     def writeHistory (self, text):
         """Write text into this data set's history file."""
         
+        self._checkOpen ()
         ll.hiswrite (self.tno, text)
 
     def logInvocation (self, taskname, args=None):
@@ -152,11 +174,13 @@ class DataSet (object):
         optionally be given an argument list if that contained in sys.argv
         does not represent this task."""
 
+        self._checkOpen ()
         ll.hisinput (self.tno, taskname, args)
     
     def closeHistory (self):
         """Close this data set's history item."""
 
+        self._checkOpen ()
         ll.hisclose (self.tno)
         self._histOpen = False
 
@@ -165,61 +189,74 @@ class DataSet (object):
     def getHeaderFloat (self, keyword, default):
         """Retrieve the value of a float-valued header variable."""
 
+        self._checkOpen ()
         return ll.rdhdr (self.tno, keyword, float (default))
 
     def getHeaderInt (self, keyword, default):
         """Retrieve the value of an int-valued header variable."""
 
+        self._checkOpen ()
         return ll.rdhdi (self.tno, keyword, int (default))
 
     def getHeaderBool (self, keyword, default):
         """Retrieve the value of a bool-valued header variable."""
 
+        self._checkOpen ()
         return bool (ll.rdhdl (self.tno, keyword, int (default)))
 
     def getHeaderDouble (self, keyword, default):
         """Retrieve the value of a double-valued header variable."""
 
+        self._checkOpen ()
         return ll.rdhdd (self.tno, keyword, float (default))
 
     def getHeaderComplex (self, keyword, default):
         """Retrieve the value of a complex-valued header variable."""
 
+        self._checkOpen ()
         return ll.rdhdc (self.tno, keyword, complex (default))
     
     def getHeaderString (self, keyword, default):
         """Retrieve the value of a string-valued header variable.
         Maximum value length is 512."""
 
+        self._checkOpen ()
         return ll.rdhda (self.tno, keyword, str (default))
 
     def writeHeaderFloat (self, keyword, value):
         """Write a float-valued header variable."""
+        self._checkOpen ()
         ll.wrhdr (self.tno, keyword, float (value))
 
     def writeHeaderInt (self, keyword, value):
         """Write an int-valued header variable."""
+        self._checkOpen ()
         ll.wrhdi (self.tno, keyword, int (value))
 
     def writeHeaderLong (self, keyword, value):
         """Write a long-int-valued header variable."""
+        self._checkOpen ()
         ll.wrhdl (self.tno, keyword, int (value))
 
     def writeHeaderDouble (self, keyword, value):
         """Write a double-valued header variable."""
+        self._checkOpen ()
         ll.wrhdd (self.tno, keyword, float (value))
 
     def writeHeaderComplex (self, keyword, value):
         """Write a complex-valued header variable."""
+        self._checkOpen ()
         ll.wrhdc (self.tno, keyword, complex (value))
     
     def writeHeaderString (self, keyword, value):
         """Write a string-valued header variable."""
+        self._checkOpen ()
         ll.wrhda (self.tno, keyword, str (value))
 
     def copyHeader (self, dest, keyword):
         """Copy a header variable from this data-set to another."""
 
+        self._checkOpen ()
         ll.hdcopy (self.tno, dest.tno, keyword)
 
     # skip hdprsnt: same thing as hexists
@@ -233,6 +270,7 @@ class DataSet (object):
         in the item. If 'n' is 1, then 'desc' encodes the item's value.
         """
 
+        self._checkOpen ()
         (desc, type, n) = ll.hdprobe (self.tno, keyword)
 
         if n == 0: raise MiriadError ('Error probing header ' + keyword)
@@ -241,7 +279,9 @@ class DataSet (object):
 
 class DataItem (object):
     """An item contained within a Miriad dataset."""
-    
+
+    itno = None
+
     def __init__ (self, dataset, keyword, mode):
         self.dataset = dataset
         self.refobj = dataset.refobj
@@ -258,35 +298,44 @@ class DataItem (object):
     def __del__ (self):
         # itno can be None if we got an exception inside haccess.
 
-        if ll is None or not hasattr (self, 'itno'): return
+        if ll is None or self.itno is None: return
         self.close ()
 
     def close (self):
         ll.hdaccess (self.itno)
-        del self.itno
+        self.itno = None
+
+    def _checkOpen (self):
+        if self.itno is not None:
+            return
+        raise RuntimeError ('Illegal operation on a closed dataset')
 
     def isOpen (self):
-        return hasattr (self, 'itno')
+        return self.itno is not None
 
     def getSize (self):
         """Return the size of this data item."""
 
+        self._checkOpen ()
         return ll.hsize (self.itno)
 
     def seek (self, offset):
         """Seek to the specified position within this data item."""
 
+        self._checkOpen ()
         ll.hseek (self.itno, int (offset))
 
     def getPosition (self):
         """Retrieve the current position within this data item."""
 
+        self._checkOpen ()
         return ll.htell (self.itno)
 
     def seqReadString (self):
         """Read until newline from the current position within this
         data item. Maximum string length of 512."""
 
+        self._checkOpen ()
         return ll.hreada (self.itno)
 
     def seqWriteString (self, line, length=None):
@@ -296,6 +345,7 @@ class DataItem (object):
         entire string."""
 
         if length is None: length = len (line)
+        self._checkOpen ()
         ll.hwritea (self.itno, str (line), length)
 
     # Reading buffers
@@ -304,6 +354,7 @@ class DataItem (object):
         """Read an array of bytes from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
         ll.hreadb (self.itno, buf, offset, length)
@@ -312,6 +363,7 @@ class DataItem (object):
         """Read an array of 32-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int)
         if length is None: length = buf.size
         ll.hreadi (self.itno, buf, offset, length)
@@ -320,6 +372,7 @@ class DataItem (object):
         """Read an array of 16-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.short)
         if length is None: length = buf.size
         ll.hreadj (self.itno, buf, offset, length)
@@ -328,6 +381,7 @@ class DataItem (object):
         """Read an array of 64-bit integers from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.long)
         if length is None: length = buf.size
         ll.hreadl (self.itno, buf, offset, length)
@@ -336,6 +390,7 @@ class DataItem (object):
         """Read an array of floats from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.float)
         if length is None: length = buf.size
         ll.hreadr (self.itno, buf, offset, length)
@@ -344,6 +399,7 @@ class DataItem (object):
         """Read an array of doubles from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
         ll.hreadd (self.itno, buf, offset, length)
@@ -352,6 +408,7 @@ class DataItem (object):
         """Read an array of complexes from the given location in the data
         item. The default read length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
         ll.hreadc (self.itno, buf, offset, length)
@@ -362,6 +419,7 @@ class DataItem (object):
         """Write an array of bytes to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
         ll.hwriteb (self.itno, buf, offset, length)
@@ -370,6 +428,7 @@ class DataItem (object):
         """Write an array of integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int)
         if length is None: length = buf.size
         ll.hwritei (self.itno, buf, offset, length)
@@ -378,6 +437,7 @@ class DataItem (object):
         """Write an array of 16-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.short)
         if length is None: length = buf.size
         ll.hwritej (self.itno, buf, offset, length)
@@ -386,6 +446,7 @@ class DataItem (object):
         """Write an array of 64-bit integers to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.long)
         if length is None: length = buf.size
         ll.hwritel (self.itno, buf, offset, length)
@@ -394,6 +455,7 @@ class DataItem (object):
         """Write an array of floats to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.float)
         if length is None: length = buf.size
         ll.hwriter (self.itno, buf, offset, length)
@@ -402,6 +464,7 @@ class DataItem (object):
         """Write an array of doubles to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
         ll.hwrited (self.itno, buf, offset, length)
@@ -410,6 +473,7 @@ class DataItem (object):
         """Write an array of complexes to the given location in the data
         item. The default write length is the size of the array."""
 
+        self._checkOpen ()
         buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
         ll.hwritec (self.itno, buf, offset, length)
@@ -451,6 +515,7 @@ class UVDataSet (DataSet):
     def flush (self):
         """Write out any unbuffered changes to the UV data set."""
         
+        self._checkOpen ()
         ll.uvflush (self.tno)
 
     # UV-specific operations
@@ -459,12 +524,14 @@ class UVDataSet (DataSet):
         """Skip to the next UV data record. On write, this causes an
         end-of-record mark to be written."""
 
+        self._checkOpen ()
         ll.uvnext (self.tno)
 
     def rewind (self):
         """Rewind to the beginning of the file, allowing the UV data to
         be reread from the start."""
 
+        self._checkOpen ()
         ll.uvrewind (self.tno)
 
     def lowlevelRead (self, preamble, data, flags, length=None):
@@ -477,6 +544,7 @@ class UVDataSet (DataSet):
 
         if length is None: length = flags.size
 
+        self._checkOpen ()
         return ll.uvread (self.tno, preamble, data, flags, length)
     
     def write (self, preamble, data, flags, length=None):
@@ -486,6 +554,7 @@ class UVDataSet (DataSet):
 
         if length is None: length = flags.size
 
+        self._checkOpen ()
         ll.uvwrite (self.tno, preamble, data, flags, length)
 
     def rewriteFlags (self, flags):
@@ -493,11 +562,13 @@ class UVDataSet (DataSet):
         visibility record. 'flags' should be a 1D integer ndarray of the
         same length and dtype returned by a uvread call."""
 
+        self._checkOpen ()
         ll.uvflgwr (self.tno, flags)
         
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):
+        self._checkOpen ()
         ll.uvset (self.tno, object, type, n, p1, p2, p3)
 
     def setPreambleType (self, *vars):
@@ -558,12 +629,14 @@ class UVDataSet (DataSet):
         copies those variables which have changed and are marked as
         'copy'."""
 
+        self._checkOpen ()
         ll.uvcopyvr (self.tno, output.tno)
 
     def updated (self):
         """Return true if any user-specified 'important variables' have
         been updated in the last chunk of data read."""
 
+        self._checkOpen ()
         return bool (ll.uvupdate (self.tno))
 
     def initVarsAsInput (self, linetype):
@@ -571,6 +644,7 @@ class UVDataSet (DataSet):
         this file as an input file. Linetype should be one of 'channel',
         'wide', or 'velocity'. Maps to Miriad's varinit() call."""
 
+        self._checkOpen ()
         ll.varinit (self.tno, linetype)
 
     def initVarsAsOutput (self, input, linetype):
@@ -578,12 +652,14 @@ class UVDataSet (DataSet):
         reading functions. Linetype should be one of 'channel', 'wide',
         or 'velocity'. Maps to Miriad's varonit() call."""
 
+        self._checkOpen ()
         ll.varonit (input.tno, self.tno, linetype)
 
     def copyLineVars (self, output):
         """Copy UV variables to the output dataset that describe the
         current line in the input set."""
 
+        self._checkOpen ()
         ll.varcopy (self.tno, output.tno)
 
     def makeVarTracker (self):
@@ -604,6 +680,7 @@ class UVDataSet (DataSet):
         updated - True if the variable was updated on the last UV data read.
         """
 
+        self._checkOpen ()
         (type, length, updated) = ll.uvprobvr (self.tno, varname)
 
         if type == '' or type == ' ': return None
@@ -613,12 +690,14 @@ class UVDataSet (DataSet):
         """Retrieve the current value of a string-valued UV
         variable. Maximum length of 512 characters."""
 
+        self._checkOpen ()
         return ll.uvgetvra (self.tno, varname)
     
     def getVarInt (self, varname, n=1):
         """Retrieve the current value or values of an int-valued UV
         variable."""
 
+        self._checkOpen ()
         ret = ll.uvgetvri (self.tno, varname, n)
 
         if n == 1: return ret[0]
@@ -628,6 +707,7 @@ class UVDataSet (DataSet):
         """Retrieve the current value or values of a float-valued UV
         variable."""
 
+        self._checkOpen ()
         ret = ll.uvgetvrr (self.tno, varname, n)
 
         if n == 1: return ret[0]
@@ -637,6 +717,7 @@ class UVDataSet (DataSet):
         """Retrieve the current value or values of a double-valued UV
         variable."""
 
+        self._checkOpen ()
         ret = ll.uvgetvrd (self.tno, varname, n)
     
         if n == 1: return ret[0]
@@ -646,6 +727,7 @@ class UVDataSet (DataSet):
         """Retrieve the current value or values of a complex-valued UV
         variable."""
 
+        self._checkOpen ()
         ret = ll.uvgetvrc (self.tno, varname, n)
     
         if n == 1: return ret[0]
@@ -656,24 +738,28 @@ class UVDataSet (DataSet):
         variable with a default if the variable is not present.
         Maximum length of 512 characters."""
 
+        self._checkOpen ()
         return ll.uvrdvra (self.tno, varname, dflt)
     
     def getVarFirstInt (self, varname, dflt):
         """Retrieve the first value of an int-valued UV
         variable with a default if the variable is not present."""
 
+        self._checkOpen ()
         return ll.uvrdvri (self.tno, varname, dflt)
     
     def getVarFirstFloat (self, varname, dflt):
         """Retrieve the first value of a float-valued UV
         variable with a default if the variable is not present."""
 
+        self._checkOpen ()
         return ll.uvrdvrr (self.tno, varname, dflt)
     
     def getVarFirstDouble (self, varname, dflt):
         """Retrieve the first value of a double-valued UV
         variable with a default if the variable is not present."""
 
+        self._checkOpen ()
         return ll.uvrdvrd (self.tno, varname, dflt)
     
     def getVarFirstComplex (self, varname, dflt):
@@ -681,6 +767,7 @@ class UVDataSet (DataSet):
         variable with a default if the variable is not present."""
 
         dflt = complex (dflt)
+        self._checkOpen ()
         retval = ll.uvrdvrd (self.tno, varname, (dflt.real, dflt.imag))
         return complex (retval[0], retval[1])
     
@@ -695,6 +782,7 @@ class UVDataSet (DataSet):
         if watch: switches += 'u'
         if copy: switches += 'c'
 
+        self._checkOpen ()
         ll.uvtrack (self.tno, varname, switches)
 
     def scanUntilChange (self, varname):
@@ -702,12 +790,15 @@ class UVDataSet (DataSet):
         to the end of the record in which the variable changes. Returns False
         if end-of-file was reached, True otherwise."""
 
+        self._checkOpen ()
         return ll.uvscan (self.tno, varname) == 0
 
     def writeVarInt (self, name, val):
         """Write an integer UV variable. val can either be a single value or
         an ndarray for array variables."""
         
+        self._checkOpen ()
+
         if not isinstance (val, N.ndarray):
             v2 = N.ndarray (1, dtype=N.int32)
             v2[0] = int (val)
@@ -719,6 +810,8 @@ class UVDataSet (DataSet):
         """Write an float UV variable. val can either be a single value or
         an ndarray for array variables."""
         
+        self._checkOpen ()
+
         if not isinstance (val, N.ndarray):
             v2 = N.ndarray (1, dtype=N.float32)
             v2[0] = float (val)
@@ -730,6 +823,8 @@ class UVDataSet (DataSet):
         """Write a double UV variable. val can either be a single value or
         an ndarray for array variables."""
         
+        self._checkOpen ()
+
         if not isinstance (val, N.ndarray):
             v2 = N.ndarray (1, dtype=N.float64)
             v2[0] = float (val)
@@ -787,22 +882,36 @@ class MaskItem (object):
     def read (self, mode, flags, offset, n):
         if mode not in _maskModes:
             raise ValueError ('Unexpected mask mode %d' % mode)
+        self._checkOpen ()
         return ll.mkread (self.handle, mode, flags, offset, n)
 
 
     def write (self, mode, flags, offset, n):
         if mode not in _maskModes:
             raise ValueError ('Unexpected mask mode %d' % mode)
+        self._checkOpen ()
         ll.mkwrite (self.handle, mode, flags, offset, n)
 
 
     def flush (self):
+        self._checkOpen ()
         ll.mkflush (self.handle)
 
 
     def close (self):
+        self._checkOpen ()
         ll.mkclose (self.handle)
         self.handle = None
+
+
+    def isOpen (self):
+        return self.handle is not None
+
+
+    def _checkOpen (self):
+        if self.handle is not None:
+            return
+        raise RuntimeError ('Illegal operation on a closed mask item')
 
 
     def __del__ (self):

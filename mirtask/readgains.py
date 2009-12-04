@@ -78,7 +78,7 @@ class GainsReader (object):
             offset += 8 * ngains
             pnt += 1
 
-        del self.gitem
+        self.gitem.close ()
         return (time, gains)
 
     def readSeq (self):
@@ -101,7 +101,7 @@ class GainsReader (object):
 
             yield (time[0], gains)
 
-        del self.gitem
+        self.gitem.close ()
 
 def readBandpass (dset):
     """Read in the bandpass table from the given dataset.
@@ -173,14 +173,13 @@ def readBandpass (dset):
                             'in UV dataset: sum(nschan) = %d, nchan0 = %d' % (nschans.sum (),
                                                                               nchan0))
     
-    del hdfreq
+    hdfreq.close ()
 
     # Bandpass table
 
     hdbpass = dset.getItem ('bandpass', 'r')
     gains = N.ndarray ((nants, nfeeds, nchan0), dtype=N.complex64)
     hdbpass.readComplex (gains, 8)
-
-    del hdbpass
+    hdbpass.close ()
     
     return nschans, freqs, gains
