@@ -53,7 +53,7 @@ for (key, val) in os.environ.iteritems ():
     elif key.startswith ('DYLD_'):
         _childenv[key] = val
 
-del var
+del var, key, val
 
 def addEnvironmentClassic (home, hosttype):
     global _bindir, _childenv
