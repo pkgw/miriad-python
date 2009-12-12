@@ -98,6 +98,12 @@ if test x"$GCC" = xyes ; then
    CFLAGS="$CFLAGS -Wall -Wstrict-prototypes"
 fi
 
+dnl MIRIAD is built with large file support, so we need to have it
+dnl too otherwise we'll disagree about the size of off_t
+
+AC_SYS_LARGEFILE
+AC_FUNC_FSEEKO
+
 dnl Here we have to work around the fact that __file__ is replaced by
 dnl M4. D'oh!
 
