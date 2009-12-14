@@ -673,6 +673,15 @@ class TaskUVFit (TaskBase):
                'spar', 'fix', 'out']
     _options = ['residual']
 
+
+class TaskUVModel (TaskBase):
+    _params = ['vis', 'model', 'select', 'polcor', 'clip', 'flux',
+               'offset', 'line', 'sigma', 'out']
+    _options = ['add', 'subtract', 'multiply', 'divide', 'replace', 'flag',
+                'polcal', 'poleak', 'unflag', 'autoscale', 'apriori', 'imhead',
+                'selradec', 'polarized', 'mfs', 'zero', 'imag']
+
+
 class SmaMfCal (TaskBase):
     _name = 'smamfcal'
     _params = ['vis', 'line', 'edge', 'flux', 'refant', 'minants',
