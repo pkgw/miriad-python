@@ -124,7 +124,8 @@ def readAll (maxchan = 4096):
             yield (ds, ) + t
 
 def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
-                      select=None, line=None, stokes=None, ref=None):
+                      select=None, line=None, stokes=None, ref=None,
+                      maxchan=4096):
     import keys
 
     # Set up args
@@ -148,16 +149,34 @@ def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
     if not nocal: flags += 'c'
     if not nopol: flags += 'e'
 
-    # Do the actual reading
+    # Do the actual reading -- copy what readData does for
+    # greater speed.
         
     keys.init (args)
     init (flags)
     inp = singleInputSet ()
 
+    preamble = N.zeros (5, dtype=N.double)
+    data = N.zeros (maxchan, dtype=N.complex64)
+    flags = N.zeros (maxchan, dtype=N.int32)
+
+    uvdatrd = ll.uvdatrd
+    rewrite = inp.rewriteFlags
+
     try:
-        for (preamble, data, flags, nread) in readData ():
-            yield inp, preamble, data, flags, nread
-            if saveFlags: inp.rewriteFlags (flags)
+        if saveFlags:
+            while True:
+                nread = uvdatrd (preamble, data, flags, maxchan)
+                if nread == 0: break
+
+                yield inp, preamble, data, flags, nread
+                rewrite (flags)
+        else:
+            while True:
+                nread = uvdatrd (preamble, data, flags, maxchan)
+                if nread == 0: break
+
+                yield inp, preamble, data, flags, nread
     finally:
         if inp.isOpen (): inp.close ()
 
