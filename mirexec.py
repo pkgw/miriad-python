@@ -598,7 +598,7 @@ class TaskUVSort (TaskBase):
 class TaskMfCal (TaskBase):
     _params = ['vis', 'line', 'stokes', 'edge', 'select', 'flux',
                'refant', 'minants', 'interval', 'tol']
-    _options = ['delay', 'nopassol', 'interpolate', 'oldflux']
+    _options = ['delay', 'nopassol', 'interpolate', 'oldflux', 'noxyalign']
 
 class TaskUVIndex (TaskBase):
     _params = ['vis', 'interval', 'refant', 'log']
