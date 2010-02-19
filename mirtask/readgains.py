@@ -1,6 +1,6 @@
 '''mirtask.readgains - convenient reading of the gains tables in UV datasets'''
 
-# Copyright 2009 Peter Williams
+# Copyright 2009, 2010 Peter Williams
 #
 # This file is part of miriad-python.
 #

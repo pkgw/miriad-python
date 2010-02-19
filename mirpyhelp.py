@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- python -*-
 
-# Copyright 2009 Peter Williams
+# Copyright 2009, 2010 Peter Williams
 #
 # This file is part of miriad-python.
 #

@@ -1,4 +1,4 @@
-dnl Copyright 2009 Peter Williams
+dnl Copyright 2009, 2010 Peter Williams
 dnl
 dnl This file is part of miriad-python.
 dnl
