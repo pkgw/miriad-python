@@ -286,8 +286,19 @@ class TaskBase (object):
 
                 if self._cleanups: self._cleanups.append (val)
                 else: self._cleanups = [val]
-                
-            if val is not None: cmd.append ("%s=%s" % (key, val))
+
+            if val is None:
+                continue
+
+            if not isinstance (val, basestring):
+                # Treat non-string iterable values as lists of items
+                # to be joined by commas, as per standard MIRIAD usage.
+                try:
+                    val = ','.join (str (x) for x in val)
+                except TypeError:
+                    pass
+
+            cmd.append ("%s=%s" % (key, val))
 
         self.cmdline = ' '.join (cmd)
         return cmd
