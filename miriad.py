@@ -278,22 +278,6 @@ to set the appropriate task input keyword.
 """
         raise NotImplementedError ()
 
-    def xapply (self, task, **params):
-        """Configure a task to run verbosely on this dataset.
-
-:arg task: the task to set up
-:type task: :class:`~mirexec.TaskBase`
-:arg params: extra task parameters
-:rtype: :class:`~mirexec.TaskBase`
-:returns: *task*
-
-Identical to :meth:`apply`, but also sets the
-:attr:`~mirexec.TaskBase.xint` attribute of the *task* to
-:const:`True`, causing the task to run verbosely.
-"""
-        self.apply (task, **params)
-        task.xint = True
-        return task
 
     # Programming-related helpers.
     
@@ -504,9 +488,8 @@ specified arguments.
     # Not-necessarily-interactive operations
 
     def apply (self, task, **params):
-        task.vis = self
-        task.setArgs (**params)
-        return task
+        return task.set (vis=self, **params)
+
 
     def catTo (self, dest, **params):
         """:command:`uvcat` this dataset to *dest*.
@@ -621,9 +604,8 @@ inherits many generic features from the :class:`Data` class.
     # make it possible to open and read images.
 
     def apply (self, task, **params):
-        task.in_ = self
-        task.setArgs (**params)
-        return task
+        return task.set (in_=self, **params)
+
 
 __all__ += ['ImData']
 
