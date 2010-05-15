@@ -349,11 +349,13 @@ class TaskCgDisp (TaskBase):
     
     device = _defaultDevice
 
+
 class TaskUVList (TaskBase):
     _keywords = ['vis', 'select', 'line', 'scale', 'recnum', 'log']
     _options = ['brief', 'data', 'average', 'allan', 'history',
                 'flux', 'full', 'list', 'variables', 'stat',
                 'birds', 'spectra']
+
 
 class TaskUVPlot (TaskBase):
     # XXX FIXME: there is a 'log' option, but that would conflict
@@ -372,6 +374,7 @@ class TaskUVPlot (TaskBase):
                 
     device = _defaultDevice
 
+
 class TaskInvert (TaskBase):
     _keywords = ['vis', 'map', 'beam', 'select', 'stokes',
                  'robust', 'cell', 'fwhm', 'imsize', 'offset',
@@ -380,16 +383,19 @@ class TaskInvert (TaskBase):
                 'mfs', 'sdb', 'mosaic', 'imaginary', 'amplitude',
                 'phase']
 
+
 class TaskClean (TaskBase):
     _keywords = ['map', 'beam', 'out', 'niters', 'region',
                  'gain', 'cutoff', 'phat', 'minpatch',
                  'speed', 'mode', 'clip', 'model']
     _options = ['negstop', 'positive', 'asym', 'pad']
 
+
 class TaskRestore (TaskBase):
     _name = 'restor'
     _keywords = ['map', 'beam', 'model', 'out', 'mode', 'fwhm',
                  'pa']
+
 
 class TaskImStat (TaskBase):
     _keywords = ['in_', 'region', 'plot', 'cutoff',
@@ -398,17 +404,21 @@ class TaskImStat (TaskBase):
                 'nolist', 'eformat', 'guaranteespaces', 'xmin',
                 'xmax', 'ymin', 'ymax', 'title', 'style']
 
+
 class TaskImHead (TaskBase):
     _keywords = ['in_', 'key', 'log']
+
 
 class TaskIMom (TaskBase):
     _keywords = ['in_', 'region', 'min', 'max', 'log']
     _options = ['skew', 'clipmean', 'clip1sigma']
+
     
 class TaskImFit (TaskBase):
     _keywords = ['in_', 'region', 'clip', 'object', 'spar',
                  'fix', 'out']
     _options = ['residual']
+
     
 class TaskUVAver (TaskBase):
     _keywords = ['vis', 'select', 'line', 'ref', 'stokes',
@@ -416,9 +426,11 @@ class TaskUVAver (TaskBase):
     _options = ['nocal', 'nopass', 'nopol', 'relax',
                 'vector', 'scalar', 'scavec']
 
+
 class TaskGPCopy (TaskBase):
     _keywords = ['vis', 'out', 'mode']
     _options = ['nopol', 'nocal', 'nopass']
+
 
 class TaskMSelfCal (TaskBase):
     _keywords = ['vis', 'select', 'model', 'clip', 'interval',
@@ -428,6 +440,7 @@ class TaskMSelfCal (TaskBase):
                 'mfs', 'relax', 'apriori', 'noscale', 'mosaic',
                 'verbose']
 
+
 class TaskSelfCal (TaskBase):
     _keywords = ['vis', 'select', 'model', 'clip', 'interval',
                  'minants', 'refant', 'flux', 'offset', 'line',
@@ -435,9 +448,11 @@ class TaskSelfCal (TaskBase):
     _options = ['amplitude', 'phase', 'smooth', 'polarized',
                 'mfs', 'relax', 'apriori', 'noscale', 'mosaic']
 
+
 class TaskPutHead (TaskBase):
     _name = 'puthd'
     _keywords = ['in_', 'value', 'type']
+
 
 class TaskGPPlot (TaskBase):
     _name = 'gpplt'
@@ -449,10 +464,12 @@ class TaskGPPlot (TaskBase):
 
     device = _defaultDevice
 
+
 class TaskPrintHead (TaskBase):
     _name = 'prthd'
     _keywords = ['in_', 'log']
     _options = ['brief', 'full']
+
 
 class TaskClosure (TaskBase):
     _keywords = ['vis', 'select', 'line', 'stokes', 'device',
@@ -462,10 +479,12 @@ class TaskClosure (TaskBase):
 
     device = _defaultDevice
 
+
 class TaskUVFlag (TaskBase):
     _keywords = ['vis', 'select', 'line', 'edge', 'flagval', 'log' ]
     _options = ['noapply', 'none', 'brief', 'indicative', 'full',
                 'noquery', 'hms', 'decimal']
+
 
 class TaskUVSpec (TaskBase):
     _keywords = ['vis', 'select', 'line', 'stokes', 'interval', 'hann',
@@ -475,22 +494,27 @@ class TaskUVSpec (TaskBase):
 
     device= _defaultDevice
 
+
 class TaskUVSort (TaskBase):
     _keywords = ['vis', 'select', 'line', 'out']
+
 
 class TaskMfCal (TaskBase):
     _keywords = ['vis', 'line', 'stokes', 'edge', 'select', 'flux',
                  'refant', 'minants', 'interval', 'tol']
     _options = ['delay', 'nopassol', 'interpolate', 'oldflux', 'noxyalign']
 
+
 class TaskUVIndex (TaskBase):
     _keywords = ['vis', 'interval', 'refant', 'log']
     _options = ['mosaic']
+
 
 class TaskUVCat (TaskBase):
     _keywords = ['vis', 'select', 'stokes', 'out']
     _options = ['nocal', 'nopass', 'nopol', 'nowide', 'nochannel',
                 'unflagged']
+
 
 class SmaUVPlot (TaskBase):
     # XXX FIXME: there is a 'log' option, but that would conflict
@@ -509,6 +533,7 @@ class SmaUVPlot (TaskBase):
                 
     device = _defaultDevice
 
+
 class SmaUVSpec (TaskBase):
     _name = 'smauvspec'
     
@@ -521,7 +546,8 @@ class SmaUVSpec (TaskBase):
                 'nobase', 'avall', 'dots', 'flagged', 'all',
                 'jplcat', 'restfreq']
 
-    device= _defaultDevice
+    device = _defaultDevice
+
 
 class TaskUVGen (TaskBase):
     _keywords = ['source', 'ant', 'baseunit', 'telescop', 'corr',
@@ -530,12 +556,14 @@ class TaskUVGen (TaskBase):
                  'lat', 'cycle', 'pbfwhm', 'center', 'gnoise',
                  'pnoise', 'systemp', 'tpower', 'jyperk', 'out']
 
+
 class TaskUVGen2 (TaskBase):
     _keywords = ['source', 'ant', 'baseunit', 'telescop', 'corr',
                  'spectra', 'time', 'freq', 'radec', 'harange',
                  'ellim', 'stokes', 'polar', 'leakage', 'zeeman',
                  'lat', 'cycle', 'pbfwhm', 'center', 'gnoise',
                  'pnoise', 'systemp', 'tpower', 'jyperk', 'out']
+
     
 class TaskUVCal (TaskBase):
     _keywords = ['vis', 'select', 'radec', 'badchan', 'endchan', 'nave',
@@ -547,9 +575,11 @@ class TaskUVCal (TaskBase):
                 'linecal', 'parang', 'passband', 'noisecal', 'uvrotate',
                 'avechan', 'slope', 'holo']
 
+
 class TaskUVFlux (TaskBase):
     _keywords = ['vis', 'select', 'line', 'stokes', 'offset']
     _options = ['nocal', 'nopol', 'nopass', 'uvpol']
+
 
 class TaskUVFit (TaskBase):
     _keywords = ['vis', 'stokes', 'line', 'select', 'object',
@@ -572,15 +602,18 @@ class SmaMfCal (TaskBase):
     _options = ['delay', 'nopassol', 'interpolate', 'oldflux',
                 'msmooth', 'opolyfit', 'wrap', 'averrll']
 
+
 class TaskMaths (TaskBase):
     _keywords = ['exp', 'mask', 'region', 'out', 'imsize', 'xrange',
                  'yrange', 'zrange']
     _options = ['grow', 'unmask']
 
+
 class TaskImGen (TaskBase):
     _keywords = ['in_', 'out', 'factor', 'object', 'spar', 'imsize',
                  'cell', 'radec', 'seed']
     _options = ['totflux']
+
 
 class TaskLinMos (TaskBase):
     _keywords = ['in_', 'out', 'rms']
