@@ -26,7 +26,7 @@ endif
 
 # Main modules ...
 
-python_PYTHON = miriad.py mirexec.py numutils.py
+python_PYTHON = miriad.py mirexec.py
 
 dist_bin_SCRIPTS = mirpyhelp.py mirpymodtask
 
