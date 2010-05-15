@@ -401,16 +401,6 @@ class TaskImStat (TaskBase):
 class TaskImHead (TaskBase):
     _keywords = ['in_', 'key', 'log']
 
-    def snarfOne (self, key):
-        self.key = key
-        (stdout, stderr) = self.snarf ()
-        
-        if len(stdout) != 1:
-            raise Exception ('Unexpected output from IMHEAD: %s' % \
-                             stdout + '\nStderr: ' + stderr)
-
-        return stdout[0].strip ()
-
 class TaskIMom (TaskBase):
     _keywords = ['in_', 'region', 'min', 'max', 'log']
     _options = ['skew', 'clipmean', 'clip1sigma']
