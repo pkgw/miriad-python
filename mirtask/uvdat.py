@@ -73,8 +73,17 @@ visdata input sets."""
     try:
         while True:
             if ds is not None and ds.isOpen (): ds.close ()
-        
-            (status, tin) = ll.uvdatopn ()
+
+            try:
+                (status, tin) = ll.uvdatopn ()
+            except:
+                # If bug() is called (e.g. "Invalid preamble" error)
+                # we can get a MiriadError without
+                # status=False. Experiments with calling this a lot
+                # indicate that uvdatcls should be called to reset the
+                # UV data system so Python can chug along worry-free.
+                ll.uvdatcls ()
+                raise
 
             if not status: break
 
@@ -92,8 +101,13 @@ def singleInputSet ():
 You should only use this function if you pass the 'b' option to
 init ().
 """
-
-    (status, tin) = ll.uvdatopn ()
+    try:
+        tin = None
+        (status, tin) = ll.uvdatopn ()
+    except:
+        # See above.
+        ll.uvdatcls ()
+        raise
 
     if not status: raise RuntimeError ('Unable to open input data set!')
 
