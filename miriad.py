@@ -169,7 +169,16 @@ and return. If not, raise an :class:`Exception`."""
   to this dataset.
 """
         return os.path.realpath (self.base)
-    
+
+
+    def path (self, *args):
+        """:rtype: :class:`str
+:returns: A path composed of user-defined items relative to this
+  dataset's path.
+"""
+        return os.path.join (self.base, *args)
+
+
     # Low-level operations
     
     def moveTo (self, dest):
