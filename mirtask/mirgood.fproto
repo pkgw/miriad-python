@@ -674,3 +674,20 @@ subroutine azel(obsra,obsdec,lst,latitude,az,el) ! in subs/ephem.f
     double precision intent(out) :: az
     double precision intent(out) :: el
 end subroutine azel
+
+subroutine uvgnini(tno1,dogains1,dopass1) ! in subs/uvgn.f
+    integer :: tno1
+    logical :: dogains1
+    logical :: dopass1
+end subroutine uvgnini
+
+subroutine uvgnfac(time,baseline,pol,dowide,data,flags,nread,grms) ! in subs/uvgn.f
+    double precision :: time
+    double precision :: baseline
+    integer :: pol
+    logical :: dowide
+    complex dimension(nread),intent(inout) :: data
+    logical dimension(nread),depend(nread),intent(inout) :: flags
+    integer optional,check(len(data)>=nread),depend(data),intent(inout) :: nread=len(data)
+    real intent(out) :: grms
+end subroutine uvgnfac

@@ -13159,56 +13159,6 @@ subroutine uvgetbl(preambl,data,nread,bl) ! in subs/uvgetbl.f
     integer optional,check(len(data)>=nread),depend(data) :: nread=len(data)
     integer :: bl
 end subroutine uvgetbl
-subroutine uvgnini(tno1,dogains1,dopass1) ! in subs/uvgn.f
-    integer :: tno1
-    logical :: dogains1
-    logical :: dopass1
-    double precision dimension(16) :: sfreq
-    double precision dimension(16) :: sdf
-    double precision :: freq0
-    integer :: tno
-    integer :: vwide
-    integer :: vline
-    integer :: nchan
-    integer :: nspect
-    integer dimension(16) :: nschan
-    integer dimension(2) :: pflags
-    integer dimension(2) :: pdat
-    integer dimension(2) :: ndat
-    integer :: ptab
-    integer :: ntab
-    integer dimension(2) :: pfreq
-    integer dimension(2) :: nfreq
-    logical :: dopass
-    logical :: aver
-    logical :: first
-    integer :: ncgains
-    integer :: nwgains
-    integer :: ncbase
-    integer :: nwbase
-    integer :: pcgains
-    integer :: pwgains
-    logical :: docgains
-    logical :: dowgains
-    double precision dimension(2) :: timetab
-    double precision :: dtime
-    complex dimension(192,2) :: gains
-    integer :: t1
-    integer :: t2
-    integer :: nsols
-    integer :: nants
-    integer :: nfeeds
-    integer :: ngains
-    integer :: ntau
-    integer :: gitem
-    integer dimension(2) :: solno
-    logical dimension(192,2) :: gflag
-    logical :: dogains
-    logical :: dotau
-    common /uvgnc/ sfreq,sdf,freq0,tno,vwide,vline,nchan,nspect,nschan,pflags,pdat,ndat,ptab,ntab,pfreq,nfreq,dopass,aver,first
-    common /uvgnb/ ncgains,nwgains,ncbase,nwbase,pcgains,pwgains,docgains,dowgains
-    common /uvgna/ timetab,dtime,gains,t1,t2,nsols,nants,nfeeds,ngains,ntau,gitem,solno,gflag,dogains,dotau
-end subroutine uvgnini
 subroutine uvgngnin ! in subs/uvgn.f
     double precision dimension(16) :: sfreq
     double precision dimension(16) :: sdf
@@ -13350,61 +13300,6 @@ subroutine uvgnfin ! in subs/uvgn.f
     common /uvgnb/ ncgains,nwgains,ncbase,nwbase,pcgains,pwgains,docgains,dowgains
     common /uvgna/ timetab,dtime,gains,t1,t2,nsols,nants,nfeeds,ngains,ntau,gitem,solno,gflag,dogains,dotau
 end subroutine uvgnfin
-subroutine uvgnfac(time,baseline,pol,dowide,data,flags,nread,grms) ! in subs/uvgn.f
-    double precision :: time
-    double precision :: baseline
-    integer :: pol
-    logical :: dowide
-    complex dimension(nread) :: data
-    logical dimension(nread),depend(nread) :: flags
-    integer optional,check(len(data)>=nread),depend(data) :: nread=len(data)
-    real :: grms
-    double precision dimension(16) :: sfreq
-    double precision dimension(16) :: sdf
-    double precision :: freq0
-    integer :: tno
-    integer :: vwide
-    integer :: vline
-    integer :: nchan
-    integer :: nspect
-    integer dimension(16) :: nschan
-    integer dimension(2) :: pflags
-    integer dimension(2) :: pdat
-    integer dimension(2) :: ndat
-    integer :: ptab
-    integer :: ntab
-    integer dimension(2) :: pfreq
-    integer dimension(2) :: nfreq
-    logical :: dopass
-    logical :: aver
-    logical :: first
-    integer :: ncgains
-    integer :: nwgains
-    integer :: ncbase
-    integer :: nwbase
-    integer :: pcgains
-    integer :: pwgains
-    logical :: docgains
-    logical :: dowgains
-    double precision dimension(2) :: timetab
-    double precision :: dtime
-    complex dimension(192,2) :: gains
-    integer :: t1
-    integer :: t2
-    integer :: nsols
-    integer :: nants
-    integer :: nfeeds
-    integer :: ngains
-    integer :: ntau
-    integer :: gitem
-    integer dimension(2) :: solno
-    logical dimension(192,2) :: gflag
-    logical :: dogains
-    logical :: dotau
-    common /uvgnc/ sfreq,sdf,freq0,tno,vwide,vline,nchan,nspect,nschan,pflags,pdat,ndat,ptab,ntab,pfreq,nfreq,dopass,aver,first
-    common /uvgnb/ ncgains,nwgains,ncbase,nwbase,pcgains,pwgains,docgains,dowgains
-    common /uvgna/ timetab,dtime,gains,t1,t2,nsols,nants,nfeeds,ngains,ntau,gitem,solno,gflag,dogains,dotau
-end subroutine uvgnfac
 subroutine uvgncwap(dowide,ant1,ant2,data,flags,nread) ! in subs/uvgn.f
     logical :: dowide
     integer :: ant1
