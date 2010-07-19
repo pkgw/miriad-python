@@ -38,12 +38,12 @@ orig_LIBS="$LIBS"
 orig_CFLAGS="$CFLAGS"
 
 if test x"$with_miriad" = xnoextra ; then
-  MIR_LIBS="-lmir -lmir_uvio -lmir_linpack -lpgplot"
+  MIR_LIBS="-lmir -lpgplot"
   MIR_CFLAGS=""
   MIR_DISTCHECK_CONFARG=""
   miriad_loc="system search path"
 else
-  MIR_LIBS="-L${with_miriad}/lib -lmir -lmir_uvio -lmir_linpack -lpgplot"
+  MIR_LIBS="-L${with_miriad}/lib -lmir -lpgplot"
   MIR_CFLAGS="-I${with_miriad}/include/miriad-c"
   MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
   LIBS="-L${with_miriad}/lib $LIBS"
@@ -58,8 +58,8 @@ if $failed ; then
   AC_MSG_ERROR([Couldn't find Miriad headers. Try the --with-miriad argument.])
 fi
 
-AC_CHECK_LIB([mir], [wrhda_], failed=false, failed=true, [-lmir_uvio -lmir_linpack -lpgplot])
-AC_CHECK_LIB([mir], [bugrecover_c], nobrc=false, nobrc=true, [-lmir_uvio -lmir_linpack -lpgplot])
+AC_CHECK_LIB([mir], [wrhda_], failed=false, failed=true, [-lpgplot])
+AC_CHECK_LIB([mir], [bugrecover_c], nobrc=false, nobrc=true, [-lpgplot])
 
 LIBS="$orig_LIBS"
 CFLAGS="$orig_CFLAGS"

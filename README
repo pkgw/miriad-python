@@ -40,7 +40,7 @@ operation of miriad-python. Installations of Miriad with source code
 more recent than February 13, 2009 should work. (Version numbers
 aren't very helpful in this case because Miriad release are almost
 never made.) The particular error is a lack of the bugrecover_c 
-function, which should be found in the libmir_uvio library. Consult
+function, which should be found in the libmir library. Consult
 your local Miriad-installation guru for more help if you're not sure
 how to react to this situation.
 
