@@ -20,8 +20,25 @@
 import sys, os, re, math
 import os.path
 from os.path import join
-from subprocess import Popen, CalledProcessError, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT
 import miriad
+
+# Compatibility with Python 2.4. It seems safest to give the exception
+# class a unique name so that callers don't build in a Python >=2.5
+# dependency by expecting our exception class to be CalledProcessError
+# itself.
+try:
+    from subprocess import CalledProcessError as _CPE
+    class TaskFailError (_CPE): pass
+    del _CPE
+except ImportError:
+    class TaskFailError (Exception):
+        def __init__ (self, returncode, cmd):
+            self.returncode = returncode
+            self.cmd = cmd
+        def __str__ (self):
+            return "Command '%s' returned non-zero exit status %d" % (self.cmd,
+                                                                      self.returncode)
 
 _defaultDevice = '/xs'
 
@@ -170,7 +187,7 @@ class MiriadSubprocess (Popen):
             print >>log, 'Command line:', ' '.join (self.command)
             print >>log, 'Task output was not captured; it may be printed above.'
 
-        raise CalledProcessError (self.returncode, ' '.join (self.command))
+        raise TaskFailError (self.returncode, ' '.join (self.command))
 
 
     def checkFailPipe (self, stdout, stderr, log=None):
@@ -193,7 +210,7 @@ class MiriadSubprocess (Popen):
             for l in stderr:
                 print >>log, '\t', l
 
-        raise CalledProcessError (self.returncode, ' '.join (self.command))
+        raise TaskFailError (self.returncode, ' '.join (self.command))
 
 
     def checkwait (self, failok=False, log=None):
