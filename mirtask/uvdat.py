@@ -24,6 +24,22 @@ from miriad import VisData
 
 __all__ = []
 
+# Python 2.4 compatibility: no try/finally in generators. Trying
+# this raises a SyntaxError, which can't be caught within a module,
+# but can be on import
+
+try:
+    from _uvdat_compat_default import _inputSets, _readFileLowlevel_gen
+except SyntaxError:
+    import sys
+    v = sys.version_info[0] * 1000 + sys.version_info[1]
+    if v >= 2005:
+        # Genuine syntax error!
+        raise
+    del v, sys
+    from _uvdat_compat_24 import _inputSets, _readFileLowlevel_gen
+
+
 def init (flags, keyword='vis'):
     """Initialize standard UV data reading subsystem. If you are
 writing a standalone task, you should use keys.doUvdat() rather
@@ -64,37 +80,12 @@ class UVDatDataSet (UVDataSet):
     def _close (self):
         ll.uvdatcls ()
 
+
 def inputSets ():
-    """Generate a sequence of DataSet objects representing the
-visdata input sets."""
+    # Implemented in one of _uvdat_compat_default or _uvdat_compat_24
+    # thanks to compatibility issues with Python 2.4
+    return _inputSets (UVDatDataSet)
 
-    ds = None
-
-    try:
-        while True:
-            if ds is not None and ds.isOpen (): ds.close ()
-
-            try:
-                (status, tin) = ll.uvdatopn ()
-            except:
-                # If bug() is called (e.g. "Invalid preamble" error)
-                # we can get a MiriadError without
-                # status=False. Experiments with calling this a lot
-                # indicate that uvdatcls should be called to reset the
-                # UV data system so Python can chug along worry-free.
-                ll.uvdatcls ()
-                raise
-
-            if not status: break
-
-            ds = UVDatDataSet (tin)
-            yield ds
-    finally:
-        # In case of exception, clean up after ourselves.
-        if ds is not None and ds.isOpen (): ds.close ()
-        
-    if ds is None:
-        raise RuntimeError ('No input UV data sets?')
 
 def singleInputSet ():
     """Get a single DataSet object representing the visdata input set.
@@ -137,6 +128,7 @@ def readAll (maxchan = 4096):
         for t in readData (maxchan=maxchan):
             yield (ds, ) + t
 
+
 def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
                       select=None, line=None, stokes=None, ref=None,
                       maxchan=4096):
@@ -174,25 +166,10 @@ def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
     data = N.zeros (maxchan, dtype=N.complex64)
     flags = N.zeros (maxchan, dtype=N.int32)
 
-    uvdatrd = ll.uvdatrd
-    rewrite = inp.rewriteFlags
+    # Python 2.4 compat ...
+    return _readFileLowlevel_gen (inp, saveFlags, ll.uvdatrd, preamble,
+                                  data, flags, maxchan, inp.rewriteFlags)
 
-    try:
-        if saveFlags:
-            while True:
-                nread = uvdatrd (preamble, data, flags, maxchan)
-                if nread == 0: break
-
-                yield inp, preamble, data, flags, nread
-                rewrite (flags)
-        else:
-            while True:
-                nread = uvdatrd (preamble, data, flags, maxchan)
-                if nread == 0: break
-
-                yield inp, preamble, data, flags, nread
-    finally:
-        if inp.isOpen (): inp.close ()
 
 # Variable probes
 

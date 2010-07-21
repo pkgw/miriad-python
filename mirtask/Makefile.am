@@ -29,7 +29,9 @@ mtpy_PYTHON = \
   keys.py \
   readgains.py \
   util.py \
-  uvdat.py
+  uvdat.py \
+  _uvdat_compat_24.py \
+  _uvdat_compat_default.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
 mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
