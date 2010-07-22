@@ -51,12 +51,9 @@ else
   miriad_loc="$with_miriad"
 fi
 
-AC_CHECK_HEADER([miriad.h], failed=false, failed=true,
-[#include "hio.h"])
-
-if $failed ; then
-  AC_MSG_ERROR([Couldn't find Miriad headers. Try the --with-miriad argument.])
-fi
+AC_CHECK_HEADER([miriad.h],[],[
+  AC_MSG_ERROR([Couldn't find Miriad headers. See README on --with-miriad.])
+],[#include "hio.h"])
 
 AC_CHECK_LIB([mir], [wrhda_],[
   dnl Check succeeded
@@ -71,7 +68,7 @@ AC_CHECK_LIB([mir], [wrhda_],[
     mirextra="$maybemirextra"
   ],[
     dnl Still failed.
-    AC_MSG_ERROR([Couldn't find Miriad libraries. Try the --with-miriad argument.])
+    AC_MSG_ERROR([Couldn't find Miriad libraries. See README on --with-miriad.])
   ],[$maybemirextra])
 ])
 

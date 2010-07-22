@@ -24,6 +24,31 @@ with him if you have any questions, particularly if you have trouble
 installing or using Miriad-Python.
 
 
+--with-miriad
+=============
+
+Miriad-Python needs to be linked with the MIRIAD shared library, and
+hence you must tell the software where to find this library. This will
+almost always be done with the --with-miriad=PATH argument to
+the 'configure' script. Here, PATH is the *prefix* in which MIRIAD
+has been installed. The following files should exist:
+
+  PATH/include/miriad-c/miriad.h
+  PATH/lib/libmir.so (the precise name of this may vary with OS)
+
+This setup is only compatible with MIRIAD software built with the
+"new-style" build system, which I (as the author of that build system)
+fully endorse.
+
+If you believe that you're specifying the correct --with-miriad
+argument and the 'configure' checks are still failing, you can peruse
+the file 'config.log', created by 'configure', for the particular error
+that led the tool to fail. Sometimes unrelated problems can show up
+in this phase of the configuration process. If you still have trouble,
+consult your local system adminstrator (with complete contextual
+information) or the Miriad-Python author.
+
+
 bugrecover_c
 ============
 
