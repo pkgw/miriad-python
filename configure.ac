@@ -38,15 +38,15 @@ orig_LIBS="$LIBS"
 orig_CFLAGS="$CFLAGS"
 
 if test x"$with_miriad" = xnoextra ; then
-  MIR_LIBS="-lmir -lpgplot"
+  MIR_LIBS=""
   MIR_CFLAGS=""
   MIR_DISTCHECK_CONFARG=""
   miriad_loc="system search path"
 else
-  MIR_LIBS="-L${with_miriad}/lib -lmir -lpgplot"
+  MIR_LIBS="-L${with_miriad}/lib"
   MIR_CFLAGS="-I${with_miriad}/include/miriad-c"
   MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
-  LIBS="-L${with_miriad}/lib $LIBS"
+  LIBS="$MIR_LIBS $LIBS"
   CFLAGS="$MIR_CFLAGS $CFLAGS"
   miriad_loc="$with_miriad"
 fi
@@ -58,17 +58,30 @@ if $failed ; then
   AC_MSG_ERROR([Couldn't find Miriad headers. Try the --with-miriad argument.])
 fi
 
-AC_CHECK_LIB([mir], [wrhda_], failed=false, failed=true, [-lpgplot])
-AC_CHECK_LIB([mir], [bugrecover_c], nobrc=false, nobrc=true, [-lpgplot])
+AC_CHECK_LIB([mir], [wrhda_],[
+  dnl Check succeeded
+  mirextra=""
+],[
+  dnl Check failed - maybe older setup that needs extra libraries?
+  dnl Check for a different function name to avoid the configure cache
+  dnl from short-circuiting the check to failure.
+  maybemirextra="-lmir_uvio -lmir_linpack -lpgplot"
+  AC_CHECK_LIB([mir], [wrhdd_],[
+    dnl Succeeded.
+    mirextra="$maybemirextra"
+  ],[
+    dnl Still failed.
+    AC_MSG_ERROR([Couldn't find Miriad libraries. Try the --with-miriad argument.])
+  ],[$maybemirextra])
+])
 
+AC_CHECK_LIB([mir], [bugrecover_c], [],[
+  AC_MSG_ERROR([Miriad libraries too old; see README on bugrecover_c])
+], [$mirextra])
+
+MIR_LIBS="$MIR_LIBS -lmir $mirextra"
 LIBS="$orig_LIBS"
 CFLAGS="$orig_CFLAGS"
-
-if $failed ; then
-  AC_MSG_ERROR([Couldn't find Miriad libraries. Try the --with-miriad argument.])
-elif $nobrc ; then
-  AC_MSG_ERROR([Miriad libraries too old; see README on bugrecover_c])
-fi
 
 AC_SUBST(MIR_LIBS)
 AC_SUBST(MIR_CFLAGS)
