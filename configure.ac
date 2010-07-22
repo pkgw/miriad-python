@@ -100,7 +100,7 @@ AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
 
 AC_PATH_PROG(F2PY, f2py, false)
 if test x"$F2PY" = xfalse ; then
-   AC_MSG_ERROR([F2PY not found])
+   AC_MSG_ERROR([F2PY not found; see README on f2py])
 fi
 AC_SUBST(F2PY)
 

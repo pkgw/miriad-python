@@ -70,6 +70,33 @@ your local Miriad-installation guru for more help if you're not sure
 how to react to this situation.
 
 
+f2py
+====
+
+(This section documents an error that may be reported by the 'configure'
+script in certain conditions.)
+
+First of all, sorry for the terse error message produced by the
+'configure' program -- the tools we use make it really hard to produce
+helpful, descriptive output at that point.
+
+The source of this error is that your system does not have the "f2py"
+program available. This program is usually distributed with the Numpy
+package for numerical work in Python. If Numpy isn't available at all,
+you need to install it. You may also need to install additional packages
+to get the f2py program in particular. On most OSes, both pieces are 
+available as a prebuilt binary package that should be easy to install.
+Here are the package names for some common Linux distributions:
+
+    Fedora: numpy, numpy-f2py
+    Ubuntu: python-numpy
+  OpenSuSE: python-numpy
+
+If Numpy isn't available as a prebuilt binary package, you'll need to
+install it manually, instructions for which are beyond the scope of
+this document. See http://numpy.scipy.org.
+
+
 Copyright Notice
 ================
 
