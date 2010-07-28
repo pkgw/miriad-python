@@ -635,3 +635,7 @@ class TaskImGen (TaskBase):
 class TaskLinMos (TaskBase):
     _keywords = ['in_', 'out', 'rms']
     _options = ['taper', 'sensitivity', 'gain']
+
+
+class TaskImSub (TaskBase):
+    _keywords = ['in_', 'out', 'region', 'incr']
