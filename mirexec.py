@@ -639,3 +639,7 @@ class TaskLinMos (TaskBase):
 
 class TaskImSub (TaskBase):
     _keywords = ['in_', 'out', 'region', 'incr']
+
+
+class TaskImMedian (TaskBase):
+    _keywords = ['in_', 'out', 'size']
