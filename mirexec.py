@@ -643,3 +643,9 @@ class TaskImSub (TaskBase):
 
 class TaskImMedian (TaskBase):
     _keywords = ['in_', 'out', 'size']
+
+
+class TaskRegrid (TaskBase):
+    _keywords = ['in_', 'out', 'axes', 'tin', 'desc', 'project',
+                 'rotate', 'tol']
+    _options = ['noscale', 'offset', 'nearest', 'galeqsw', 'equisw']
