@@ -199,10 +199,6 @@ visibility to another."""
 
     return _getOneInt ('pol')
 
-def getCurrentTno ():
-    """Return the 'tno' of the current file being processed."""
-    return _getOneInt ('number')
-
 def getNChan ():
     """Return the number of channels being processed."""
     return _getOneInt ('nchan')
