@@ -15,18 +15,10 @@ visdata input sets."""
         while True:
             if ds is not None and ds.isOpen (): ds.close ()
 
-            try:
-                (status, tin) = ll.uvdatopn ()
-            except:
-                # If bug() is called (e.g. "Invalid preamble" error)
-                # we can get a MiriadError without
-                # status=False. Experiments with calling this a lot
-                # indicate that uvdatcls should be called to reset the
-                # UV data system so Python can chug along worry-free.
-                ll.uvdatcls ()
-                raise
+            (status, tin) = ll.uvdatopn ()
 
-            if not status: break
+            if not status:
+                break
 
             ds = UVDatDataSet (tin)
             yield ds

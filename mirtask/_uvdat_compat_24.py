@@ -10,11 +10,7 @@ visdata input sets."""
     try:
         while True:
             if ds is not None and ds.isOpen (): ds.close ()
-            try:
-                (status, tin) = ll.uvdatopn ()
-            except:
-                ll.uvdatcls ()
-                raise
+            (status, tin) = ll.uvdatopn ()
             if not status: break
             ds = UVDatDataSet (tin)
             yield ds

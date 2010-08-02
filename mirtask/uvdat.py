@@ -92,15 +92,31 @@ def singleInputSet ():
 You should only use this function if you pass the 'b' option to
 init ().
 """
-    try:
-        tin = None
-        (status, tin) = ll.uvdatopn ()
-    except:
-        # See above.
-        ll.uvdatcls ()
-        raise
 
-    if not status: raise RuntimeError ('Unable to open input data set!')
+    # In certain cases (e.g. an empty dataset, which yields an
+    # "Invalid preamble time/baseline" MiriadError if there's no coord
+    # UV variable), UVDATOPN can fail with a bug('f') call but still
+    # leave the dataset opened. This means that too many successive
+    # such failures will fill up MIRIAD's static buffer of UV dataset
+    # information and make it impossible to open more datasets. This
+    # could be solved by catching the exception and calling
+    # UVDATCLS().
+    #
+    # On the other hand, if, say, the desired dataset doesn't exist,
+    # then we get a MiriadError without having the dataset opened, and
+    # if we call UVDATCLS, we segfault.
+    #
+    # I haven't yet figured out a way to handle both of these cases
+    # cleanly. With some hacking of UVDATOPN or the uvdat module
+    # in general, something could be worked out. In the meantime, we
+    # prefer to avoid the segfault.
+    #
+    # Similar code is relevant in _uvdat_compat_*:inputSets.
+
+    (status, tin) = ll.uvdatopn ()
+
+    if not status:
+        raise RuntimeError ('No input datasets?!')
 
     # Count on the user or the __del__ to close this.
     return UVDatDataSet (tin)
