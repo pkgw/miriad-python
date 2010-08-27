@@ -34,7 +34,8 @@ the 'configure' script. Here, PATH is the *prefix* in which MIRIAD
 has been installed. The following files should exist:
 
   PATH/include/miriad-c/miriad.h
-  PATH/lib/libmir.so (the precise name of this may vary with OS)
+  PATH/lib/libmir.so (the precise name of this may vary with OS;
+                      on Macs, it will be libmir.dylib)
 
 This setup is only compatible with MIRIAD software built with the
 "new-style" build system, which I (as the author of that build system)
