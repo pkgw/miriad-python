@@ -122,7 +122,7 @@ init ().
     return UVDatDataSet (tin)
 
 def readData (maxchan = 4096):
-    """Generate a sequence of (preamble, data, flags, nread) tuples representing
+    """Generate a sequence of (preamble, data, flags) tuples representing
 the visibility data in the current file. Must be called with a UVDatDataSet having
 been opened, such as from calling singleInputSet() or inputSets()."""
     
@@ -135,7 +135,7 @@ been opened, such as from calling singleInputSet() or inputSets()."""
 
         if nread == 0: break
 
-        yield (preamble, data, flags, nread)
+        yield preamble, data[:nread], flags[:nread]
 
 def readAll (maxchan = 4096):
     """Yield the data from all of the input datasets sequentially."""

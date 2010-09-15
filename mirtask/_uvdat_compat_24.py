@@ -29,13 +29,14 @@ def _readFileLowlevel_gen (inp, saveFlags, uvdatrd, preamble,
             while True:
                 nread = uvdatrd (preamble, data, flags, maxchan)
                 if nread == 0: break
-                yield inp, preamble, data, flags, nread
-                rewrite (flags)
+                f = flags[:nread]
+                yield inp, preamble, data[:nread], f
+                rewrite (f)
         else:
             while True:
                 nread = uvdatrd (preamble, data, flags, maxchan)
                 if nread == 0: break
-                yield inp, preamble, data, flags, nread
+                yield inp, preamble, data[:nread], flags[:nread]
     except:
         if inp.isOpen (): inp.close ()
     else:
