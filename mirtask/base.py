@@ -886,9 +886,11 @@ class MaskItem (object):
         return ll.mkread (self.handle, mode, flags, offset, n)
 
 
-    def write (self, mode, flags, offset, n):
+    def write (self, mode, flags, offset, n=None):
         if mode not in _maskModes:
             raise ValueError ('Unexpected mask mode %d' % mode)
+        if n is None:
+            n = flags.size
         self._checkOpen ()
         ll.mkwrite (self.handle, mode, flags, offset, n)
 
