@@ -148,8 +148,6 @@ def readAll (maxchan = 4096):
 def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
                       select=None, line=None, stokes=None, ref=None,
                       maxchan=4096):
-    import keys
-
     # Set up args
 
     args = ['miriad-python', 'vis=' + fn]
@@ -174,7 +172,7 @@ def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
     # Do the actual reading -- copy what readData does for
     # greater speed.
         
-    keys.init (args)
+    ll.keyini (args)
     init (flags)
     inp = singleInputSet ()
 

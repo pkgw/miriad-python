@@ -15,249 +15,498 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-'''mirtask.keys - wrappers for the MIRIAD keyword handline routines
+'''mirtask.keys - process task arguments in the MIRIAD style'''
 
-Public routines are:
-
-keyword  - Register a keyword
-keymatch - Register a keymatch keyword (like an enumeration)
-option   - Register an option
-init     - Tell the keyword routines what our arguments were.
-process  - Process keywords and return an object with the arguments.
-'''
-
-
-import sys
 import lowlevel as ll
-import numpy
-from mirtask import MiriadError
-
-__all__ = []
-
-# Constant indicating that the keyword represents a file input.
-file = '_file_keyword'
 
 class KeyHolder (object):
-    """An empty subclass of object that will have fields
-set to the values of keys by the key-handling routines."""
+    """:synopsis: Methodless object that holds keyword data
+
+This class is merely an empty subclass of :class:`object`. Instances
+of it are created in and returned by
+:meth:`mirtask.keys.KeySpec.process` for holding values of keyword
+arguments to a task.
+"""
     pass
 
-_keywords = {}
-_okkinds = ['a', 'i', 'd', 'f', 't', 'b']
-_okfmts = ['dms', 'hms', 'dtime', 'atime', 'time']
 
-def keyword (name, kind, default, nmax=1, timefmt=None):
-    """Register a keyword with the key-handling system. Parameters:
+def _get_unlimited (name, mget):
+    # Get a potentially unlimited number of values for a keyword
+    # using the function 'mget', which satisfies
+    # 
+    # mget (name, nmax) -> list of values (length <= nmax)
 
-name    - The name of the keyword.
-kind    - The keyword kind: 'f' for filename, 'a' for textual string,
-          'i' for integer, 'd' for double, 'b' for boolean, and 't'
-          for time or angle.
-default - The default value of the keyword. The default for a multivalued
-          keyword is ignored and should be None.
-nmax    - The maximum number of items to return for this keyword. Defaults
-          to 1, indicating a single-value keyword.
-timefmt - The expected format of the time value. Only needed if kind is 't'.
-          Allowed values are:
+    allvals = []
 
-          dms   - Angle given in dd:mm:ss.s or dd.ddd; output in radians.
-          hms   - Angle given in hh:mm:ss.s or hh.hhh; output in radians.
-          dtime - Day fraction given in hh:mm:ss.s or hh.hhh; output is
-                  a day fraction between 0 and 1.
-          atime - Absolute time, given in yymmmdd.ddd or yymmdd:hh:mm:ss.s
-                  or an epoch (bYYYY or jYYYY); output in Julian days.
-          time  - Either an absolute time or a day fraction; output is either
-                  a day fraction or Julian days.
+    while True:
+        newvals = mget (name, 100)
+        if len (newvals) == 0:
+            break
+        allvals += newvals
+
+    return allvals
+
+
+def _mget (name, mget, nmax, format):
+    """Get multiple values for a keyword using the function *mget*. If
+*nmax* is None, a potentially unlimited number of values is returned;
+otherwise at most *nmax* are. If *format* is not None, it is passed to
+*mget* as an argument."""
+
+    if format is None:
+        if nmax is None:
+            return _get_unlimited (name, mget)
+        return mget (name, nmax)
+
+    if nmax is None:
+        return _get_unlimited (name,
+                               lambda name, nmax: mget (name, nmax, format))
+
+    return mget (name, nmax, format)
+
+
+def _get_string (name, default):
+    # MIRIAD parses commas in string-valued keywords: if I pass
+    # keyword=val,with,comma to MIRIAD, keya() returns only "val".
+    # This can be somewhat confusing, so in the case that a single
+    # string value is requested, use mkeya to get every value (from
+    # MIRIAD's point of view) and stitch them into a single string.
+    vals = _get_unlimited (name, ll.mkeya)
+    if len (vals) == 0:
+        return default
+    return ','.join (vals)
+
+
+def _make_getters (coerce, useFormat, llget, llmget):
+    if useFormat:
+        def get (name, format, default):
+            return llget (name, format, coerce (default))
+        def mget (name, format, nmax):
+            return _mget (name, llmget, nmax, format)
+    else:
+        def get (name, format, default):
+            return llget (name, coerce (default))
+        def mget (name, format, nmax):
+            return _mget (name, llmget, nmax, None)
+
+    return get, mget
+
+
+_typeinfo = {
+    # Mapping is (kind) -> (single-key-fetch-func, multi-key-fetch-func)
+    'i': _make_getters (int, False, ll.keyi, ll.mkeyi),
+    'd': _make_getters (float, False, ll.keyd, ll.mkeyd),
+    'f': _make_getters (str, False, ll.keyf, ll.mkeyf),
+    'a': _make_getters (str, False, _get_string, ll.mkeya),
+    't': _make_getters (str, True, ll.keyt, ll.mkeyt),
+}
+
+_formatinfo = {
+    # Mapping is (kind) -> (set of valid format values)
+    't': set (('dms', 'hms', 'dtime', 'atime', 'time')),
+}
+
+
+def _check_misc (name, kind, format):
+    if kind not in _typeinfo:
+        raise ValueError ('Unknown type %s for keyword %s' % (kind, name))
+
+    if kind not in _formatinfo:
+        if format is not None:
+            raise ValueError ('Format type %s not needed for keyword %s '
+                              'of kind %s' % (format, name, kind))
+    else:
+        if format is None:
+            raise ValueError ('Must specify format for keyword %s' % name)
+        if format not in _formatinfo[kind]:
+            raise ValueError ('Unknown format type %s for keyword %s' % \
+                                  (format, name))
+
+
+KT_SINGLE, KT_MULTI, KT_KEYMATCH, KT_CUSTOM = range (4)
+
+class KeySpec (object):
+    """:synopsis: Specifies the structure of keywords expected by a task.
+
+A :class:`~KeySpec` object is used to specify the keywords accepted by
+a task and then retrieve their values given a set of command-line
+arguments. Its usage is outlined in the :ref:`module documentation
+<pytaskskeys>`.
 """
+    _uvdatFlags = None
+    _uvdatCals = None
+    _uvdatViskey = None
 
-    if name in _keywords: raise Exception ('Keyword already registered')
-    if kind not in _okkinds: raise Exception ('Unknown keyword kind')
+    def __init__ (self):
+        self._keywords = {}
+        self._options = set ()
 
-    if kind == 't':
-        if timefmt is None:
-            raise Exception ('Must provide a time format for a time keyword')
-        if timefmt not in _okfmts:
-            raise Exception ('Illegal time format ' + timefmt)
 
-    if kind == 'b' and nmax != 1:
-        raise Exception ('Cannot have multivalued boolean keyword')
-    
-    _keywords[name] = (kind, nmax, default, None, timefmt)
+    def keyword (self, name, kind, default, format=None):
+        """Declare a single-valued keyword.
 
-def keymatch (name, nmax, allowed):
-    """Register an expanded multi-match (MIRIAD keymatch) keyword. Parameters:
+:arg name: the name of the keyword
+:type name: :class:`str`
+:arg kind: the kind of the keyword (see :ref:`keywordtypes`)
+:type kind: a single character
+:arg default: the default value of the keyword
+:type default: any
+:arg format: an optional format specifying how the keyword should be
+             parsed (see :ref:`keywordformats`)
+:type format: :const:`None` or :class:`str`
+:rtype: :class:`KeySpec`
+:returns: self
 
-name    - The name of the multi-match keyword
-nmax    - The maximum number of items in allowed in the keyword value
-allowed - The full list of allowed item values.
+This function declares a single-valued keyword. If the user doesn't
+specify the keyword, it will take on the value *default* (after an
+attempt to coerce it to the correct type, which might raise an
+exception).
+
+If the keyword *kind* is "t", then the parse format *format* must be
+specified.
+
+If the keyword *kind* is "a" (character string), the MIRIAD subsystems
+will consider the keyword to have multiple values if commas occur in
+the string outside of parentheses. These semantics are overridden by
+miriad-python such that such a string value appears to be a single
+string. Thus::
+
+  ks = keys.KeySpec ()
+  ks.keyword ('demo', 'a', 'default')
+  opts = ks.process (['demo=a(1,2),b,c,d'])
+  print opts.demo
+
+yields ``'a(1,2),b,c,d'``, whereas::
+
+  ks = keys.KeySpec ()
+  ks.mkeyword ('demo', 'a', 'default')
+  opts = ks.process (['demo=a(1,2),b,c,d'])
+  print opts.demo
+
+yields ``['a(1,2)', 'b', 'c', 'd']``.
+
+If the user specifies multiple values for the keyword on the
+command-line, the keyword will take on the first value specified, and
+a warning will be issued.
+
+This function returns *self* for convenience in chaining calls.
 """
+        if not isinstance (name, basestring):
+            raise ValueError ('Keyword name "%s" must be a string' % name)
+        _check_misc (name, kind, format)
+        self._keywords[name] = (KT_SINGLE, kind, default, format)
+        return self
 
-    if name in _keywords: raise Exception ('Keyword already registered!')
 
-    _keywords[name] = (None, nmax, None, allowed, None)
+    def mkeyword (self, name, kind, nmax, format=None):
+        """Declare a multi-valued keyword.
 
-_options = set ()
+:arg name: the name of the keyword
+:type name: :class:`str`
+:arg kind: the kind of the keyword (see :ref:`keywordtypes`)
+:type kind: a single character
+:arg nmax: the maximum number of different values that each keyword may take
+:type nmax: :class:`int` or :const:`None`
+:arg format: an optional format specifying how the keyword should be
+             parsed (see :ref:`keywordformats`)
+:type format: :const:`None` or :class:`str`
+:rtype: :class:`KeySpec`
+:returns: self
 
-def option (*names):
-    """Register options with the key-handling system. Parameters:
+This function declares a multi-valued keyword. The value of the
+keyword is a list of the values provided by the user, or an empty list
+if the user doesn't specify any. If *nmax* is not :const:`None`, at
+most *nmax* values will be returned; if the user specifies more, a
+warning will be issued about the keyword not being fully consumed.
 
-*names - An arbitrary number of option names.
+If the keyword *kind* is "t", then the parse format *format* must be
+specified.
+
+This function returns *self* for convenience in chaining calls.
 """
+        if not isinstance (name, basestring):
+            raise ValueError ('Keyword name "%s" must be a string' % name)
+        _check_misc (name, kind, format)
+        self._keywords[name] = (KT_MULTI, kind, nmax, format)
+        return self
 
-    for name in names:
-        name = str (name)
-        
-        if name in _options: raise Exception ('Option "%s" already registered!' % name)
 
-        _options.add (name)
+    def keymatch (self, name, nmax, allowed):
+        """Declare a keyword with enumerated values.
 
-__all__ += ['keyword', 'keymatch', 'option']
+:arg name: the name of the keyword
+:type name: :class:`str`
+:arg nmax: the maximum number of values to process
+:type nmax: :class:`int`
+:arg allowed: the allowed values of the keyword
+:type allowed: an iterable of :class:`str`
+:rtype: :class:`KeySpec`
+:returns: self
 
-_uvdatFlags = None
-_uvdatCals = False
-_uvdatViskey = None
+This function declares a keyword that can take on one or more
+enumerated, textual values. The user can abbreviate values to
+uniqueness when specifying the keyword, and these abbreviations will
+be expanded upon processing. If *nmax* is not :const:`None`, at most
+*nmax* values will be returned; if the user specifies more, a warning
+will be issues about the keyword not being fully consumed.
 
-def doUvdat (flags, calOpts, viskey='vis'):
-    """Initialize the UVDAT subsystem when reading in keywords.
-Parameters:
+For example::
 
-flags   - Flags to the MIRIAD UVDATINP routine. See the documentation
-          to uvdat.init () for allowed flags and their meaning.
+  ks = keys.KeySpec ()
+  ks.keymatch ('demo', 3, ['phase', 'amplitude', 'real', 'imaginary'])
+  opts = ks.process (['demo=am,re,ph,im'])
+  print opts.demo
 
-calOpts - If true, automatically enable the calibration options 'nocal',
-          'nopass', and 'nopol', and apply calibrations in UVDAT unless
-          those options are given. You should use this mechanism instead
-          of passing the 'c', 'e', and 'f' flags to uvdat.init ()
+yields::
 
-Returns: None.
+  ['amplitude', 'real', phase']
+
+and a warning about the keyword not being fully consumed.
+
+This function returns *self* for convenience in chaining calls.
 """
-    global _uvdatFlags, _uvdatCals, _uvdatViskey
+        if not isinstance (name, basestring):
+            raise ValueError ('Keyword name "%s" must be a string' % name)
+        self._keywords[name] = (KT_KEYMATCH, nmax, allowed)
+        return self
 
-    _uvdatFlags = flags
-    _uvdatCals = calOpts
-    _uvdatViskey = viskey
-    
-    if calOpts:
-        option ('nocal', 'nopol', 'nopass')
 
-__all__ += ['doUvdat']
+    def custom (self, name, handler):
+        """Declare a custom-handled keyword.
 
-def init (args=None):
-    """Re-initialize the MIRIAD database of keyword arguments. You do not
-need to call this function explicitly if you are going to call process (),
-since that function calls init () itself.
+:arg name: the name of the keyword
+:type name: :class:`str`
+:arg handler: a function that returns the keyword's value
+:type handler: callable
+:rtype: :class:`KeySpec`
+:returns: self
 
-Parameters:
+This function declares a keyword that will be specially handled. Upon
+keyword processing, the callable *handler* will be called with one
+argument, the *name* of the keyword. The keyword will take on whatever
+value is returned by *handler*.
 
-args - The argv array of this program. If None, sys.argv is used.
+The intended usage is for *handler* to manually invoke the lowlevel
+MIRIAD value-fetching routines found in :mod:`mirtask.lowlevel`, but
+you can obtain a value however you like.
+
+This function returns *self* for convenience in chaining calls.
 """
-    
-    if args is None: args = sys.argv
+        if not isinstance (name, basestring):
+            raise ValueError ('Keyword name "%s" must be a string' % name)
+        if not callable (handler):
+            raise ValueError ('handler must be callable')
+        self._keywords[name] = (KT_CUSTOM, handler)
+        return self
 
-    ll.keyini (args)
 
-def process (args=None):
-    """Process the arguments to this task. Returns an object with fields
-set to the values of the registered keyword and option arguments. A warning
-will be issued if any un-registered keywords or options were given.
+    def option (self, *names):
+        """Declare one or more options to be handled.
 
-Parameters:
+:arg names: the names of the options to declare
+:type names: tuple of :class:`str`
+:rtype: :class:`KeySpec`
+:returns: self
 
-args - The argv array of this program. If None, sys.argv is used.
+This function declares one or more of options that will be
+handled. Each option takes on the value :const:`True` if it is
+specified in the "options=" line by the user, and :const:`False`
+otherwise. You can call this function multiple times.
+
+This function returns *self* for convenience in chaining calls.
 """
+        for name in names:
+            self._options.add (str (name))
+        return self
 
-    init (args)
-    
-    res = KeyHolder ()
-    
-    # Keywords
 
-    for name, (kind, nmax, default, mmallowed, timefmt) in _keywords.iteritems ():
-        if mmallowed is not None:
-            # This is a keymatch keyword. Easy since there is no multiplexing
-            # by type.
-            val = ll.keymatch (name, mmallowed, nmax)
+    def uvdat (self, flags, addCalOpts=True, viskey='vis'):
+        """Declare that this task will make use of the UVDAT subsystem.
+
+:arg flags: see below
+:type flags: :class:`str`
+:arg addCalOpts: whether the standard calibration options should be used
+:type addCalOpts: :class:`bool`
+:arg viskey: the keyword from which to take input dataset names
+:type viskey: :class:`str`
+:rtype: :class:`KeySpec`
+:returns: self
+
+Calling this functions indicates that the MIRIAD UVDAT subsystem should
+be initialized when command-line arguments are processed. If this is done,
+several keywords and options may be automatically processed by the UVDAT
+subsystem to set up the subsequent reading of UV data.
+
+The *flags* argument is a character string that controls optional
+behavior of the UVDAT subsystem. Each feature in the subsystem is
+identified with a character; if that character is present in *flags*,
+the corresponding feature is enabled. Features that enable the
+processing of certain keywords are:
+
+==========      ==================
+Character       Feature behavior
+==========      ==================
+*d*             Input data should be filtered via the standard
+                "select" keyword.
+*l*             Input spectral data should be processed via the
+                standard "line" keyword.
+*s*             Input data should be polarization-processed via
+                the standard "stokes" keyword.
+*r*             Input data should be divided by a reference 
+                via the standard "ref" keyword.
+==========      ==================
+
+There are also features that control the format of the data returned
+by the UVDAT routines:
+
+==========      ==================
+Character       Feature behavior
+==========      ==================
+*p*             Planet rotation and scaling corrections should be applied.
+*w*             UVW coordinates should be returned in wavelength units, not
+                nanoseconds. (Beware when writing these data to new UV 
+                datasets, as the output routines expect the values to
+                be in nanoseconds.)
+*1*             (The character is the number one.) Average the data
+                down to one channel.
+*x*             The input data must be cross-correlations.
+*a*             The input data must be autocorrelations.
+*b*             The input must be exactly one UV dataset (not multiple).
+*3*             The "preamble" returned while reading data will always have 5
+                elements and include the *w* coordinate.
+==========      ==================
+
+If *addCalOpts* is :const:`True`, three options will be enabled: the
+standard "nocal", "nopass", and "nopol". These control which kinds of
+on-the-fly calibrations are applied to the data. (These options are
+implemented by additional flags that may be passed to the
+UVDAT initialization function, UVDATINP. See its documentation for
+more information.) If *addCalOpts* is :const:`False`, no on-the-fly
+calibrations will be applied, even if all of the necessary information
+is present in the input data.
+
+It is possible to specify which keyword is used to obtain the names of
+the UV datasets that UVDAT will read. By MIRIAD convention this
+keyword is "vis". The argument *viskey* allows you to override this
+default, however.
+
+Unless your task has unusual needs, it is recommended that you supply
+at least the flags "dlsr" and leave *addCalOpts* as :const:`True` as
+well as *viskey* as "vis".
+"""
+        self._uvdatFlags = flags
+        self._uvdatCals = addCalOpts
+        self._uvdatViskey = viskey
+
+        if addCalOpts:
+            self.option ('nocal', 'nopol', 'nopass')
+        return self
+
+
+    def process (self, args=None):
+        """Process arguments and return their values.
+
+:arg args: an optional array of argument values
+:type args: iterable of :class:`str`
+:rtype: :class:`KeyHolder`
+:returns: data structure containing keyword values
+
+This function processes the command-line arguments and returns an
+object containing keyword and option values. If *args* is
+:const:`None`, the command-line arguments contained in :data:`sys.argv`
+are used; otherwise, *args* should be an array of :class:`str` to be
+interpreted as the command-line arguments. The initial element of
+*args* should be the first command-line parameter, *not* the name of
+the executable. *I.e.*, to pass :data:`sys.argv` to this function
+manually, the correct code is::
+
+  ks.process (sys.argv[1:]) # correct but complicated
+  ks.process (None) # same semantics
+
+The return value is a :class:`KeyHolder` object with an attribute set
+for each declared keyword and option; the value of each attribute
+depends on the way in which it was declared. (See documentation of the
+associated functions.)
+
+If :meth:`KeySpec.uvdat` was called, the MIRIAD UVDAT subsystem is
+also (re)initialized upon a call to this function using the parameters
+set in the call to :meth:`KeySpec.uvdat`.
+
+If an argument cannot be converted to its intended type, or the UVDAT
+subsytem encounters an error initializing, a
+:class:`~miriad.MiriadError` will be raised. If there are unrecognized
+keywords or extra values specified for a given keyword, a warning,
+*not* an error, will be issued.
+"""
+        from sys import argv
+
+        if args is None:
+            ll.keyini (argv)
         else:
-            # Not a keymatch keyword
+            ll.keyini ([argv[0]] + list (args))
 
-            if nmax == 1:
-                # Single-valued too
+        res = KeyHolder ()
 
-                if kind == 'a':
-                    val = ll.keya (name, str (default))
-                elif kind == 'i':
-                    val = ll.keyi (name, int (default))
-                elif kind == 'd':
-                    val = ll.keyd (name, float (default))
-                elif kind == 'f':
-                    val = ll.keyf (name, str (default))
-                elif kind == 'b':
-                    val = bool (ll.keyl (name, int (bool (default))))
-                elif kind == 't':
-                    val = ll.keyt (name, timefmt, str (default))
-                else: raise Exception ('not reached')
-            else:
-                # Multi-valued
-                
-                if kind == 'a':
-                    val = ll.mkeya (name, nmax)
-                elif kind == 'i':
-                    val = ll.mkeyi (name, nmax)
-                elif kind == 'd':
-                    val = ll.mkeyd (name, nmax)
-                elif kind == 'f':
-                    val = ll.mkeyf (name, nmax)
-                elif kind == 't':
-                    val = ll.mkeyt (name, nmax, timefmt)
-                else: raise Exception ('not reached')
+        for name, info in self._keywords.iteritems ():
+            kt = info[0]
 
-        # Ok now we have the value. Woo.
+            if kt == KT_SINGLE:
+                kind, default, format = info[1:]
+                get, mget = _typeinfo[kind]
+                val = get (name, format, default)
+            elif kt == KT_MULTI:
+                kind, nmax, format = info[1:]
+                get, mget = _typeinfo[kind]
+                val = mget (name, format, nmax)
+            elif kt == KT_KEYMATCH:
+                nmax, allowed = info[1:]
+                val = ll.keymatch (name, allowed, nmax)
+            elif kt == KT_CUSTOM:
+                handler = info[1]
+                val = handler (name)
 
-        setattr (res, name, val)
+            setattr (res, name, val)
 
-    # Options. Must flatten the set() into an array
-    # to be sure our indexing is well-defined.
+        # Options. Must flatten the set() into an array
+        # to be sure our indexing is well-defined.
 
-    ml = 0
-    names = []
-    
-    for name in _options:
-        ml = max (ml, len (name))
-        names.append (name)
+        ml = 0
+        names = []
 
-    optarr = []
+        for name in self._options:
+            ml = max (ml, len (name))
+            names.append (name)
 
-    for i in range (0, len (names)):
-        optarr.append (names[i].ljust (ml, ' '))
+        optarr = []
 
-    present = ll.options ('options', optarr)
+        for name in names:
+            optarr.append (name.ljust (ml, ' '))
 
-    for i in range (0, len (names)):
-        setattr (res, names[i], present[i] != 0)
+        present = ll.options ('options', optarr)
 
-    # UVDAT initialization
+        for i, name in enumerate (names):
+            setattr (res, name, present[i] != 0)
 
-    if _uvdatFlags is not None:
-        import uvdat
+        # UVDAT initialization. UVDATINP can potentially
+        # raise a MiriadError if there are argument problems.
 
-        f = _uvdatFlags
-        
-        if _uvdatCals:
-            if not res.nocal: f += 'c'
-            if not res.nopass: f += 'f'
-            if not res.nopol: f += 'e'
+        if self._uvdatFlags is not None:
+            f = self._uvdatFlags
 
-        try:
-            uvdat.init (f, _uvdatViskey)
-        except MiriadError, e:
-            # Prettier error message if argument problem.
-            print 'Error:', e
-            sys.exit (1)
-    
-    # All done. Check if any unexhausted keywords.
+            if self._uvdatCals:
+                if not res.nocal:
+                    f += 'c'
+                if not res.nopass:
+                    f += 'f'
+                if not res.nopol:
+                    f += 'e'
 
-    ll.keyfin ()
-    
-    return res
+            ll.uvdatinp (self._uvdatViskey, f)
 
-__all__ += ['init', 'process']
+        # All done. Check for any unexhausted keywords.
+
+        ll.keyfin ()
+        return res
+
+
+__all__ = ['KeySpec']
