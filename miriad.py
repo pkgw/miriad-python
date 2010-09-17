@@ -172,7 +172,7 @@ and return. If not, raise an :class:`Exception`."""
 
 
     def path (self, *args):
-        """:rtype: :class:`str
+        """:rtype: :class:`str`
 :returns: A path composed of user-defined items relative to this
   dataset's path.
 """
