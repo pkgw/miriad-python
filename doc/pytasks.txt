@@ -21,4 +21,10 @@
 Writing Your Own MIRIAD Tasks
 =============================
 
-Blah blah.
+There are several things that you need to do to write your own
+MIRIAD tasks that blend in with the standard MIRIAD tasks.
+
+.. toctree::
+   :maxdepth: 3
+
+   pytasks-keys.txt

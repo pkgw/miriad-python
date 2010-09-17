@@ -25,7 +25,8 @@ dist_noinst_DATA = \
  executing.txt \
  index.txt \
  intro.txt \
- pytasks.txt
+ pytasks.txt \
+ pytasks-keys.txt
 
 # Temp hack: make sure the 'static' directory gets created
 EXTRA_DIST = static/.gitignore
@@ -33,7 +34,7 @@ EXTRA_DIST = static/.gitignore
 SCANNEDPY = \
  $(top_srcdir)/miriad.py
 
-BUILD = PYTHONPATH=$(top_srcdir):$$PYTHONPATH $(SPHINXBUILD) -d doctrees -c .
+BUILD = eval `$(top_builddir)/libtool --config |$(GREP) objdir=` ; PYTHONPATH=$(top_srcdir):$(top_builddir)/mirtask/$$objdir:$$PYTHONPATH $(SPHINXBUILD) -d doctrees -c .
 
 HTML_STAMP = sphinx-html.stamp
 

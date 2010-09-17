@@ -1,0 +1,203 @@
+.. Copyright 2009, 2010 Peter Williams
+
+   This file is part of miriad-python.
+
+   Miriad-python is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   Miriad-python is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
+.. _pytaskskeys:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+MIRIAD-Style Argument Handling: :mod:`mirtask.keys`
+===================================================
+
+.. module:: mirtask.keys
+   :synopsis: Process task arguments in the MIRIAD style.
+.. moduleauthor:: Peter Williams <peter@newton.cx>
+
+Like other UNIX programs, MIRIAD tasks accept input parameters from
+the user via command-line arguments. The way in which MIRIAD tasks do
+this, however, is different than the usual UNIX way.
+
+Each task defines a number of "keywords". The MIRIAD keyword-handling
+subsystem can be used to obtain zero or more values of each keyword
+from the command-line arguments. The values of a given keyword do not
+necessarily all have to be of the same type. The user specifies the
+values of these keywords on the command-line with an assignment
+syntax::
+
+  invert vis=3c286.uv map=3c286.mp imsize=824,724 slop=0.5 select='ant(1,3),pol(xx)'
+
+Here, the *vis* keyword has a single string value (interpretable
+specifically as a filename), the *imsize* keyword has two integer
+values, and the *select* keyword has two string values. (Note that the
+keyword-handling routines process parentheses in string-valued
+keywords and do *not* consider the keyword to have the values "ant(1",
+"3)", and "pol(xx)".)
+
+Boolean-valued keywords are called "options" and are implemented by an
+*options* pseudo-keyword::
+
+  invert options=mfs,double
+
+Here the options *mfs* and *double* have :const:`True` values while
+all other options are :const:`False`.
+
+Handling keywords in miriad-python
+----------------------------------
+
+Tasks in MIRIAD obtain the values of keywords in a procedural way. In
+miriad-python, keywords are generally specified declaratively and
+their values are obtained automatically, although there is support for
+the more general procedural approach.
+
+To parse arguments in a miriad-python task:
+
+#. Instantiate a :class:`KeySpec` object.
+#. Specify the keywords your task accepts.
+#. Use the :meth:`KeySpec.process` method to obtain a data structure
+   populated with the settings for all keywords based on your
+   specification.
+
+Here's a simple example::
+
+  from mirtask import keys
+
+  ks = keys.KeySpec ()
+  ks.keyword ('param', 'd', 0.25)
+  ks.keyword ('mode', 'a', 'deconvolve')
+  ks.option ('verbose', 'noop')
+
+  opts = ks.process ()
+  if opts.param < 0:
+     die ('"param" must be positive, not %f' % opts.param)
+  if opts.mode not in ('deconvolve', 'stirfry'):
+     die ('Unknown operation mode "%s"' % opts.mode)
+  if opts.verbose:
+     print "Being verbose starting now!"
+
+The methods on :class:`KeySpec` to define keywords are:
+
+* :meth:`~KeySpec.keyword` defines a keyword that takes a single,
+  typed value, with a default if the keyword is left unspecified.
+* :meth:`~KeySpec.mkeyword` defines a keyword that takes multiple
+  values of the same type.
+* :meth:`~KeySpec.keymatch` defines a keyword that takes on one or
+  more enumerated values with minimum-match string expansion.
+* :meth:`~KeySpec.option` defines one or more options.
+* :meth:`~KeySpec.custom` defines a keyword that is handled in a
+  custom way by the caller.
+
+The object returned by :meth:`~KeySpec.process` has an attribute
+for each keyword defined using the above functions.
+
+* For keywords defined with :meth:`~KeySpec.keyword`, the attribute is
+  equal to the user's provided value or the default.
+* For keywords defined with :meth:`~KeySpec.mkeyword`, the attribute
+  is a list of the values provided by the user, with the list being
+  empty if the user provided none.
+* For keywords defined with :meth:`~KeySpec.keymatch`, the attribute
+  is a list of the values provided by the user expanded out to their
+  full values if the user abbreviated any. As above, the list may be
+  empty.
+* For options defined with :meth:`~KeySpec.option`, the attribute is
+  either :const:`True` or :const:`False`.
+* For keywords defined with :meth:`~KeySpec.custom`, the attribute is
+  whatever value was returned by a user-specified routine.
+
+If the user-specified values do not match the expectations defined by
+the specification (e.g., a keyword that should be integer-typed is
+passed the value "abcd") then a :class:`~miriad.MiriadError` is raised
+in :meth:`~KeySpec.process`.
+
+.. _keywordtypes:
+
+Keyword Types
+-------------
+
+Keyword types in MIRIAD and miriad-python are identified by single
+letters. The following types are available:
+
+===========	==============
+Character	Description
+===========	==============
+*i*		(The character is the lower-case letter i.) An integer value.
+*d*		A floating-point ("double") value.
+*a*		A character string value.
+*f*		A filename value. These are essentially treated like character
+		strings, but there are special hooks in the MIRIAD processing code
+		to expand out shell glob patterns into multiple values.
+*t*		A time or angle value. These are parsed according to one of several
+		formats, described below. The output is always a floating-point
+		number but its meaning depends on the parse format.
+===========	==============
+
+.. _keywordformats:
+
+Keyword Formats
+---------------
+
+Keywords describing a time or angle can be parsed according to one of
+several formats. You must specify one of these formats when declaring
+the keyword.
+
+=======	============
+Name	Description
+=======	============
+*dms*	The argument is an angle measured in degrees, written as
+	"dd:mm:ss.s" or "dd.ddd". The output is the angle in radians.
+*hms*   The argument is an angle/time measured in hours, written as
+	"hh:mm:ss.s" or "hh.hhh". The output is the angle/time in radians.
+*dtime*	The argument is a day fraction, i.e. the portion of a day that has
+	elapsed at that local time. The user can provide it in the format
+	"hh:mm:ss.s" or "hh.hhhh". The output is the day fraction, a number
+	in the range [0, 1].
+*atime*	The argument is an absolute time, specified as either "yyMMMdd.ddd"
+	or "yyMMMdd:hh:mm:ss.s", or as an epoch, "bYYYY" or "jYYYY". The
+	output is in Julian days.
+*time*	Either an absolute time or a day fraction. The output is either a
+	Julian day value or a day fraction.
+=======	============
+
+.. _keysuvdat:
+
+Integration with the UVDAT Subsystem
+------------------------------------
+
+The keyword subsystem can integrate with MIRIAD's UVDAT
+subsystem. This integration is necessary because the UVDAT subsystem
+uses the MIRIAD keyword-handling routines to obtain settings for UV
+data selection, whether calibration should be applied, and so on.
+
+If your task does not use the UVDAT subsystem, you need take no
+action.
+
+If your task does use the UVDAT subsystem, you must call
+:meth:`KeySpec.uvdat` while defining your keywords. When doing so, you
+specify processing options that will be passed to the UVDAT
+subsystem. See the documentation of :meth:`~KeySpec.uvdat` for more
+information.
+
+.. _mirtaskkeysapiref:
+
+:mod:`mirtask.keys` API Reference
+---------------------------------
+
+This section presents a detailed API reference for the
+:mod:`mirtask.keys` module.
+
+.. autoclass:: KeySpec
+   :members:
+
+.. autoclass:: KeyHolder
+   :members:
