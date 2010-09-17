@@ -22,22 +22,46 @@ visdata input sets."""
         raise RuntimeError ('No input UV data sets?')
 
 
-def _readFileLowlevel_gen (inp, saveFlags, uvdatrd, preamble,
-                           data, flags, maxchan, rewrite):
+def _read_gen (saveFlags, UVDatDataSet, maxchan):
+    from lowlevel import uvdatopn, uvdatrd
+    from numpy import zeros, double, complex64, int32
+    inp = None
+    preamble = zeros (5, dtype=double)
+    data = zeros (maxchan, dtype=complex64)
+    flags = zeros (maxchan, dtype=int32)
     try:
         if saveFlags:
             while True:
-                nread = uvdatrd (preamble, data, flags, maxchan)
-                if nread == 0: break
-                f = flags[:nread]
-                yield inp, preamble, data[:nread], f
-                rewrite (f)
+                if inp is not None and inp.isOpen ():
+                    inp.close ()
+                (status, tin) = uvdatopn ()
+                if not status:
+                    break
+                inp = UVDatDataSet (tin)
+                rewrite = inp.rewriteFlags
+                while True:
+                    nread = uvdatrd (preamble, data, flags, maxchan)
+                    if nread == 0:
+                        break
+                    f = flags[:nread]
+                    yield inp, preamble, data[:nread], f
+                    rewrite (f)
         else:
             while True:
-                nread = uvdatrd (preamble, data, flags, maxchan)
-                if nread == 0: break
-                yield inp, preamble, data[:nread], flags[:nread]
+                if inp is not None and inp.isOpen ():
+                    inp.close ()
+                (status, tin) = uvdatopn ()
+                if not status:
+                    break
+                inp = UVDatDataSet (tin)
+                while True:
+                    nread = uvdatrd (preamble, data, flags, maxchan)
+                    if nread == 0:
+                        break
+                    yield inp, preamble, data[:nread], flags[:nread]
     except:
-        if inp.isOpen (): inp.close ()
+        if inp is not None and inp.isOpen ():
+            inp.close ()
     else:
-        if inp.isOpen (): inp.close ()
+        if inp is not None and inp.isOpen ():
+            inp.close ()

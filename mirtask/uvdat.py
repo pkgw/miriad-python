@@ -20,7 +20,7 @@
 import lowlevel as ll
 import numpy as N
 from mirtask import MiriadError, UVDataSet
-from miriad import VisData
+from miriad import VisData, commasplice
 
 __all__ = []
 
@@ -29,7 +29,7 @@ __all__ = []
 # but can be on import
 
 try:
-    from _uvdat_compat_default import _inputSets, _readFileLowlevel_gen
+    from _uvdat_compat_default import _inputSets, _read_gen
 except SyntaxError:
     import sys
     v = sys.version_info[0] * 1000 + sys.version_info[1]
@@ -37,41 +37,20 @@ except SyntaxError:
         # Genuine syntax error!
         raise
     del v, sys
-    from _uvdat_compat_24 import _inputSets, _readFileLowlevel_gen
+    from _uvdat_compat_24 import _inputSets, _read_gen
 
-
-def init (flags, keyword='vis'):
-    """Initialize standard UV data reading subsystem. If you are
-writing a standalone task, you should use keys.doUvdat() rather
-than this function to give the use control over whether calibration
-corrections are applied or not.
-
-Parameters:
-
-flags - A sequence of characters giving options to the UV reading
-subsystem. Possible contents are:
-
-  r - Get a reference linetype specification via the 'ref' keyword
-  s - Get Stokes parameters / polarizations via the 'stokes' keyword
-  d - Perform input selection via the 'select' keyword
-  l - Get a data linetype specification via the 'line' keyword
-  p - Apply planet rotation and scaling
-  w - Return U and V values in wavelengths
-  1 - Default number of channels is 1
-  x - Data must be cross-correlation data
-  a - Data must be auto-correlation data
-  b - Input must be a single file
-  c - Apply gain/phase and delay corrections
-  e - Apply polarization leakage corrections
-  f - Apply bandpass corrections
-  3 - Always return a 5-element 'preamble' with UVW coordinates
-
-keyword - The keyword from which to get one or more UV dataset names.
-Defaults to 'vis', the usual value.
-"""
-    ll.uvdatinp (keyword, flags)
 
 class UVDatDataSet (UVDataSet):
+    """:synopsis: a handle to a UV dataset being read with the UVDAT
+    subsystem
+
+This class is a subclass of :class:`mirtask.UVDataSet` with extra code
+to invoke the correct lifecycle functions associated with MIRIAD's
+UVDAT subsystem. It should transparently behave like a
+:class:`mirtask.UVDataSet` from the Python programmer's perspective.
+
+You should not construct a :class:`UVDatDataSet` yourself.
+"""
     def __init__ (self, tno):
         self.tno = tno
         self.name = getCurrentName ()
@@ -82,15 +61,44 @@ class UVDatDataSet (UVDataSet):
 
 
 def inputSets ():
+    """Retrieve handles to the datasets to be read by the UVDAT
+    subsystem.
+
+:rtype: generator of :class:`UVDatDataSet`
+:returns: handles to the datasets to by read by the UVDAT system
+
+Generates a sequence of :class:`UVDatDataSet` objects allowing access
+to the datasets that would be read by the UVDAT subsystem.
+
+If you plan on reading the UV data associated with these handles, you
+should instead use :func:`read`.
+
+See also :func:`singleInputSet` in the case that you know there is
+exactly one input dataset.
+"""
     # Implemented in one of _uvdat_compat_default or _uvdat_compat_24
     # thanks to compatibility issues with Python 2.4
     return _inputSets (UVDatDataSet)
 
 
 def singleInputSet ():
-    """Get a single DataSet object representing the visdata input set.
-You should only use this function if you pass the 'b' option to
-init ().
+    """Get a :class:`UVDatDataSet` object representing the input UV dataset.
+
+:rtype: :class:`UVDatDataSet`
+:returns: a UV data dataset
+
+Retrieves a :class:`UVDatDataSet` object corresponding to the dataset
+to be read by the UVDAT subsystem.
+
+If you want to read the UV data associated with this handle, use
+:func:`read` or :func:`setupAndRead`.
+
+The subsystem can accept more than one input dataset generically, but
+you should only call this function if UVDAT has been initialized to
+read only one dataset. You can ensure this condition by passing the
+*b* option to :func:`setupAndRead` or
+:meth:`mirtask.keys.KeySpec.uvdat`. If you don't want to or can't
+enforce this condition, use :func:`inputSets`.
 """
 
     # In certain cases (e.g. an empty dataset, which yields an
@@ -121,68 +129,124 @@ init ().
     # Count on the user or the __del__ to close this.
     return UVDatDataSet (tin)
 
-def readData (maxchan = 4096):
-    """Generate a sequence of (preamble, data, flags) tuples representing
-the visibility data in the current file. Must be called with a UVDatDataSet having
-been opened, such as from calling singleInputSet() or inputSets()."""
-    
-    preamble = N.zeros (5, dtype=N.double)
-    data = N.zeros (maxchan, dtype=N.complex64)
-    flags = N.zeros (maxchan, dtype=N.int32)
 
-    while True:
-        nread = ll.uvdatrd (preamble, data, flags, maxchan)
+def read (saveFlags=False, maxchan=4096):
+    """Read in data via the UVDAT subsystem.
 
-        if nread == 0: break
+:arg saveFlags: whether to rewrite the flags of the dataset(s) as it/they are
+                being read
+:type saveFlags: :class:`bool`
+:arg maxchan: the maximum number of spectral channels that can be read in at once
+:type maxchan: :class:`int`
+:rtype: generator of ``(handle, preamble, data, flags)``
+:returns: generator yielding UV data records
 
-        yield preamble, data[:nread], flags[:nread]
+Read in data with the UVDAT subsystem. The system must have previously
+been initialized, typically in a call to
+:meth:`mirtask.keys.KeySpec.process` after configuration with
+:meth:`mirtask.keys.KeySpec.uvdat`.
 
-def readAll (maxchan = 4096):
-    """Yield the data from all of the input datasets sequentially."""
-    
-    for ds in inputSets ():
-        for t in readData (maxchan=maxchan):
-            yield (ds, ) + t
+The return value is a generator that yields tuples of ``(handle,
+preamble, data, flags)``, where *handle* is a :class:`UVDatDataSet`
+corresponding to the dataset being read, and *preamble*, *data*, and
+*flags* are the usual UV data arrays. For speed, the identities of the
+arrays do not change from iteration to iteration, but their contents do.
+"""
+    return _read_gen (saveFlags, UVDatDataSet, maxchan)
 
 
-def readFileLowlevel (fn, saveFlags, nopass=False, nocal=False, nopol=False,
-                      select=None, line=None, stokes=None, ref=None,
-                      maxchan=4096):
-    # Set up args
+def setupAndRead (toread, uvdOptions, saveFlags, nopass=False, nocal=False,
+                  nopol=False, select=None, line=None, stokes=None, ref=None,
+                  maxchan=4096):
+    """Set up the UVDAT subsystem manually and read in the data.
 
-    args = ['miriad-python', 'vis=' + fn]
-    flags = 'wb3'
+:arg toread: the name(s) of the dataset or datasets to read
+:type toread: stringable or iterable of stringable
+:arg uvdOptions: extra options controlling the behavior of the UVDAT subsytem
+:type uvdOptions: :class:`str`
+:arg saveFlags: whether to rewrite the flags of the dataset(s) as it/they are
+                being read
+:type saveFlags: :class:`bool`
+:arg nopass: whether to avoid applying bandpass calibration even if possible
+:type nopass: :class:`bool`
+:arg nocal: whether to avoid applying gain calibration even if possible
+:type nocal: :class:`bool`
+:arg nopol: whether to avoid applying polarization calibration even if possible
+:type nopol: :class:`bool`
+:arg select: standard UV data selection string
+:type select: :class:`str` or :const:`None`
+:arg line: standard channel processing string
+:type line: :class:`str` or :const:`None`
+:arg stokes: standard Stokes parameter processing string
+:type stokes: :class:`str` or :const:`None`
+:arg ref: standard reference line specification string
+:type ref: :class:`str` or :const:`None`
+:arg maxchan: the maximum number of spectral channels that can be read in at once
+:type maxchan: :class:`int`
+:rtype: generator of ``(handle, preamble, data, flags)``
+:returns: generator yielding UV data records
+
+Set up the UVDAT subsytem with explicitly-specified parameters and
+read in the data.
+
+The argument *toread* specifies which dataset or datasets to read. If
+it is a non-string iterable, the stringification of each of its values
+is treated as a dataset to read. Otherwise, its stringification is
+treated as the dataset to read. Escaping is not supported by MIRIAD,
+so if ``toread = 'a,b'``, MIRIAD will interpret this as a direction to
+read two datasets named "a" and "b".
+
+The return value is a generator that yields tuples of ``(handle,
+preamble, data, flags)``, where *handle* is a :class:`UVDatDataSet`
+corresponding to the dataset being read, and *preamble*, *data*, and
+*flags* are the usual UV data arrays. For speed, the identities of the
+arrays do not change from iteration to iteration, but their contents do.
+
+Optional features of the UVDAT subsystem may be enabled by including
+their control characters in the contents of *uvdOptions*:
+
+==========      ==================
+Character       Feature behavior
+==========      ==================
+*p*             Planet rotation and scaling corrections should be applied.
+*w*             UVW coordinates should be returned in wavelength units, not
+                nanoseconds. (Beware when writing these data to new UV
+                datasets, as the output routines expect the values to
+                be in nanoseconds.)
+*1*             (The character is the number one.) Average the data
+                down to one channel.
+*x*             The input data must be cross-correlations.
+*a*             The input data must be autocorrelations.
+*b*             The input must be exactly one UV dataset (not multiple).
+*3*             The "preamble" returned while reading data will always have 5
+                elements and include the *w* coordinate.
+==========      ==================
+"""
+    args = ['vis=' + commasplice (toread)]
+    flags = uvdOptions + 'dslr'
+    options = set ()
 
     if select is not None:
-        flags += 'd'
         args.append ('select=' + select)
     if line is not None:
-        flags += 'l'
         args.append ('line=' + line)
     if stokes is not None:
-        flags += 's'
         args.append ('stokes=' + stokes)
     if ref is not None:
-        flags += 'r'
         args.append ('ref=' + ref)
-    if not nopass: flags += 'f'
-    if not nocal: flags += 'c'
-    if not nopol: flags += 'e'
 
-    # Do the actual reading -- copy what readData does for
-    # greater speed.
-        
-    ll.keyini (args)
-    init (flags)
-    inp = singleInputSet ()
+    if nopass:
+        options.add ('nopass')
+    if nocal:
+        options.add ('nocal')
+    if nopol:
+        options.add ('nopol')
+    if len (options) > 0:
+        args.append ('options=' + ','.join (options))
 
-    preamble = N.zeros (5, dtype=N.double)
-    data = N.zeros (maxchan, dtype=N.complex64)
-    flags = N.zeros (maxchan, dtype=N.int32)
-
-    # Python 2.4 compat ...
-    return _readFileLowlevel_gen (inp, saveFlags, ll.uvdatrd, preamble,
-                                  data, flags, maxchan, inp.rewriteFlags)
+    from keys import KeySpec
+    KeySpec ().uvdat (flags).process (args)
+    return _read_gen (saveFlags, UVDatDataSet, maxchan)
 
 
 # Variable probes

@@ -474,25 +474,27 @@ and inherits many generic features from the :class:`Data` class.
         from mirtask import UVDataSet
         return UVDataSet (self, mode)
 
-    def readLowlevel (self, saveFlags, **kwargs):
+    def readLowlevel (self, uvdOptions, saveFlags, **kwargs):
         """Directly access the visibility data.
 
+:arg uvdOptions: options controlling the behavior of the UVDAT subsystem
+:type uvdOptions: :class:`str`
 :arg saveFlags: whether to save modified UV flags to the dataset
   as it is read
 :type saveFlags: :class:`bool`
 :arg kwargs: extra arguments to
-  :func:`mirtask.uvdat.readFileLowlevel`.
-:rtype: generator
+  :func:`mirtask.uvdat.setupAndRead`.
+:rtype: generator of ``(handle, preamble, data, flags)``
 :returns: generates a sequence of UV information tuples. See the
-  documentation of :func:`mirtask.uvdat.readFileLowlevel` for more
+  documentation of :func:`mirtask.uvdat.setupAndRead` for more
   information.
 
-Calls :func:`mirtask.uvdat.readFileLowlevel` on this dataset with the
+Calls :func:`mirtask.uvdat.setupAndRead` on this dataset with the
 specified arguments.
 """
 
         from mirtask import uvdat
-        return uvdat.readFileLowlevel (self.base, saveFlags, **kwargs)
+        return uvdat.setupAndRead (self, uvdOptions, saveFlags, **kwargs)
     
     # Not-necessarily-interactive operations
 
