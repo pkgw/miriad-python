@@ -623,3 +623,20 @@ __all__ += ['ImData']
 
 Data.defaultVisClass (VisData)
 Data.defaultImClass (ImData)
+
+
+# Helpers for the common case of dealing with one-or-more datasets
+# referenced by strings, Data objects, or something else.
+
+def ensureiterable (value):
+    if isinstance (value, basestring):
+        return [value]
+    try:
+        iter (value)
+        return value
+    except TypeError:
+        return [value]
+
+
+def commasplice (value):
+    return ','.join (str (x) for x in ensureiterable (value))
