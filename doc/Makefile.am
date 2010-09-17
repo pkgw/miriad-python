@@ -26,7 +26,8 @@ dist_noinst_DATA = \
  index.txt \
  intro.txt \
  pytasks.txt \
- pytasks-keys.txt
+ pytasks-keys.txt \
+ pytasks-uvdat.txt
 
 # Temp hack: make sure the 'static' directory gets created
 EXTRA_DIST = static/.gitignore

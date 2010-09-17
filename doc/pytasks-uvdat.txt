@@ -15,17 +15,32 @@
    You should have received a copy of the GNU General Public License
    along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-.. _pytasks:
+.. _pytasksuvdat:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
-Writing Your Own MIRIAD Tasks
-=============================
+The UVDAT Subsystem for Reading UV Data: :mod:`mirtask.uvdat`
+=============================================================
 
-There are several things that you need to do to write your own
-MIRIAD tasks that blend in with the standard MIRIAD tasks.
+.. module:: mirtask.uvdat
+   :synopsis: Read in UV data with generic preprocessing options.
+.. moduleauthor:: Peter Williams <peter@newton.cx>
 
-.. toctree::
-   :maxdepth: 3
+Foo.
 
-   pytasks-keys.txt
-   pytasks-uvdat.txt
+.. _mirtaskuvdatapiref:
+
+:mod:`mirtask.uvdat` API Reference
+----------------------------------
+
+This section presents a detailed API reference for the
+:mod:`mirtask.uvdat` module.
+
+.. autofunction:: read
+
+.. autofunction:: setupAndRead
+
+.. autofunction:: inputSets
+
+.. autofunction:: singleInputSet
+
+.. autoclass:: UVDatDataSet
