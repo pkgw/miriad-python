@@ -304,15 +304,7 @@ class TaskBase (object):
             if val is None:
                 continue
 
-            if not isinstance (val, basestring):
-                # Treat non-string iterable values as lists of items
-                # to be joined by commas, as per standard MIRIAD usage.
-                try:
-                    val = ','.join (str (x) for x in val)
-                except TypeError:
-                    pass
-
-            cmd.append ("%s=%s" % (key, val))
+            cmd.append ("%s=%s" % (key, miriad.commasplice (val)))
 
         return cmd
 
