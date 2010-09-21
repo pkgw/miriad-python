@@ -15,18 +15,11 @@
    You should have received a copy of the GNU General Public License
    along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-.. _pytasks:
+.. _pytaskscliutil:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
-Writing Your Own MIRIAD Tasks
-=============================
+Utilities for Command-Line Programs: :mod:`mirtask.cliutil`
+===========================================================
 
-There are several things that you need to do to write your own
-MIRIAD tasks that blend in with the standard MIRIAD tasks.
-
-.. toctree::
-   :maxdepth: 3
-
-   pytasks-keys.txt
-   pytasks-uvdat.txt
-   pytasks-cliutil.txt
+.. automodule:: mirtask.cliutil
+   :members:

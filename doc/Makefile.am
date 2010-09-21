@@ -26,6 +26,7 @@ dist_noinst_DATA = \
  index.txt \
  intro.txt \
  pytasks.txt \
+ pytasks-cliutil.txt \
  pytasks-keys.txt \
  pytasks-uvdat.txt
 
