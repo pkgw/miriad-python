@@ -23,6 +23,46 @@ from lowlevel import MiriadError
 
 __all__ = []
 
+class ProgramFailError (StandardError):
+    """:synopsis: Error indicating that the program cannot continue successfully.
+
+:arg format: an explanatory message to be presented to the user
+:type format: :class:`str`
+:arg args: optional formatting arguments to the error string
+
+The :class:`ProgramFailError` exception is a utility class for
+aborting a high-level operation with a message to the user. It should
+be raised with the expectation that the exception message will be
+shown to the user without additional context. Exceptions of type
+:class:`ProgramFailError` should be used sparingly in library code.
+See the documentation of the module :mod:`mirtask.cliutil` for an
+example way to handle :class:`ProgramFailError` exceptions specially
+on the program level.
+
+The exception message will likely be printed to the user after the
+text "Error:", so it should begin with a lower-case letter.
+
+Upon construction, the attribute :attr:`message` is initialized as
+``format % args`` if *args* is nonempty. Otherwise, :attr:`message` is
+set to *format*. The stringification of the exception is
+``self.message``.
+
+"""
+    message = None
+    """An explanatory message of why the program failed."""
+
+    def __init__ (self, format, *args):
+        if len (args) == 0:
+            self.message = format
+        else:
+            self.message = format % args
+
+    def __str__ (self):
+        return str (self.message)
+
+__all__ += ['ProgramFailError']
+
+
 # Very simple wrapper classes. Shouldn't necessarily be used,
 # given that there are standard APIs like uvdat*
 

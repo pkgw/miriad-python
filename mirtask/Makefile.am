@@ -26,6 +26,7 @@ mtpy_PYTHON = \
   lowlevel.py \
   \
   base.py \
+  cliutil.py \
   keys.py \
   readgains.py \
   util.py \
