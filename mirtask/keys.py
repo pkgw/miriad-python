@@ -17,6 +17,7 @@
 
 '''mirtask.keys - process task arguments in the MIRIAD style'''
 
+from base import ProgramFailError, MiriadError
 import lowlevel as ll
 
 class KeyHolder (object):
@@ -434,10 +435,17 @@ set in the call to :meth:`KeySpec.uvdat`.
 
 If an argument cannot be converted to its intended type, or the UVDAT
 subsytem encounters an error initializing, a
-:class:`~miriad.MiriadError` will be raised. If there are unrecognized
+:class:`~mirtask.ProgramFailError` will be raised. If there are unrecognized
 keywords or extra values specified for a given keyword, a warning,
 *not* an error, will be issued.
 """
+        try:
+            return self._process (args)
+        except MiriadError, e:
+            raise ProgramFailError (str (e))
+
+
+    def _process (self, args):
         from sys import argv
 
         if args is None:
