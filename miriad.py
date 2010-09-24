@@ -462,6 +462,31 @@ __all__ += ['Data']
 
 # Visibility data
 
+_TAIL_MAXSIZE = 1024 * 1024
+
+def _tail_update (filename, hash):
+    try:
+        f = file (filename)
+    except IOError, e:
+        if e.errno == 2:
+            return
+        raise
+
+    # Oh, Python. Your APIs can be so stupid.
+    from os import fstat
+    from stat import ST_SIZE
+    size = fstat (f.fileno ())[ST_SIZE]
+
+    if size > _TAIL_MAXSIZE:
+        f.seek (-_TAIL_MAXSIZE, 2)
+
+    while True:
+        s = f.read (4096)
+        if len (s) < 1:
+            break
+        hash.update (s)
+
+
 class VisData (Data):
     """:synopsis: Reference to a MIRIAD visibility dataset.
 
@@ -495,7 +520,84 @@ specified arguments.
 
         from mirtask import uvdat
         return uvdat.setupAndRead (self, uvdOptions, saveFlags, **kwargs)
-    
+
+
+    def updateHash (self, hash):
+        """Update a cryptographic hash with information about the dataset, cheating a bit.
+
+:arg hash: the object to update with hash data from the dataset
+:type hash: compatible with :class:`hashlib.HASH`
+:returns: *hash*
+
+This function aids in the computation of a cryptographic hash of a
+visibility dataset. It takes as an argument an existing
+:class:`hashlib.HASH` object, and invokes its
+:meth:`~hashlib.HASH.update` method with data from the dataset. A key
+caveat is that the entire dataset is not hashed, as this could involve
+a huge amount of I/O with a large dataset. Instead, representative
+portions of the dataset are hashed, with the intent being that the
+hash will change for any typical modifications to the dataset.
+
+In particular, the full contents of the "vartable" and "header"
+dataset items are hashed. The last megabyte (or entire contents, if
+they are smaller) of the following items are hashed as well: visdata,
+flags, wflags, gains, leakage, bandpass, history. (The ends of these
+potentially-large files are hashed so that in the not-uncommon case
+that a visibility dataset is appended to, its hash will change.)
+"""
+        # Header and vartable are small enough to read in their
+        # entirety without worry.
+        hash.update (file (self.path ('vartable')).read ())
+        hash.update (file (self.path ('header')).read ())
+
+        # Visdata can be huge. Only read its last megabyte to save
+        # time. (We read the end of the file so that if it's appended
+        # to we pick up the changes.) Apply the same logic to other
+        # UV-relevant large items, although flags is the only other
+        # one that tends to be nontrivially large.
+
+        _tail_update (self.path ('visdata'), hash)
+
+        for optitem in ('flags', 'wflags', 'gains', 'leakage',
+                        'bandpass', 'history'):
+            hash.update (optitem)
+            _tail_update (self.path (optitem), hash)
+
+        return hash
+
+
+    def quickHash (self, hash=None, hex=False):
+        """Compute a cryptographic hash of the dataset, cheating a bit.
+
+:arg hash: (optional) an object that computes hashes
+:type hash: compatible with :class:`hashlib.HASH`
+:arg hex: whether to return the digest encoded as hexadecimal or not
+:type hex: :class:`bool`
+:returns: the hash value
+:rtype: :class:`str`
+
+Returns the hash of the UV dataset in string form. If *hex* is
+:const:`True`, the return value is the hash represented in
+hexadecimal; otherwise, the return value is a string of binary
+values. The hash is computed using :meth:`updateHash`, and hence is
+subject to the same caveats mentioned in the documentation of that
+function.
+
+If *hash* is :const:`None` (the default), a SHA1 hash is computed. If
+*hash* is not :const:`None`, it may be prefilled with other data if
+you desire.
+"""
+        if hash is None:
+            import hashlib
+            hash = hashlib.sha1 ()
+
+        self.updateHash (hash)
+
+        if hex:
+            return hash.hexdigest ()
+        return hash.digest ()
+
+
     # Not-necessarily-interactive operations
 
     def apply (self, task, **params):
