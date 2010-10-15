@@ -27,6 +27,7 @@ mtpy_PYTHON = \
   \
   base.py \
   cliutil.py \
+  emucal.py \
   keys.py \
   readgains.py \
   util.py \
