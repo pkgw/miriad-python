@@ -604,7 +604,32 @@ class UVDataSet (DataSet):
 
         self._checkOpen ()
         ll.uvflgwr (self.tno, flags)
-        
+
+    # uvinfo exploders
+
+    def getLineInfo (self):
+        """Returns line information about the most recently-read UV record.
+        Returns an array of 6 integers: linetype, nchan, chan0, width, step,
+        win0.
+
+        linetype - the kind of data being read. 1 indicates spectral data;
+                   2 indicates wideband data; 3 indicates velocity-space data.
+                   (Symbolic constants for these are defined in mirtask.util.)
+        nchan    - the number of channels in the record.
+        chan0    - the index of the first channel in the record. (This index
+                   is 1-based in the MIRIAD API, but is adjusted to be 0-based
+                   in miriad-python).
+        width    - the number of input channels that are averaged together.
+        step     - the increment between selected input channels.
+        win0     - If reading spectral or wideband data, -1. If resampling in
+                   velocity space, returns the index of the first spectral window
+                   contributing to the returned data. (This index is 1-based in
+                   the MIRIAD API, and the null return value is 0, but is
+                   likewise adjusted to be 0-based here.)
+        """
+        self._checkOpen ()
+        return ll.uvinfo_line (self.tno)
+
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):

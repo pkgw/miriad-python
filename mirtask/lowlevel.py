@@ -103,6 +103,17 @@ def uvdatgta (obj):
     
     raise MiriadError ('Output from uvdatgta exceeded buffer size')
 
+
+def uvinfo_line (tno):
+    info = _N.zeros (6, dtype=_N.double)
+    _uvio.uvinfo (tno, 'line', info)
+    info = info.astype (_N.int)
+    # Convert Fortran 1-based index to 0-based
+    info[2] -= 1
+    info[5] -= 1
+    return info
+
+
 def mkeyf (key, nmax, bufsz=120):
     """Wrapper for mkeyf with extra layer of string sanity."""
 

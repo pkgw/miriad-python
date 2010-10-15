@@ -1293,7 +1293,37 @@ py_uvflgwr (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* uvinfo: too hard */
+/* uvinfo */
+
+static PyObject *
+py_uvinfo (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *object;
+    PyObject *data;
+
+    if (!PyArg_ParseTuple (args, "isO!", &tno, &object, &PyArray_Type, &data))
+	return NULL;
+
+    if (!PyArray_ISFLOAT (data)) {
+	PyErr_SetString (PyExc_TypeError, "data must be float ndarray");
+	return NULL;
+    }
+
+    if (PyArray_ITEMSIZE (data) != NPY_SIZEOF_DOUBLE) {
+	PyErr_SetString (PyExc_TypeError, "data must be double-sized ndarray");
+	return NULL;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (data)) {
+	PyErr_SetString (PyExc_TypeError, "data must be contiguous ndarray");
+	return NULL;
+    }
+
+    MTS_CHECK_BUG;
+    uvinfo_c (tno, object, PyArray_DATA (data));
+    Py_RETURN_NONE;
+}
 
 /* XXX uvio incomplete! .... */
 
@@ -2001,7 +2031,8 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvset, "(int tno, str object, str type, int n, double p1,\n"
 	" double p2, double p3) => void"),
     DEF(uvflgwr, "(int tno, int-ndarray flags) => void"),
-    
+    DEF(uvinfo, "(int tno, str object, double-ndarray data) => void"),
+
     /* XXX uvio incomplete ... */
 
     /* uvio macros */

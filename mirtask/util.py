@@ -50,6 +50,14 @@ def encodeBaseline (ant1, ant2):
 suitable for use in UV data preambles."""
     return ll.antbas (ant1, ant2)
 
+# Linetype constants. From subs/uvio.c
+
+LINETYPE_NONE = 0
+LINETYPE_CHANNEL = 1
+LINETYPE_WIDE = 2
+LINETYPE_VELOCITY = 3
+LINETYPE_FELOCITY = 4
+
 # Polarizations. From subs/uvdat.h
 
 POL_II = 0
