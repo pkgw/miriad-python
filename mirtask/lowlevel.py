@@ -43,6 +43,7 @@ def bug (sev, msg):
         from warnings import warn
         warn ('MIRIAD warning (severity %c): %s' % (sev, msg), UserWarning, 2)
 
+
 def julday (julian, form):
     """Wrapper for julday. Form is one of 'D', 'F', 'H', 'T', or 'V'."""
 
@@ -53,6 +54,7 @@ def julday (julian, form):
         if calday[i] == '': return calday[0:i].tostring ()
     
     raise MiriadError ('Output from julday exceeded buffer size')
+
 
 def hisinput (tno, name, args=None):
     """Wrapper for hisinput. The Fortran implementation is not usable
@@ -88,6 +90,7 @@ def hisinput (tno, name, args=None):
         else:
             if arg == '-f': dofile = True
             else: _uvio.hiswrite (tno, prefix + arg)
+
 
 def uvdatgta (obj):
     """Wrapper for uvdatgta that handles Fortran text inputs and outputs
@@ -141,6 +144,7 @@ def mkeyf (key, nmax, bufsz=120):
 
     return ret
 
+
 def mkeya (key, nmax, bufsz=120):
     """Wrapper for mkeya with extra layer of string sanity."""
 
@@ -160,6 +164,7 @@ def mkeya (key, nmax, bufsz=120):
         ret.append (s)
 
     return ret
+
 
 def keymatch (key, types, maxout):
     """Wrapper for keymatch with extra layer of string sanity."""
