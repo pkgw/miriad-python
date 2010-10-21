@@ -630,6 +630,14 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         return ll.uvinfo_line (self.tno)
 
+
+    def getCurrentVisNum (self):
+        """Returns the serial number of the UV record that was just read.
+        Counting begins at zero."""
+        self._checkOpen ()
+        return ll.uvinfo_visno (self.tno)
+
+
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):

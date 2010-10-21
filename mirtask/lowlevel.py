@@ -114,6 +114,13 @@ def uvinfo_line (tno):
     return info
 
 
+def uvinfo_visno (tno):
+    info = _N.zeros (1, dtype=_N.double)
+    _uvio.uvinfo (tno, 'visno', info)
+    # Convert Fortran 1-based index to 0-based
+    return int (info[0]) - 1
+
+
 def mkeyf (key, nmax, bufsz=120):
     """Wrapper for mkeyf with extra layer of string sanity."""
 
