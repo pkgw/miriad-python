@@ -39,6 +39,11 @@ def printBannerSvn (name, desc, idstr):
     print b
     return b
 
+
+def die (format, *args):
+    raise SystemExit ('Error: ' + (format % args))
+
+
 # Baseline-related stuff
 
 def decodeBaseline (encoded, check=True):

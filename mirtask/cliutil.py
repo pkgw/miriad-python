@@ -15,45 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-""":synopsis: Utilities for programs run from the command line.
-
-.. moduleauthor:: Peter Williams <peter@newton.cx>
-
-When this module is imported, it replaces the system exception handler
-(:data:`sys.excepthook`) with a new one that prints out
-:class:`mirtask.ProgramFailError` exceptions as (comparatively) terse
-error messages without tracebacks. Other exceptions are presented in a
-format similar to the one employed by the default Python handler.
-
-The motivation for this functionality is that MIRIAD tasks often need
-to abort abruptly but that doing so by raising Python exceptions
-creates cluttered output (*e.g.* deep tracebacks) that can be
-confusing for the user. This module makes it possible to use
-:class:`mirtask.ProgramFailError` exceptions to terminate a program
-while maintaining more control over the output presented to the
-user. Example usage would be::
-
-   from mirtask import ProgramFailError, cliutil
-
-   def my_deep_function ():
-       # ...
-       if index < 0 and isinf (fmax):
-           raise ProgramFailError ('negative index %f disallowed with '
-                                   'infinite max frequency %f', index, fmax)
-
-Uncaught instances of :class:`ProgramFailError` are printed preceded
-by the string "Error:", so your exception message should begin with a
-lower-case letter.
-
-The original system exception handler is stored in the variable
-:data:`prev_except_hook`.
-
-If the environment variable :envvar:`MIRTASK_FULL_ERRORS` is nonempty,
-tracebacks will be printed for all exceptions.
-"""
-
-import sys, os, traceback
-from base import ProgramFailError
+import sys, os.path, traceback, tempfile
 
 __all__ = ['prev_except_hook']
 
@@ -61,21 +23,107 @@ prev_except_hook = sys.excepthook
 """This variable stores the original value of
 :data:`sys.excepthook` before it is overwritten with the module's version."""
 
-def _mirtask_except_hook (etype, exc, tb):
-    if issubclass (etype, ProgramFailError) and \
-            not ('MIRTASK_FULL_ERRORS' in os.environ):
-        print >>sys.stderr, 'Error:', exc.message
-        sys.exit (1)
+def _cli_except_hook (etype, exc, tb):
+    """User-friendly exceptions, for the following definition of
+    user-friendly:
 
-    # We're intentionally making things a little opaque-sounding here.
-    # Hopefully the user will get the impression that this is an
-    # unexpected error message.
-    print >>sys.stderr, 'Internal state traceback (most recent call last):'
-    traceback.print_tb (tb, file=sys.stderr)
+    - EnvironmentErrors (IOErrors and OSErrors) are printed to the
+    user with their strerror and filename information, in the hope
+    that the user will be able to understand why the error
+    occurred. (Permission denied, no space left on device, etc.) The
+    calling function is identified but the full traceback is NOT
+    printed.
 
-    print >>sys.stderr
-    print >>sys.stderr, 'Internal Error: uncaught %s exception' % etype.__name__
-    print >>sys.stderr, 'Exception details:', exc
-    sys.exit (1)
+    - KeyboardInterrupts are reported without any further information.
 
-sys.excepthook = _mirtask_except_hook
+    - Other unhandled exceptions are reported briefly as unhandled
+    internal errors, and the full exception and traceback information
+    are logged to a file if at all possible. These are not expected to
+    be "user-servicable" exceptions so the idea is to hide the lengthy
+    and confusing technical information. Saving the information to a
+    file also hopefully makes it more likely that the technical
+    details can be sent to the developer exactly and fully.
+
+    - If the information can't be logged to a file, it's printed for
+    lack of a better alternative.
+
+    - If the environment variable MIRPY_PRINT_EXCEPTIONS is set and
+    nonempty, the traceback information is printed for all exceptions
+    (including EnvironmentErrors) and it's always printed to standard
+    error.
+    """
+
+    forcestderr = len (os.environ.get ('MIRPY_PRINT_EXCEPTIONS', '')) > 0
+    details = []
+    skiptb = False
+
+    if isinstance (exc, KeyboardInterrupt):
+        msg = 'interrupted by user'
+        skiptb = not forcestderr
+    elif not isinstance (exc, EnvironmentError):
+        msg = 'unhandled internal exception of kind ' + etype.__name__
+        details.append ('Technical detail: ' + str (exc))
+    else:
+        hasfn = hasattr (exc, 'filename') and exc.filename is not None
+
+        if isinstance (exc, IOError):
+            if hasfn:
+                op = 'failure performing I/O on path \"%s\"' % exc.filename
+            else:
+                op = 'I/O failure'
+        elif isinstance (exc, OSError):
+            if hasfn:
+                op = 'OS reported failure operating on path \"%s\"' % exc.filename
+            else:
+                op = 'OS reported a failure'
+        else:
+            if hasfn:
+                op = '%s operating on path \"%s\"' % (etype.__name__, exc.filename)
+            else:
+                op = etype.__name__
+
+        msg = '%s: %s' % (op, exc.strerror)
+        filename, lineno, func, text = traceback.extract_tb (tb)[-1]
+        details.append  ('The error occurred in the function %s (%s:%d)' %
+                         (func, filename, lineno))
+        skiptb = not forcestderr
+
+    if not skiptb:
+        log = None
+
+        if not forcestderr:
+            logfnbase = 'bug_%d.txt' % os.getpid ()
+
+            for logfn in (logfnbase, os.path.join (tempfile.gettempdir (), logfnbase)):
+                try:
+                    log = open (logfn, 'w')
+                    logmsg = 'in the file "%s".' % logfn
+                    break
+                except StandardError:
+                    pass
+
+        if log is None:
+            log = sys.stderr
+            logmsg = 'below.\n'
+
+        details.append ('Debugging information is logged ' + logmsg)
+
+    print >>sys.stderr, 'Error:', msg
+    for detail in details:
+        print >>sys.stderr, '      ', detail
+
+    if skiptb:
+        return
+
+    def p (format, *args):
+        print >>log, format % args
+
+    p ('Please report this error information to the developer completely and')
+    p ('exactly to aid in the debugging process.')
+    p ('')
+    p ('Traceback (most recent call last):')
+    traceback.print_tb (tb, file=log)
+    p ('')
+    p ('%s exception: %s', etype.__name__, exc)
+
+sys.excepthook = _cli_except_hook
