@@ -873,11 +873,12 @@ class UVVarTracker (object):
         self.vhnd = ll.uvvarini (owner.tno)
 
     def track (self, *vars):
-        """Indicate that the specifieds variable should be tracked by this
-        tracker."""
+        """Indicate that the specified variable(s) should be tracked by this
+        tracker. Returns *self* for convenience."""
 
         for var in vars:
             ll.uvvarset (self.vhnd, var)
+        return self
 
     def copyTo (self, output):
         """Copy the variables tracked by this tracker into the output
