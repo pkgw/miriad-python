@@ -464,7 +464,7 @@ __all__ += ['Data']
 
 _TAIL_MAXSIZE = 1024 * 1024
 
-def _tail_update (filename, hash):
+def _tail_update (filename, updatefunc):
     try:
         f = file (filename)
     except IOError, e:
@@ -484,7 +484,7 @@ def _tail_update (filename, hash):
         s = f.read (4096)
         if len (s) < 1:
             break
-        hash.update (s)
+        updatefunc (s)
 
 
 class VisData (Data):
@@ -522,21 +522,21 @@ specified arguments.
         return uvdat.setupAndRead (self, uvdOptions, saveFlags, **kwargs)
 
 
-    def updateHash (self, hash):
+    def updateHash (self, updatefunc):
         """Update a cryptographic hash with information about the dataset, cheating a bit.
 
-:arg hash: the object to update with hash data from the dataset
-:type hash: compatible with :class:`hashlib.HASH`
-:returns: *hash*
+:arg updatefunc: the object to update with hash data from the dataset
+:type updatefunc: callable, taking 1 :class:`str` argument
+:returns: *self*
 
 This function aids in the computation of a cryptographic hash of a
-visibility dataset. It takes as an argument an existing
-:class:`hashlib.HASH` object, and invokes its
-:meth:`~hashlib.HASH.update` method with data from the dataset. A key
-caveat is that the entire dataset is not hashed, as this could involve
-a huge amount of I/O with a large dataset. Instead, representative
-portions of the dataset are hashed, with the intent being that the
-hash will change for any typical modifications to the dataset.
+visibility dataset. It takes as an argument an "update" function,
+expected to be the :meth:`~hashlib.HASH.update` method on some hash
+object, and invokes it with data from the dataset. A key caveat is
+that the entire dataset is not hashed, as this could involve a huge
+amount of I/O with a large dataset. Instead, representative portions
+of the dataset are hashed, with the intent being that the hash will
+change for any typical modifications to the dataset.
 
 In particular, the full contents of the "vartable" and "header"
 dataset items are hashed. The last megabyte (or entire contents, if
@@ -544,11 +544,14 @@ they are smaller) of the following items are hashed as well: visdata,
 flags, wflags, gains, leakage, bandpass, history. (The ends of these
 potentially-large files are hashed so that in the not-uncommon case
 that a visibility dataset is appended to, its hash will change.)
+
+In the common case that you're just interested in extracting a
+cryptographic hash with minimal fuss, use :meth:`quickHash`.
 """
         # Header and vartable are small enough to read in their
         # entirety without worry.
-        hash.update (file (self.path ('vartable')).read ())
-        hash.update (file (self.path ('header')).read ())
+        updatefunc (file (self.path ('vartable')).read ())
+        updatefunc (file (self.path ('header')).read ())
 
         # Visdata can be huge. Only read its last megabyte to save
         # time. (We read the end of the file so that if it's appended
@@ -556,14 +559,14 @@ that a visibility dataset is appended to, its hash will change.)
         # UV-relevant large items, although flags is the only other
         # one that tends to be nontrivially large.
 
-        _tail_update (self.path ('visdata'), hash)
+        _tail_update (self.path ('visdata'), updatefunc)
 
         for optitem in ('flags', 'wflags', 'gains', 'leakage',
                         'bandpass', 'history'):
-            hash.update (optitem)
-            _tail_update (self.path (optitem), hash)
+            updatefunc (optitem)
+            _tail_update (self.path (optitem), updatefunc)
 
-        return hash
+        return self
 
 
     def quickHash (self, hash=None, hex=False):
@@ -591,7 +594,7 @@ you desire.
             import hashlib
             hash = hashlib.sha1 ()
 
-        self.updateHash (hash)
+        self.updateHash (hash.update)
 
         if hex:
             return hash.hexdigest ()
