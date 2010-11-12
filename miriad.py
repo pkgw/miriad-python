@@ -462,6 +462,21 @@ __all__ += ['Data']
 
 # Visibility data
 
+def _full_update (filename, updatefunc):
+    try:
+        f = file (filename)
+    except IOError, e:
+        if e.errno == 2:
+            return
+        raise
+
+    while True:
+        s = f.read (4096)
+        if len (s) < 1:
+            break
+        updatefunc (s)
+
+
 _TAIL_MAXSIZE = 1024 * 1024
 
 def _tail_update (filename, updatefunc):
@@ -729,6 +744,64 @@ inherits many generic features from the :class:`Data` class.
     def apply (self, task, **params):
         return task.set (in_=self, **params)
 
+
+    def updateHash (self, updatefunc):
+        """Update a cryptographic hash with information about the dataset.
+
+:arg updatefunc: the object to update with hash data from the dataset
+:type updatefunc: callable, taking 1 :class:`str` argument
+:returns: *self*
+
+This function aids in the computation of a cryptographic hash of an
+image dataset. It takes as an argument an "update" function,
+expected to be the :meth:`~hashlib.HASH.update` method on some hash
+object, and invokes it with data from the dataset.
+
+The full contents of the "header" and "image" dataset items are hashed.
+The "history" item of the dataset is explicitly *not* included in the
+hash because it has no bearing on the interpretation of the image.
+Because timestamps are embedded in the history item, two images
+can be produced in an identical way and yet have different history
+items, which several curtails the usefulness of the hash-based
+approach.
+
+In the common case that you're just interested in extracting a
+cryptographic hash with minimal fuss, use :meth:`quickHash`.
+"""
+        _full_update (self.path ('header'), updatefunc)
+        _full_update (self.path ('image'), updatefunc)
+
+
+    def quickHash (self, hash=None, hex=False):
+        """Compute a cryptographic hash of the dataset.
+
+:arg hash: (optional) an object that computes hashes
+:type hash: compatible with :class:`hashlib.HASH`
+:arg hex: whether to return the digest encoded as hexadecimal or not
+:type hex: :class:`bool`
+:returns: the hash value
+:rtype: :class:`str`
+
+Returns the hash of the image dataset in string form. If *hex* is
+:const:`True`, the return value is the hash represented in
+hexadecimal; otherwise, the return value is a string of binary
+values. The hash is computed using :meth:`updateHash`, and hence is
+subject to the same caveats mentioned in the documentation of that
+function.
+
+If *hash* is :const:`None` (the default), a SHA1 hash is computed. If
+*hash* is not :const:`None`, it may be prefilled with other data if
+you desire.
+"""
+        if hash is None:
+            import hashlib
+            hash = hashlib.sha1 ()
+
+        self.updateHash (hash.update)
+
+        if hex:
+            return hash.hexdigest ()
+        return hash.digest ()
 
 __all__ += ['ImData']
 
