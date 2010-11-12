@@ -541,9 +541,16 @@ change for any typical modifications to the dataset.
 In particular, the full contents of the "vartable" and "header"
 dataset items are hashed. The last megabyte (or entire contents, if
 they are smaller) of the following items are hashed as well: visdata,
-flags, wflags, gains, leakage, bandpass, history. (The ends of these
+flags, wflags, gains, leakage, bandpass. (The ends of these
 potentially-large files are hashed so that in the not-uncommon case
 that a visibility dataset is appended to, its hash will change.)
+
+The "history" item of the dataset is explicitly *not* included in the
+hash because it has no bearing on the interpretation of the UV data.
+Because timestamps are embedded in the history item, two datasets
+can be produced in an identical way and yet have different history
+items, which several curtails the usefulness of the hash-based
+approach.
 
 In the common case that you're just interested in extracting a
 cryptographic hash with minimal fuss, use :meth:`quickHash`.
@@ -562,7 +569,7 @@ cryptographic hash with minimal fuss, use :meth:`quickHash`.
         _tail_update (self.path ('visdata'), updatefunc)
 
         for optitem in ('flags', 'wflags', 'gains', 'leakage',
-                        'bandpass', 'history'):
+                        'bandpass'):
             updatefunc (optitem)
             _tail_update (self.path (optitem), updatefunc)
 
