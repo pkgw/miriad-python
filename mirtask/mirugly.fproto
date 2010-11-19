@@ -11323,12 +11323,6 @@ subroutine dsfetra(lon,lat,inv,sys) ! in subs/sfetra.f
     logical :: inv
     integer :: sys
 end subroutine dsfetra
-function shadowed(tno,ants,limit) ! in subs/shadowed.f
-    integer :: tno
-    double precision :: ants
-    real :: limit
-    integer :: shadowed
-end function shadowed
 function si(x) ! in subs/si.f
     double precision :: x
     double precision :: si

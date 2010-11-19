@@ -691,3 +691,10 @@ subroutine uvgnfac(time,baseline,pol,dowide,data,flags,nread,grms) ! in subs/uvg
     integer optional,check(len(data)>=nread),depend(data),intent(inout) :: nread=len(data)
     real intent(out) :: grms
 end subroutine uvgnfac
+
+function shadowed(tno,ants,limit) ! in subs/shadowed.f
+    integer :: tno
+    double precision :: ants
+    real :: limit
+    integer :: shadowed
+end function shadowed
