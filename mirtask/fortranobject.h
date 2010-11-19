@@ -1,15 +1,29 @@
+/* This file was copied from Numpy. It is required to link the code generated
+ * by f2py.
+ *
+ * Copyright 2005 Pearu Peterson
+ *
+ * Numpy is licensed under a 3-clause BSD license. See the file LICENSE for
+ * more information.
+ */
+
 #ifndef Py_FORTRANOBJECT_H
 #define Py_FORTRANOBJECT_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* miriad-python customization (also, copyright notice above) */
+#include "mirtasksupport.h"
+
 #include "Python.h"
 
+/* miriad-python customization: mirtasksupport deals with this.
 #ifdef FORTRANOBJECT_C
 #define NO_IMPORT_ARRAY
 #endif
 #define PY_ARRAY_UNIQUE_SYMBOL PyArray_API
+*/
 #include "numpy/arrayobject.h"
 
 /*

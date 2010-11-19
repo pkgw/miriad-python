@@ -1,3 +1,15 @@
+/* This file was copied from Numpy. It is required to link the code generated
+ * by f2py.
+ *
+ * Copyright 2005 Pearu Peterson
+ *
+ * Numpy is licensed under a 3-clause BSD license. See the file LICENSE for
+ * more information.
+ */
+
+/* miriad-python customization (also, copyright notice added above) */
+#include "mirtasksupport.h"
+
 #define FORTRANOBJECT_C
 #include "fortranobject.h"
 
@@ -334,6 +346,10 @@ fortran_call(PyFortranObject *fp, PyObject *arg, PyObject *kw) {
     /*  printf("fortran call
         name=%s,func=%p,data=%p,%p\n",fp->defs[i].name,
         fp->defs[i].func,fp->defs[i].data,&fp->defs[i].data); */
+
+    /* miriad-python customization */
+    MTS_CHECK_BUG;
+
     if (fp->defs[i].rank==-1) {/* is Fortran routine */
         if ((fp->defs[i].func==NULL)) {
             PyErr_Format(PyExc_RuntimeError, "no function to call");
