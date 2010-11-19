@@ -1241,7 +1241,24 @@ py_uvwrite (PyObject *self, PyObject *args)
 }
 
 /* skip uvwwrite_c ... lazy */
-/* skip uvsela_c, uvselect_c ... too lowlevel */
+/* skip uvsela_c, ... too lowlevel */
+
+static PyObject *
+py_uvselect (PyObject *self, PyObject *args)
+{
+    int tno, flag;
+    char *object;
+    double p1, p2;
+
+    if (!PyArg_ParseTuple (args, "isddi", &tno, &object, &p1, &p2,
+			   &flag))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvselect_c (tno, object, p1, p2, flag);
+
+    Py_RETURN_NONE;
+}
 
 static PyObject *
 py_uvset (PyObject *self, PyObject *args)
@@ -2028,6 +2045,7 @@ static PyMethodDef uvio_methods[] = {
 	" int-ndarray flags, int n) => int retval"),
     DEF(uvwrite, "(int tno, double-ndarray preamble, float-ndarray data,\n"
 	" int-ndarray flags, int n) => void"),
+    DEF(uvselect, "(int tno, str object, double p1, double p2, int flag) => None"),
     DEF(uvset, "(int tno, str object, str type, int n, double p1,\n"
 	" double p2, double p3) => void"),
     DEF(uvflgwr, "(int tno, int-ndarray flags) => void"),
