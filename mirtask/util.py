@@ -327,7 +327,7 @@ def parseBP (text):
     except:
         raise Exception ('Text does not encode a valid BP: ' + text)
 
-    return ((m1 - 1) << 19) + (fp1 << 12) + ((m2 - 1) << 3) + fp2
+    return ((m1 - 1) << 19) + (fp1 << 16) + ((m2 - 1) << 3) + fp2
 
 # FIXME: following not implemented. Not sure if it is actually
 # necessary since in practice we condense down lists of basepols into
