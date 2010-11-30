@@ -1445,6 +1445,20 @@ py_uvputvrd (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+py_uvputvra (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *name, *value;
+
+    if (!PyArg_ParseTuple (args, "iss", &tno, &name, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    uvputvra_c (tno, name, value);
+    Py_RETURN_NONE;
+}
+
 /* xyio */
 
 /* maskio */
@@ -2058,7 +2072,8 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvputvri, "(int tno, str name, int-ndarray value) => void"),
     DEF(uvputvrr, "(int tno, str name, float-ndarray value) => void"),
     DEF(uvputvrd, "(int tno, str name, double-ndarray value) => void"),
-	
+    DEF(uvputvra, "(int tno, str name, str value) => void"),
+
     /* XXX uvio macros incomplete ... */
 
     /* xyio */

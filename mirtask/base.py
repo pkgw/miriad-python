@@ -866,6 +866,13 @@ class UVDataSet (DataSet):
 
         ll.uvputvrd (self.tno, name, val)
     
+    def writeVarString (self, name, val):
+        """Write a string UV variable. val will be stringified."""
+
+        self._checkOpen ()
+        ll.uvputvra (self.tno, name, str (val))
+
+
 class UVVarTracker (object):
     def __init__ (self, owner):
         self.dataset = owner
