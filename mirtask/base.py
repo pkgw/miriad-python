@@ -267,8 +267,9 @@ class DataSet (object):
         (desc, type, n), where 'desc' describes the item or gives its value
         if it can be expressed compactly; 'type' is one of 'nonexistant',
         'integer*2', 'integer*8', 'integer', 'real', 'double', 'complex',
-        'character', 'text', or 'binary'; and 'n' is the number of elements
-        in the item. If 'n' is 1, then 'desc' encodes the item's value.
+        'character', 'text', 'binary', or 'unknown'; and 'n' is the number
+        of elements in the item. If 'n' is 1, then 'desc' encodes the item's
+        value.
         """
 
         self._checkOpen ()
@@ -277,6 +278,101 @@ class DataSet (object):
         if n == 0: raise MiriadError ('Error probing header ' + keyword)
 
         return (desc, type, n)
+
+    # Elaborations on the basic MIRIAD functions to make it easier
+    # to read write simple header arrays
+
+    def getArrayHeader (self, keyword):
+        desc, type, n = self.getHeaderInfo (keyword)
+
+        if type == 'nonexistant':
+            raise MiriadError ('Trying to read nonexistant header ' + keyword)
+        elif type == 'unknown':
+            raise MiriadError ('Cannot determine type of header ' + keyword)
+        elif type == 'character':
+            # Already gets read into desc for us.
+            return desc
+        elif type == 'integer*2':
+            func = 'readShorts'
+            dtype = N.int16
+        elif type == 'integer*8':
+            func = 'readLongs'
+            dtype = N.int8
+        elif type == 'integer':
+            func = 'readInts'
+            dtype = N.int32
+        elif type == 'real':
+            func = 'readFloats'
+            dtype = N.float32
+        elif type == 'double':
+            func = 'readDoubles'
+            dtype = N.float64
+        elif type == 'complex':
+            func = 'readComplex'
+            dtype = N.complex64
+        elif type == 'text' or type == 'binary':
+            func = 'readBytes'
+            dtype = N.uint8
+        else:
+            raise MiriadError ('Unhandled type %s for header %s' % (type, keyword))
+
+        # Mistakes in hdprobe() / no offset
+        if type == 'text':
+            n -= 4
+            offset = 0
+        elif type == 'binary':
+            n -= 4
+            offset = 4
+        else:
+            offset = max (4, dtype ().itemsize)
+
+        data = N.empty (n, dtype=dtype)
+        item = self.getItem (keyword, 'r')
+
+        getattr (item, func) (data, offset)
+        item.close ()
+
+        if type == 'text':
+            # There has to be a better way to do this ...
+            data = ''.join (chr (x) for x in data)
+
+        return data
+
+
+    def _writeArrayHeader (self, keyword, value, wsingle, wmultiname, dtype):
+        value = N.asarray (value, dtype=dtype)
+        offset = max (4, dtype ().itemsize)
+
+        wsingle (keyword, 0)
+        item = self.getItem (keyword, 'a')
+        getattr (item, wmultiname) (value, offset)
+        item.close ()
+
+
+    def writeArrayHeaderInt (self, keyword, value):
+        self._writeArrayHeader (keyword, value, self.writeHeaderInt,
+                                 'writeInts', N.int32)
+
+
+    def writeArrayHeaderLong (self, keyword, value):
+        self._writeArrayHeader (keyword, value, self.writeHeaderLong,
+                                 'writeLongs', N.int64)
+
+
+    def writeArrayHeaderFloat (self, keyword, value):
+        self._writeArrayHeader (keyword, value, self.writeHeaderFloat,
+                                 'writeFloats', N.float32)
+
+
+    def writeArrayHeaderDouble (self, keyword, value):
+        self._writeArrayHeader (keyword, value, self.writeHeaderDouble,
+                                 'writeDoubles', N.float64)
+
+
+    def writeArrayHeaderComplex (self, keyword, value):
+        self._writeArrayHeader (keyword, value, self.writeHeaderComplex,
+                                 'writeComplex', N.complex64)
+
 
 class DataItem (object):
     """An item contained within a Miriad dataset."""
