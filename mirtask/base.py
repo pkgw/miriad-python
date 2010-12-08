@@ -488,7 +488,7 @@ class DataItem (object):
         item. The default read length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.float)
+        buf = N.asarray (buf, dtype=N.float32)
         if length is None: length = buf.size
         ll.hreadr (self.itno, buf, offset, length)
 
@@ -553,7 +553,7 @@ class DataItem (object):
         item. The default write length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.float)
+        buf = N.asarray (buf, dtype=N.float32)
         if length is None: length = buf.size
         ll.hwriter (self.itno, buf, offset, length)
 
