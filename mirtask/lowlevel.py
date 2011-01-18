@@ -1,6 +1,6 @@
 '''mirtask.lowlevel - low-level exposure of MIRIAD subroutine APIs'''
 
-# Copyright 2009, 2010 Peter Williams
+# Copyright 2009, 2010, 2011 Peter Williams
 #
 # This file is part of miriad-python.
 #

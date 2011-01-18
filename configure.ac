@@ -1,4 +1,4 @@
-dnl Copyright 2009, 2010 Peter Williams
+dnl Copyright 2009, 2010, 2011 Peter Williams
 dnl
 dnl This file is part of miriad-python.
 dnl
@@ -25,7 +25,7 @@ AC_SUBST(ACLOCAL_AMFLAGS, ["-I ."])
 
 dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[0.5])
-AC_SUBST([MIRPY_COPYRIGHT],["2009, 2010, Peter Williams"])
+AC_SUBST([MIRPY_COPYRIGHT],["2009, 2010, 2011, Peter Williams"])
 
 dnl Miriad.
 
