@@ -15,7 +15,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([miriad-python], [0.5])
+AC_INIT([miriad-python], [0.5.1])
 AC_CONFIG_SRCDIR([mirtask/_uviomodule.c])
 AC_CONFIG_MACRO_DIR(.)
 AM_INIT_AUTOMAKE([foreign -Wall])
