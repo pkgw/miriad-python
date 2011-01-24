@@ -143,7 +143,9 @@ _polToFPol = [0x10, 0x01, 0x11, 0x00, # YX XY YY XX
 
 # This table performs the reverse mapping, with index being the two
 # f-pol values packed into four bits each. A value of 99 indicates
-# an illegal pairing.
+# an illegal pairing. Correlations written in Stokes space are
+# indicated with the single-letter FITS codes; the "II", "QQ", and
+# "UU" codes are only used during pol conversion inside UVDAT.
 
 _fpolToPol = N.ndarray (128, dtype=N.int)
 _fpolToPol.fill (99)
@@ -155,9 +157,10 @@ _fpolToPol[0x22] = POL_RR
 _fpolToPol[0x23] = POL_RL
 _fpolToPol[0x32] = POL_LR
 _fpolToPol[0x33] = POL_LL
-_fpolToPol[0x44] = POL_II
-_fpolToPol[0x55] = POL_QQ
-_fpolToPol[0x66] = POL_UU
+_fpolToPol[0x44] = POL_I
+_fpolToPol[0x55] = POL_Q
+_fpolToPol[0x66] = POL_U
+_fpolToPol[0x77] = POL_V
 
 # A "antpol" (AP) is a >=8-bit integer identifying an
 # antenna/feed-polarization combination. It can be decoded without any
