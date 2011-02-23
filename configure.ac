@@ -76,6 +76,14 @@ AC_CHECK_LIB([mir], [bugrecover_c], [],[
   AC_MSG_ERROR([Miriad libraries too old; see README on bugrecover_c])
 ], [$mirextra])
 
+AC_CHECK_LIB([mir], [uvchkshadow_c], [
+    chkshadow=1 chkshadowstr=yes
+  ],[
+    chkshadow=0 chkshadowstr=no
+  ],[$mirextra])
+AC_DEFINE_UNQUOTED([HAVE_UVCHKSHADOW], [$chkshadow],
+  [Define if the MIRIAD UVIO library provides uvchkshadow_c().])
+
 MIR_LIBS="$MIR_LIBS -lmir $mirextra"
 LIBS="$orig_LIBS"
 CFLAGS="$orig_CFLAGS"
@@ -151,6 +159,7 @@ AC_OUTPUT
 dnl Summarize important configuration options
 
 echo "Configuration summary:"
-echo "   Install prefix:  " $prefix
-echo "   MIRIAD found in: " $miriad_loc
-echo "   Building docs?   " $DOCS_DESC
+echo "                   Install prefix: " $prefix
+echo "                  MIRIAD found in: " $miriad_loc
+echo "                    Building docs? " $DOCS_DESC
+echo "   uvchkshadow function available? " $chkshadowstr

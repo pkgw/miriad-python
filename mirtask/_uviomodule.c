@@ -1459,6 +1459,32 @@ py_uvputvra (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#if HAVE_UVCHKSHADOW
+static PyObject *
+py_uvchkshadow (PyObject *self, PyObject *args)
+{
+    int tno;
+    double diameter_meters;
+
+    if (!PyArg_ParseTuple (args, "id", &tno, &diameter_meters))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    if (uvchkshadow_c (tno, diameter_meters))
+	Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+#else
+static PyObject *
+py_uvchkshadow (PyObject *self, PyObject *args)
+{
+    PyErr_SetString (PyExc_NotImplementedError,
+		     "no uvchkshadow_c() in underlying MIRIAD UVIO library");
+    return NULL;
+}
+#endif
+
 /* xyio */
 
 /* maskio */
@@ -2064,6 +2090,7 @@ static PyMethodDef uvio_methods[] = {
 	" double p2, double p3) => void"),
     DEF(uvflgwr, "(int tno, int-ndarray flags) => void"),
     DEF(uvinfo, "(int tno, str object, double-ndarray data) => void"),
+    DEF(uvchkshadow, "(int tno, double diameter_meters) => bool"),
 
     /* XXX uvio incomplete ... */
 

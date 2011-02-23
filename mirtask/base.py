@@ -695,6 +695,20 @@ class UVDataSet (DataSet):
         return ll.uvinfo_visno (self.tno)
 
 
+    def baselineShadowed (self, diameter_meters):
+        """Returns whether the most recently-read UV record comes from
+        antennas that were shadowed, assuming a given antenna
+        diameter.
+
+        *diameter_meters* - the diameter within which an antenna is
+          considered shadowed, measured in meters.
+
+        Returns: boolean."""
+
+        self._checkOpen ()
+        return ll.uvchkshadow (self.tno, diameter_meters)
+
+
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):
