@@ -1475,6 +1475,12 @@ py_uvchkshadow (PyObject *self, PyObject *args)
 	Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
+
+static PyObject *
+py_probe_uvchkshadow (PyObject *self, PyObject *args)
+{
+    Py_RETURN_TRUE;
+}
 #else
 static PyObject *
 py_uvchkshadow (PyObject *self, PyObject *args)
@@ -1482,6 +1488,12 @@ py_uvchkshadow (PyObject *self, PyObject *args)
     PyErr_SetString (PyExc_NotImplementedError,
 		     "no uvchkshadow_c() in underlying MIRIAD UVIO library");
     return NULL;
+}
+
+static PyObject *
+py_probe_uvchkshadow (PyObject *self, PyObject *args)
+{
+    Py_RETURN_FALSE;
 }
 #endif
 
@@ -2091,6 +2103,7 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvflgwr, "(int tno, int-ndarray flags) => void"),
     DEF(uvinfo, "(int tno, str object, double-ndarray data) => void"),
     DEF(uvchkshadow, "(int tno, double diameter_meters) => bool"),
+    DEF(probe_uvchkshadow, "() => bool"),
 
     /* XXX uvio incomplete ... */
 
