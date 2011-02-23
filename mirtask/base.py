@@ -700,6 +700,14 @@ class UVDataSet (DataSet):
         antennas that were shadowed, assuming a given antenna
         diameter.
 
+        This function depends on an API in the MIRIAD UV I/O library
+        that may not necessarily be exposed. If this is the case, this
+        function will raise a :exc:`NotImplementedError`. You can
+        check in advance whether this function is available by
+        checking the return value of
+        :func:`mirtask.lowlevel.probe_uvchkshadow`, :const:`True`
+        indicating availability.
+
         *diameter_meters* - the diameter within which an antenna is
           considered shadowed, measured in meters.
 
