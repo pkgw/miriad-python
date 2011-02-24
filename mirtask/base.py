@@ -700,6 +700,13 @@ class UVDataSet (DataSet):
         antennas that were shadowed, assuming a given antenna
         diameter.
 
+        In order for this function to operate, you must apply a UV
+        selection of the form "shadow(1e9)". This is a necessary hack
+        to enable the internal UVW recomputation needed for shadow
+        testing. The extremely large argument means that no data will
+        actually be filtered out by the selection. If the selection is
+        not applied, a :exc:`MiriadError` will be raised.
+
         This function depends on an API in the MIRIAD UV I/O library
         that may not necessarily be exposed. If this is the case, this
         function will raise a :exc:`NotImplementedError`. You can
