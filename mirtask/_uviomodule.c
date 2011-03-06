@@ -1545,12 +1545,12 @@ py_mkclose (PyObject *self, PyObject *args)
 static PyObject *
 py_mkread (PyObject *self, PyObject *args)
 {
-    long handint;
+    long handint, offset;
     char *handle;
-    int mode, offset, n, nread, nsize;
+    int mode, n, nread, nsize;
     PyObject *flags;
 
-    if (!PyArg_ParseTuple (args, "liO!ii", &handint, &mode, &PyArray_Type,
+    if (!PyArg_ParseTuple (args, "liO!li", &handint, &mode, &PyArray_Type,
 			   &flags, &offset, &n))
 	return NULL;
 
@@ -1583,7 +1583,7 @@ py_mkread (PyObject *self, PyObject *args)
      */
 
     MTS_CHECK_BUG;
-    nread = mkread_c (handle, mode, PyArray_DATA (flags), offset, n, nsize);
+    nread = mkread_c (handle, mode, PyArray_DATA (flags), (off_t) offset, n, nsize);
 
     return Py_BuildValue ("i", nread);
 }
@@ -1592,12 +1592,12 @@ py_mkread (PyObject *self, PyObject *args)
 static PyObject *
 py_mkwrite (PyObject *self, PyObject *args)
 {
-    long handint;
+    long handint, offset;
     char *handle;
-    int mode, offset, n, nsize;
+    int mode, n, nsize;
     PyObject *flags;
 
-    if (!PyArg_ParseTuple (args, "liO!ii", &handint, &mode, &PyArray_Type,
+    if (!PyArg_ParseTuple (args, "liO!li", &handint, &mode, &PyArray_Type,
 			   &flags, &offset, &n))
 	return NULL;
 
@@ -1630,7 +1630,7 @@ py_mkwrite (PyObject *self, PyObject *args)
      */
 
     MTS_CHECK_BUG;
-    mkwrite_c (handle, mode, PyArray_DATA (flags), offset, n, nsize);
+    mkwrite_c (handle, mode, PyArray_DATA (flags), (off_t) offset, n, nsize);
 
     Py_RETURN_NONE;
 }
