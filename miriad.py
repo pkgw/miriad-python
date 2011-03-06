@@ -673,11 +673,13 @@ interval={interval} {params...}`.
         self.apply (TaskUVAver (), out=dest, interval=interval,
                     **params).run ()
 
-    def lwcpTo (self, dest):
+    def lwcpTo (self, dest, skip=()):
         """Make a lightweight copy of this dataset in *dest*.
 
 :arg dest: the destination dataset
 :type dest: :class:`Data`, str, or any other stringable
+:arg skip: names of dataset files to skip when copying
+:type skip: collection of str
 :rtype: :const:`None`
 
 Creates a "lightweight" copy of the source dataset. This
@@ -714,7 +716,9 @@ the destination dataset.
                 sfn = join (self.realPath (), fn)
                 dfn = join (dest.base, fn)
 
-                if fn == 'visdata':
+                if fn in skip:
+                    continue
+                elif fn == 'visdata':
                     os.symlink (sfn, dfn)
                 elif os.path.isfile (sfn):
                     shutil.copy (sfn, dfn)
