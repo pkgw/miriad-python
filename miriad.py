@@ -831,3 +831,6 @@ def ensureiterable (value):
 
 def commasplice (value):
     return ','.join (str (x) for x in ensureiterable (value))
+
+
+__all__ += ['ensureiterable', 'commasplice']
