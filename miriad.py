@@ -810,6 +810,39 @@ you desire.
 __all__ += ['ImData']
 
 
+# Gain / bandpass / leakage calibration data
+
+class CalData (Data):
+    def apply (self, task, **params):
+        return task.set (vis=self, **params)
+
+
+    def updateHash (self, updatefunc):
+        updatefunc (file (self.path ('header')).read ())
+
+        for item in ('flags', 'wflags', 'gains', 'leakage',
+                     'bandpass'):
+            if os.path.exists (self.path (item)):
+                updatefunc (item)
+                updatefunc (open (self.path (item)).read ())
+
+        return self
+
+
+    def quickHash (self, hash=None, hex=False):
+        if hash is None:
+            import hashlib
+            hash = hashlib.sha1 ()
+
+        self.updateHash (hash.update)
+
+        if hex:
+            return hash.hexdigest ()
+        return hash.digest ()
+
+__all__ += ['CalData']
+
+
 # Initialize default variant classes
 
 Data.defaultVisClass (VisData)
