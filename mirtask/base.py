@@ -461,7 +461,7 @@ class DataItem (object):
         item. The default read length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int)
+        buf = N.asarray (buf, dtype=N.int32)
         if length is None: length = buf.size
         ll.hreadi (self.itno, buf, offset, length)
 
@@ -470,7 +470,7 @@ class DataItem (object):
         item. The default read length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.short)
+        buf = N.asarray (buf, dtype=N.int16)
         if length is None: length = buf.size
         ll.hreadj (self.itno, buf, offset, length)
 
@@ -479,7 +479,7 @@ class DataItem (object):
         item. The default read length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.long)
+        buf = N.asarray (buf, dtype=N.int64)
         if length is None: length = buf.size
         ll.hreadl (self.itno, buf, offset, length)
 
@@ -526,7 +526,7 @@ class DataItem (object):
         item. The default write length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int)
+        buf = N.asarray (buf, dtype=N.int32)
         if length is None: length = buf.size
         ll.hwritei (self.itno, buf, offset, length)
 
@@ -535,7 +535,7 @@ class DataItem (object):
         item. The default write length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.short)
+        buf = N.asarray (buf, dtype=N.int16)
         if length is None: length = buf.size
         ll.hwritej (self.itno, buf, offset, length)
 
@@ -544,7 +544,7 @@ class DataItem (object):
         item. The default write length is the size of the array."""
 
         self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.long)
+        buf = N.asarray (buf, dtype=N.int64)
         if length is None: length = buf.size
         ll.hwritel (self.itno, buf, offset, length)
 
@@ -860,7 +860,7 @@ class UVDataSet (DataSet):
         ret = ll.uvgetvri (self.tno, varname, n)
 
         if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.int)
+        return N.asarray (ret, dtype=N.int32)
         
     def getVarFloat (self, varname, n=1):
         """Retrieve the current value or values of a float-valued UV
