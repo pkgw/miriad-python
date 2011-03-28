@@ -194,16 +194,16 @@ class DataSet (object):
         return ll.rdhdr (self.tno, keyword, float (default))
 
     def getHeaderInt (self, keyword, default):
-        """Retrieve the value of an int-valued header variable."""
+        """Retrieve the value of an int32-valued header variable."""
 
         self._checkOpen ()
         return ll.rdhdi (self.tno, keyword, int (default))
 
-    def getHeaderBool (self, keyword, default):
-        """Retrieve the value of a bool-valued header variable."""
+    def getHeaderLong (self, keyword, default):
+        """Retrieve the value of an int64-valued header variable."""
 
         self._checkOpen ()
-        return bool (ll.rdhdl (self.tno, keyword, int (default)))
+        return ll.rdhdl (self.tno, keyword, N.int64 (default))
 
     def getHeaderDouble (self, keyword, default):
         """Retrieve the value of a double-valued header variable."""

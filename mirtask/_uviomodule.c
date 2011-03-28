@@ -20,6 +20,8 @@
 #include <string.h> /* strerror */
 
 #include "mirtasksupport.h"
+#include <numpy/ndarrayobject.h>
+#include <numpy/arrayscalars.h>
 
 #include "hio.h"
 #include "miriad.h"
@@ -526,23 +528,22 @@ py_rdhdi (PyObject *self, PyObject *args)
 static PyObject *
 py_rdhdl (PyObject *self, PyObject *args)
 {
+    /* Python's API doesn't have specific-sized types, so we work through
+       Numpy. */
+
     int tno;
     char *keyword;
-    int8 value, defval8;
-    int defval;
+    int8 value;
+    PyObject *defval, *ret;
 
-    if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &defval))
+    if (!PyArg_ParseTuple (args, "isO!", &tno, &keyword, &PyInt64ArrType_Type, &defval))
 	return NULL;
 
-    if (defval)
-	defval8 = 1;
-    else
-	defval8 = 0;
-
     MTS_CHECK_BUG;
-    rdhdl_c (tno, keyword, &value, defval8);
-
-    return Py_BuildValue ("i", (int) value);
+    rdhdl_c (tno, keyword, &value, PyArrayScalar_VAL (defval, Int64));
+    ret = PyArrayScalar_New (Int64);
+    PyArrayScalar_ASSIGN (ret, Int64, value);
+    return ret;
 }
 
 static PyObject *
