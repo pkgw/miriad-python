@@ -612,6 +612,13 @@ class SmaMfCal (TaskBase):
                 'msmooth', 'opolyfit', 'wrap', 'averrll']
 
 
+class TaskGPCal (TaskBase):
+    _keywords = ['vis', 'select', 'line', 'flux', 'refant', 'minants',
+                 'interval', 'tol', 'xyphase']
+    _options = ['xyvary', 'qusolve', 'oldflux', 'circular', 'nopol',
+                'noxy', 'nopass', 'noamphase', 'xyref', 'polref', 'vsolve']
+
+
 class TaskMaths (TaskBase):
     _keywords = ['exp', 'mask', 'region', 'out', 'imsize', 'xrange',
                  'yrange', 'zrange']
