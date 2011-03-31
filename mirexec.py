@@ -40,6 +40,14 @@ except ImportError:
             return "Command '%s' returned non-zero exit status %d" % (self.cmd,
                                                                       self.returncode)
 
+class TaskLaunchError (Exception):
+    def __init__ (self, command, fmt, *args):
+        self.command = command
+        self.detail = fmt % args
+    def __str__ (self):
+        return 'Could not launch \"%s\": %s' % (' '.join (self.command), self.detail)
+
+
 _defaultDevice = '/xs'
 
 # Management of the environment of the tasks that we spawn.  By
@@ -312,7 +320,13 @@ class TaskBase (object):
     def launch (self, **kwargs):
         cmd = self.commandLine ()
         miriad.trace (cmd)
-        return MiriadSubprocess (cmd, shell=False, close_fds=True, env=_childenv, **kwargs)
+        try:
+            return MiriadSubprocess (cmd, shell=False, close_fds=True,
+                                     env=_childenv, **kwargs)
+        except OSError, e:
+            if e.errno == 2:
+                raise TaskLaunchError (cmd, 'executable not found in $PATH')
+            raise TaskLaunchError (cmd, str (e))
 
 
     def launchpipe (self, **kwargs):
