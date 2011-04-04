@@ -849,6 +849,33 @@ py_uvgetvri (PyObject *self, PyObject *args)
 }
 
 static PyObject *
+py_uvgetvrj (PyObject *self, PyObject *args)
+{
+    int tno, n;
+    char *var;
+    PyObject *retval;
+    npy_intp dims[1];
+
+    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    /* So, the uvgetvr* functions convert variables from their
+       storage ("external") type to in-memory ("internal") types.
+       A 16-bit integer is stored as two bytes, but expanded to
+       a platform "int", which will presumably be 32 or 64 bytes.
+       This is why we allocate a plain int array, and not one of
+       type NPY_INT16.
+     */
+
+    dims[0] = n;
+    retval = PyArray_SimpleNew (1, dims, NPY_INT);
+    uvgetvrj_c (tno, var, PyArray_DATA (retval), n);
+    return retval;
+}
+
+static PyObject *
 py_uvgetvrr (PyObject *self, PyObject *args)
 {
     int tno, n, i;
@@ -2082,7 +2109,8 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvvarcpy, "(int vhan, int tout) => void"),
     DEF(uvvarupd, "(int vhan) => int retval"),
     DEF(uvgetvra, "(int tno, str var) => str retval"),
-    DEF(uvgetvri, "(int tno, str var, int n) => (tuple of n int values)"),
+    DEF(uvgetvri, "(int tno, str var, int n) => (tuple of n int32 values)"),
+    DEF(uvgetvrj, "(int tno, str var, int n) => (tuple of n int16 values)"),
     DEF(uvgetvrr, "(int tno, str var, int n) => (tuple of n float values)"),
     DEF(uvgetvrd, "(int tno, str var, int n) => (tuple of n double values)"),
     DEF(uvgetvrc, "(int tno, str var, int n) => (tuple of n complex values)"),

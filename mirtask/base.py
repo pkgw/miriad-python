@@ -853,7 +853,7 @@ class UVDataSet (DataSet):
         return ll.uvgetvra (self.tno, varname)
     
     def getVarInt (self, varname, n=1):
-        """Retrieve the current value or values of an int-valued UV
+        """Retrieve the current value or values of an int32-valued UV
         variable."""
 
         self._checkOpen ()
@@ -861,7 +861,18 @@ class UVDataSet (DataSet):
 
         if n == 1: return ret[0]
         return N.asarray (ret, dtype=N.int32)
-        
+
+    def getVarShort (self, varname, n=1):
+        """Retrieve the current value or values of an int16-valued UV
+        variable."""
+
+        self._checkOpen ()
+        ret = ll.uvgetvrj (self.tno, varname, n)
+
+        if n == 1:
+            return ret[0]
+        return ret
+
     def getVarFloat (self, varname, n=1):
         """Retrieve the current value or values of a float-valued UV
         variable."""
