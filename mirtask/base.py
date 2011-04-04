@@ -851,7 +851,7 @@ class UVDataSet (DataSet):
 
         self._checkOpen ()
         return ll.uvgetvra (self.tno, varname)
-    
+
     def getVarInt (self, varname, n=1):
         """Retrieve the current value or values of an int32-valued UV
         variable."""
@@ -859,8 +859,9 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         ret = ll.uvgetvri (self.tno, varname, n)
 
-        if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.int32)
+        if n == 1:
+            return ret[0]
+        return ret
 
     def getVarShort (self, varname, n=1):
         """Retrieve the current value or values of an int16-valued UV
@@ -880,8 +881,9 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         ret = ll.uvgetvrr (self.tno, varname, n)
 
-        if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.float32)
+        if n == 1:
+            return ret[0]
+        return ret
 
     def getVarDouble (self, varname, n=1):
         """Retrieve the current value or values of a double-valued UV
@@ -890,8 +892,9 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         ret = ll.uvgetvrd (self.tno, varname, n)
     
-        if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.float64)
+        if n == 1:
+            return ret[0]
+        return ret
 
     def getVarComplex (self, varname, n=1):
         """Retrieve the current value or values of a complex-valued UV
@@ -900,8 +903,9 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         ret = ll.uvgetvrc (self.tno, varname, n)
     
-        if n == 1: return ret[0]
-        return N.asarray (ret, dtype=N.complex64)
+        if n == 1:
+            return ret[0]
+        return ret
 
     def getVarFirstString (self, varname, dflt):
         """Retrieve the first value of a string-valued UV

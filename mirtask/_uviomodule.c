@@ -825,26 +825,23 @@ py_uvgetvra (PyObject *self, PyObject *args)
 static PyObject *
 py_uvgetvri (PyObject *self, PyObject *args)
 {
-    int tno, n, i;
+    int tno, n;
     char *var;
     PyObject *retval;
-    int *vals;
+    npy_intp dims[1];
 
     if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    vals = PyMem_Malloc (sizeof (int) * n);
-    uvgetvri_c (tno, var, vals, n);
+    /* See py_uvgetvrj for commentary on why we are allocating
+       a platform "int" and not specifically an int32.
+    */
 
-    retval = PyTuple_New (n);
-
-    for (i = 0; i < n; i++)
-	PyTuple_SetItem (retval, i, PyInt_FromLong ((long) vals[i]));
-
-    PyMem_Free (vals);
-
+    dims[0] = n;
+    retval = PyArray_SimpleNew (1, dims, NPY_INT);
+    uvgetvri_c (tno, var, PyArray_DATA (retval), n);
     return retval;
 }
 
@@ -878,81 +875,57 @@ py_uvgetvrj (PyObject *self, PyObject *args)
 static PyObject *
 py_uvgetvrr (PyObject *self, PyObject *args)
 {
-    int tno, n, i;
+    int tno, n;
     char *var;
     PyObject *retval;
-    float *vals;
+    npy_intp dims[1];
 
     if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    vals = PyMem_Malloc (sizeof (float) * n);
-    uvgetvrr_c (tno, var, vals, n);
-
-    retval = PyTuple_New (n);
-
-    for (i = 0; i < n; i++)
-	PyTuple_SetItem (retval, i, PyFloat_FromDouble ((double) vals[i]));
-
-    PyMem_Free (vals);
-
+    dims[0] = n;
+    retval = PyArray_SimpleNew (1, dims, NPY_FLOAT);
+    uvgetvrr_c (tno, var, PyArray_DATA (retval), n);
     return retval;
 }
 
 static PyObject *
 py_uvgetvrd (PyObject *self, PyObject *args)
 {
-    int tno, n, i;
+    int tno, n;
     char *var;
     PyObject *retval;
-    double *vals;
+    npy_intp dims[1];
 
     if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    vals = PyMem_Malloc (sizeof (double) * n);
-    uvgetvrd_c (tno, var, vals, n);
-
-    retval = PyTuple_New (n);
-
-    for (i = 0; i < n; i++)
-	PyTuple_SetItem (retval, i, PyFloat_FromDouble (vals[i]));
-
-    PyMem_Free (vals);
-
+    dims[0] = n;
+    retval = PyArray_SimpleNew (1, dims, NPY_DOUBLE);
+    uvgetvrd_c (tno, var, PyArray_DATA (retval), n);
     return retval;
 }
 
 static PyObject *
 py_uvgetvrc (PyObject *self, PyObject *args)
 {
-    int tno, n, i;
+    int tno, n;
     char *var;
     PyObject *retval;
-    double *vals;
+    npy_intp dims[1];
 
     if (!PyArg_ParseTuple (args, "isi", &tno, &var, &n))
 	return NULL;
 
     MTS_CHECK_BUG;
 
-    vals = PyMem_Malloc (2 * sizeof (float) * n);
-    uvgetvrc_c (tno, var, vals, n);
-
-    retval = PyTuple_New (n);
-
-    for (i = 0; i < n; i++) {
-	double real = (double) vals[2*i];
-	double imag = (double) vals[2*i+1];
-	PyTuple_SetItem (retval, i, PyComplex_FromDoubles (real, imag));
-    }
-
-    PyMem_Free (vals);
-
+    dims[0] = n;
+    retval = PyArray_SimpleNew (1, dims, NPY_CFLOAT);
+    uvgetvrc_c (tno, var, PyArray_DATA (retval), n);
     return retval;
 }
 
