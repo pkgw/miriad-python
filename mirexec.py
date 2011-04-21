@@ -662,3 +662,16 @@ class TaskRegrid (TaskBase):
     _keywords = ['in_', 'out', 'axes', 'tin', 'desc', 'project',
                  'rotate', 'tol']
     _options = ['noscale', 'offset', 'nearest', 'galeqsw', 'equisw']
+
+
+class TaskSFind (TaskBase):
+    _keywords = ['in_', 'type', 'region', 'xybin', 'chan', 'slev',
+                 'levs', 'range', 'cutoff', 'rmsbox', 'alpha',
+                 'xrms', 'device', 'nxy', 'labtyp', 'logfile',
+                 'csize']
+    _options = ['fiddle', 'wedge', '3value', '3pixel', 'grid', 'noerase',
+                'unequal', 'mark', 'nofit', 'asciiart', 'auto', 'negative',
+                'pbcorr', 'oldsfind', 'fdrimg', 'sigmaimg', 'rmsimg',
+                'normimg', 'kvannot', 'fdrpeak', 'allpix', 'psfsize']
+
+    device = _defaultDevice
