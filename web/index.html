@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>miriad-python</title>
+  <style type="text/css" media="all">
+    @import "style.css";
+  </style>
+</head>
+
+<body>
+<h1>miriad-python</h1>
+
+<p>This is the homepage of the <tt>miriad-python</tt> package, which
+provides a bridge between <a href="http://www.python.org/">the Python
+programming language</a> and <a
+href="http://carma.astro.umd.edu/wiki/index.php/Miriad">the MIRIAD
+radio astronomy package</a>. It provides facilities for:</p>
+
+<ul>
+<li>reading and writing MIRIAD datasets in Python,</li>
+<li>executing MIRIAD tasks from Python, and</li>
+<li>implementing MIRIAD tasks in Python.</li>
+</ul>
+
+<p>For more information, see the <a href="docs/">Miriad-Python
+Manual</a>, which is a work in progress.</p>
+
+<p>Miriad-Python is almost entirely Free Software, licensed under the
+<a href="http://www.gnu.org/copyleft/gpl.html">GPL version 3</a> or
+later. Small portions of it are licensed under a BSD license with an
+advertising clause that limits your ability to make advertising claims
+using the names of the authors of those portions. With that exception,
+Miriad-Python is available for inspection and use by anyone for any
+purpose. Your contributions to the software are encouraged and
+welcomed.</p>
+
+<p id="latest"><b>Latest release:</b> <a
+href="miriad-python-0.6.tar.gz">miriad-python 0.6</a> (source only),
+SHA1 checksum <tt>c70ee78afd59a631110a23a94803e2b9d1c49d68</tt>,
+git commit <tt>acbfa731c5da07c0270b03e9e93c11f4c9b7a4d4</tt></p>
+
+<h2>News</h2>
+
+<p><b>2011 April 28:</b> You wouldn’t know it by looking at this
+webpage, but Miriad-Python has been evolving steadily over
+the past year and a half. Today I'm releasing <a
+href="miriad-python-0.6.tar.gz">version 0.6</a>, which is a <em>vast</em>
+improvement over the previous public version. It is much more
+correct and also much easier to use for a variety of tasks. Check
+it out!</p>
+
+<p><b>2009 September 28:</b> The first public release of
+Miriad-Python, <a href="miriad-python-0.1.0.tar.gz">version 0.1.0</a>,
+has been posted, and this website has been created. Even though this
+is the first release, it should be quite stable and useful. I've been
+using Miriad-Python for the past year or so and it's worked very well
+and needed no substantial changes to the overall package design. This
+is a source-only release.</p>
+
+<h2>Download and Installation</h2>
+
+<p>Miriad-Python is currently released only as source code. The latest
+release is <a href="miriad-python-0.6.tar.gz">version
+0.6</a>. Miriad-Python requires at <a
+href="http://numpy.scipy.org">NumPy</a> with development files (in
+particular, the program <tt>f2py</tt>) installed. Miriad-Python
+definitely works with NumPy version 1.5, and may work with NumPy as
+old as 1.0, but I haven't tested which versions work and which don’t.</p>
+
+<p>Miriad-Python also requires a recent working installation of
+MIRIAD. Because there are several flavors of MIRIAD that are built and
+released in different ways, it's difficult for us to specify what
+exactly is needed. Version 4.1.1 or newer of MIRIAD should work, but
+somewhat older versions should also be fine. Installations of MIRIAD
+built with the “new-style” build system (using
+<tt>configure</tt>) are required. The Miriad-Python build
+configuration step should give you an error if it encounters an
+install of MIRIAD that it can't handle. We apologize for being unable
+to give more specific requirements, but installations of MIRIAD vary
+highly and many MIRIAD installs do not derive from standardized
+released packages.</p>
+
+<p>Miriad-Python is built using the standard <a
+href="http://www.gnu.org">GNU</a> tools <tt>autoconf</tt>,
+<tt>automake</tt>, and <tt>libtool</tt>. Linux programmers and system
+administrators should be familiar with these tools if you have any
+problems. The generic recipe for building the software is:</p>
+
+<ol>
+<li>Unpack the source code into a working directory.</li>
+<li>In that directory, run <tt>./configure --help</tt> to see a list
+of package setup options. In particular, note the
+<tt>--with-miriad</tt> and <tt>--prefix</tt> options.</li>
+<li>Run <tt>./configure</tt> with any options you need.</li>
+<li>Run <tt>make install</tt>.</li>
+</ol>
+
+<p>For more detailed instructions, see the file <tt>INSTALL</tt>
+provided with the source code, or consult your local system
+administrator, or email Peter Williams at
+<tt>pwilliams@astro.berkeley.edu</tt>.</p>
+
+<h2>Documentation</h2>
+
+<p>Miriad-Python has a work-in-progress <a href="docs/">manual</a>. We
+hope that you'll find that the manual provides a good overview of the
+design of Miriad-Python, but there are unfortunately still gaps in its
+coverage. If you're curious about Miriad-Python, we encourage you to
+take a look at the manual and see if it fits your needs.</p>
+
+<h2>Development and Contributions</h2>
+
+<p>We aspire for Miriad-Python to have an open and welcoming
+development model. Peter Williams
+(<tt>pwilliams@astro.berkeley.edu</tt>) has been the primary developer
+but he is happy for others to become involved in the project. The
+source code to Miriad-Python is stored in a <a
+href="http://git-scm.com">Git</a> repository that's accessible for
+read-only access via HTTP <a
+href="http://astro.berkeley.edu/~pkwill/repos/miriad-python.git">here</a>.
+For read-write access, contact Peter and he'll figure something
+out.</p>
+
+<p>There are currently no mailing lists or bug trackers for
+Miriad-Python because the userbase is too small to warrant
+them. If that changes, they'll be set up.</p>
+
+<h2>Contact</h2>
+
+<p>For more information, contact Peter Williams at
+<tt>pwilliams@astro.berkeley.edu</tt>.</p>
+
+<div id="footer">
+<p>Copyright 2009, 2010, 2011 Peter Williams. <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/us/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/us/80x15.png" /></a><br
+/>This work is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/us/">Creative
+Commons Attribution-Share Alike 3.0 United States License</a>.</p>
+</div>
+
+</body>
+</html>

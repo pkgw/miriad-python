@@ -1,0 +1,5 @@
+These files contain the miriad-python website (such as it is).
+
+They are explicitly *not* part of the autotools build system, and are
+*not* distributed in source tarballs. They just live here so I can
+version-control them.

@@ -1,0 +1,18 @@
+body {
+	margin: 0 15% 0 15%;
+}
+
+p {
+	text-align: justify;
+	text-indent: 0;
+}
+
+#latest {
+	text-align: left;
+	margin: 0 10% 0 10%;
+}
+
+#footer p {
+	font-size: smaller;
+	text-align: center;
+}
