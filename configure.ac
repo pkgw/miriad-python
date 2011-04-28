@@ -72,8 +72,8 @@ AC_CHECK_LIB([mir], [wrhda_],[
   ],[$maybemirextra])
 ])
 
-AC_CHECK_LIB([mir], [bugrecover_c], [],[
-  AC_MSG_ERROR([Miriad libraries too old; see README on bugrecover_c])
+AC_CHECK_LIB([mir], [bughandler_c], [],[
+  AC_MSG_ERROR([Miriad libraries too old; see README on bughandler_c])
 ], [$mirextra])
 
 AC_CHECK_LIB([mir], [uvchkshadow_c], [
