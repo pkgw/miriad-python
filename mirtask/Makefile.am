@@ -38,7 +38,8 @@ mtpy_PYTHON = \
 lib_LTLIBRARIES = libmirtasksupport.la
 mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
 
-AM_CFLAGS = -Wall -g -O2 $(PYTHON_INCLUDES) -I$(NUMPY_INCLUDEDIR) $(MIR_CFLAGS) -I$(srcdir)
+AM_CPPFLAGS = -I$(NUMPY_INCLUDEDIR) $(MIR_CPPFLAGS) $(PYTHON_INCLUDES)
+AM_CFLAGS = -Wall -g -O2
 mod_ldflags = -module -avoid-version
 
 libmirtasksupport_la_LDFLAGS =

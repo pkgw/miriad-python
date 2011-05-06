@@ -35,19 +35,19 @@ AS_HELP_STRING([--with-miriad=PREFIX],
 [],with_miriad=noextra)
 
 orig_LIBS="$LIBS"
-orig_CFLAGS="$CFLAGS"
+orig_CPPFLAGS="$CPPFLAGS"
 
 if test x"$with_miriad" = xnoextra ; then
   MIR_LIBS=""
-  MIR_CFLAGS=""
+  MIR_CPPFLAGS=""
   MIR_DISTCHECK_CONFARG=""
   miriad_loc="system search path"
 else
   MIR_LIBS="-L${with_miriad}/lib"
-  MIR_CFLAGS="-I${with_miriad}/include/miriad-c"
+  MIR_CPPFLAGS="-I${with_miriad}/include/miriad-c"
   MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
   LIBS="$MIR_LIBS $LIBS"
-  CFLAGS="$MIR_CFLAGS $CFLAGS"
+  CPPFLAGS="$MIR_CPPFLAGS $CPPFLAGS"
   miriad_loc="$with_miriad"
 fi
 
@@ -86,10 +86,10 @@ AC_DEFINE_UNQUOTED([HAVE_UVCHKSHADOW], [$chkshadow],
 
 MIR_LIBS="$MIR_LIBS -lmir $mirextra"
 LIBS="$orig_LIBS"
-CFLAGS="$orig_CFLAGS"
+CPPFLAGS="$orig_CPPFLAGS"
 
 AC_SUBST(MIR_LIBS)
-AC_SUBST(MIR_CFLAGS)
+AC_SUBST(MIR_CPPFLAGS)
 AC_SUBST(MIR_DISTCHECK_CONFARG)
 
 dnl Checks
