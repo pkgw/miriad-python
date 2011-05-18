@@ -53,7 +53,7 @@ fi
 
 AC_CHECK_HEADER([miriad.h],[],[
   AC_MSG_ERROR([Couldn't find Miriad headers. See README on --with-miriad.])
-],[#include "hio.h"])
+])
 
 AC_CHECK_LIB([mir], [wrhda_],[
   dnl Check succeeded

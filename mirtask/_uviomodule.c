@@ -23,7 +23,6 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/arrayscalars.h>
 
-#include "hio.h"
 #include "miriad.h"
 
 #define BUFSZ 512

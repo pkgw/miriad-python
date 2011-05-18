@@ -20,7 +20,6 @@
 #define __MIR_TASK_SUPPORT_C
 #include "mirtasksupport.h"
 
-#include "hio.h"
 #include "miriad.h"
 
 #define BUFSZ 512
