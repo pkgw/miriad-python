@@ -236,20 +236,12 @@ class MiriadSubprocess (Popen):
 
 
 class TaskBase (object):
-    """Generic MIRIAD task launcher class. The parameters to commands
-    are taken from fields in the object; those with names contained in
-    self._keywords are added to the command line in the style
-    '[member name]=[member value]'. The field self._name is the name of
-    the MIRIAD task to be run.
+    """:synopsis: Generic MIRIAD task launcher
+:arg kwargs: attributes to set on the object
 
-    If an element in self._keywords ends with an underscore, the key name
-    associated with that element has the underscore stripped off. This
-    allows MIRIAD keywords corresponding to Python keywords to be passed to
-    MIRIAD programs (eg, _keywords = ['in_']).
-
-    IDEA/FIXME/TODO: if an element in _keywords begins with *, ensure that
-    it is not None before running the task.
-    """
+The constructor returns an object that can be used to execute
+MIRIAD tasks.
+"""
 
     __metaclass__ = DefaultedTaskType
     

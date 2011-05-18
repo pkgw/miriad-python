@@ -434,7 +434,7 @@ also (re)initialized upon a call to this function using the parameters
 set in the call to :meth:`KeySpec.uvdat`.
 
 If an argument cannot be converted to its intended type, or the UVDAT
-subsytem encounters an error initializing, a :exception:`SystemExit`
+subsytem encounters an error initializing, :exc:`SystemExit`
 will be raised. If there are unrecognized keywords or extra values
 specified for a given keyword, a warning, *not* an error, will be
 issued.

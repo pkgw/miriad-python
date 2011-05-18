@@ -113,7 +113,7 @@ arguments with the following rules:
 * Keyword arguments have the same name in Python as they do on the
   command-line if possible. If the MIRIAD keyword is a Python
   keyword (*e.g.*, "in"), the keyword is accessible in Python by
-  suffixing it with an underscore ("in_").
+  suffixing it with an underscore ("in\_").
 * The textual value of each MIRIAD keyword is the stringification of
   the Python variable assigned to it. If the Python value is
   :const:`None`, the keyword is not supplied on the command-line.
@@ -207,10 +207,4 @@ Utility Classes
 ^^^^^^^^^^^^^^^
 
 .. autoclass:: DefaultedTaskType
-   :members:
-
-.. autoclass:: Holder
-   :members:
-
-.. autoclass:: Options
    :members:
