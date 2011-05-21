@@ -379,80 +379,94 @@ moderate accuracy only, e.g. good to a few seconds (I think?)."""
 def nlLeastSquares (guess, neqn, func, derivative=None,
                     maxIter=None, absCrit=None, relCrit=None,
                     stepSizes=None, allowFail=False):
-    """Optimize parameters by performing a nonlinear least-squares fit.
-Parameters:
+    """\
+Optimize parameters by performing a nonlinear least-squares fit.
 
-      guess - A 1D array giving the initial guess of the parameters.
-              The size of the array is used to determine the number of
-              parameters.
-       neqn - The number of equations -- usually, the number of data
-              points you have. Should be a positive integer bigger than
-              guess.size.
-       func - A function evaluating the fit residuals. Prototype below.
- derivative - Optional. A function giving the derivative of func with
-              regards to changes in the parameters. Prototype below. If
-              unspecified, the derivative will be approximated by
-              exploring values of 'func', and 'stepSizes' below must be
-              given.
-    maxIter - Optional. The maximum number of iterations to perform
-              before giving up. An integer, or None. If None, maxIter
-              is set to 200 times the number of unknowns. Defaults to
-              None.
-    absCrit - Optional. Absolute termination criterion: iteration stops
-              if sum(normResids**2) < criterion. If None, set to
-              neqn - guess.size (i.e., reduced chi squared = 1). Default
-              is None.
-    relCrit - Optional. Relative termination criterion: iteration stops
-              if relCrit * sum(abs(params)) < sum (abs(dparams)). If
-              None, set to nunk * 1e-4, i.e. explore until the parameters
-              are constrained to about one in 10000 . Default is None.
-  stepSizes - Optional. If 'derivative' isn't given, this should be a
-              1D array of guess.size parameters, giving the parameter
-              step sizes to use when evaluating the derivative of 'func'
-              numerically. If 'derivative' is given, the value is
-              ignored.
-  allowFail - Optional. If True, return results even for fits that did
-              not succeed. If False, raise an exception in these cases.
-              It is better to choose better values for absCrit and
-              relCrit than it is to set allowFail to True.
+:type guess: 1D ndarray
+:arg guess: the initial guess of the parameters. The size of the
+  array is used to determine the number of parameters, to which we
+  refer as *nunk* below.
+:arg int neqn: the number of equations -- usually, the number of data
+  points you have. Should be at least *nunk*.
+:arg callable func: a function evaluating the fit residuals. Prototype
+  below.
+:arg callable derivative: an optional function giving the derivative
+  of func with regards to changes in the parameters. Prototype
+  below. If unspecified, the derivative will be approximated by
+  exploring values of *func*, and *stepSizes* below must be given.
+:arg int/None maxIter: the maximum number of iterations to perform
+  before giving up. An integer, or :const:`None`. If :const:`None`,
+  maxIter is set to 200 times *nunk*. Defaults to :const:`None`.
+:arg float/None absCrit: absolute termination criterion: iteration
+  stops if sum(normResids**2) < criterion. If :const:`None`, set to
+  ``neqn - nunk`` (i.e., reduced chi squared = 1). Default is
+  :const:`None`.
+:arg float/none relCrit: relative termination criterion: iteration
+  stops if relCrit * sum(abs(params)) < sum (abs(dparams)). If
+  :const:`None`, set to ``nunk * 1e-4``, i.e. explore until the
+  parameters are constrained to about one in 10000 . Default is
+  :const:`None`.
+:type stepSizes: 1D ndarray
+:arg stepSizes: if *derivative* isn't given, this should be a
+  1D array of *nunk* parameters, giving the parameter step sizes
+  to use when evaluating the derivative of *func* numerically. If
+  *derivative* is given, the value is ignored.
+:arg bool allowFail: if :const:`True`, return results even for fits
+  that did not succeed. If :const:`False`, raise an exception in these
+  cases.  It is better to choose better values for absCrit and relCrit
+  than it is to set allowFail to :const:`True`.
+:rtype: (int, 1D ndarray, 1D ndarray, float)
+:returns: tuple of (*success*, *best*, *normResids*, *rchisq*),
+  described below.
 
-Prototype of 'func': func (params, normResids) ; return value ignored.
+The argument *func* is a function taking two arguments, *params* and
+*normResids*, and returning :const:`None`.
 
-     params - The current guess of the parameters.
- normResids - A 1D ndarray of neqn elements used as an output argument.
-              sum(normResids**2) is minimized by the solver. So-called
-              because in the classic case, this variable is set to the
-              normalized residuals:
+:type params: 1D ndarray
+:arg params: the current guess of the parameters
+:type normResids: 1D ndarray
+:arg normResids: an output argument of size *neqn*.
+  sum(normResids**2) is minimized by the solver. So-called because in
+  the classic case, this variable is set to the normalized residuals::
 
-              normResids[i] = (model (x[i], params) - data[i]) / sigma[i]
+    normResids[i] = (model (x[i], params) - data[i]) / sigma[i]
 
-Prototype of 'derivative': derivative (params, dfdx) ; return value
-ignored.
+:returns: ignored
 
- params - The current guess of the parameters.
-   dfdx - A 2D ndarray of (nunk, neqn) elements used as an output argument.
-          Gives the derivative of 'func' with regard to the parameters.
-          dfdx[i,j] = d(normResids[j]) / d(params[i]) .
+The optional argument *derivative* is a function taking two arguments,
+*params* and *dfdx*, and returning :const:`None`.
 
-Returns: (success, best, normResids, rChiSq)
+:type params: 1D ndarray
+:arg params: the current guess of the parameters.
+:type dfdx: 2D ndarray
+:arg dfdx: an output argument of shape (*nunk*, *neqn*). Should be
+  filled with the derivative of *func* with regard to the parameters::
 
-    success - An integer describing the outcome of the fit.
-              0 - Fit succeeded; one of the convergence criteria was
-                  achieved.
-              1 - A singular matrix was encountered; unable to complete fit.
-              2 - Maximum number of iterations completed before able to find
-                  a solution meeting either convergence criterion.
-              3 - Failed to achieve a better chi-squared than on the previous
-                  iteration, and the convergence criteria were not met
-                  on the previous iteration. The convergence criteria may be
-                  too stringent, or the initial guess may be leading the solver
-                  into a local minimum too far from the correct solution.
-       best - A 1D array giving the best-fit parameter values found by
-              the algorithm.
- normResids - A 1D array giving the last-evaluated normalized residuals
-              as described in the prototype of 'func'.
-     rChiSq - The reduced chi squared of the fit:
-              rChiSq = sum (normResids**2) / (neqn - guess.size)
+    dfdx[i,j] = d(normResids[j]) / d(params[i]) .
+
+:returns: ignored
+
+The return value is a tuple (*success*, *best*, *normResids*, *rchisq*),
+with the following meanings:
+
+* **success** -- an integer describing the outcome of the fit:
+
+  * *0* -- fit succeeded; one of the convergence criteria was achieved.
+  * *1* -- a singular matrix was encountered; unable to complete fit.
+  * *2* -- maximum number of iterations completed before able to find
+    a solution meeting either convergence criterion.
+  * *3* -- failed to achieve a better chi-squared than on the previous
+    iteration, and the convergence criteria were not met on the
+    previous iteration. The convergence criteria may be too stringent,
+    or the initial guess may be leading the solver into a local
+    minimum too far from the correct solution.
+* **best** -- a 1D array giving the best-fit parameter values found by the
+  algorithm.
+* **normResids** -- a 1D array giving the last-evaluated normalized residuals as
+  described in the prototype of *func*.
+* **rchisq** -- the reduced chi squared of the fit::
+
+    rChiSq = sum (normResids**2) / (neqn - nunk)
 
 Implemented using the Miriad function NLLSQU.
 """
@@ -533,26 +547,27 @@ Implemented using the Miriad function NLLSQU.
 # Wrapper around LLSQU, the linear least-squares solver
 
 def linLeastSquares (coeffs, vals):
-    """Solve for parameters in a linear least-squares problem.
-The problem has neqn equations used to solve for nunk
-unknown paremeters.
+    """\
+Solve for parameters in a linear least-squares problem.  The problem
+has *neqn* equations used to solve for *nunk* unknown parameters.
 
-Parameters:
+:type coeffs: 2D ndarray
+:arg coeffs: an array of shape (neqn, nunk). With *vals*, defines the
+  linear equations specifying the problem.
+:type vals: 1D ndarray
+:arg vals: data array of size *neqn*.
+:rtype: 1D ndarray
+:returns: an array of size *nunk* giving the parameters that yield the
+  least-squares fit to the given equation.
 
-    coeffs - A 2D array of shape (neqn, nunk). With "vals",
-             defines the linear equations specifying the
-             problem.
-      vals - A 1D array of size neqn.
+The linear least squares problem is that of finding best solution (in
+a least-squares sense), *retval*, such that ``coeffs * retval =
+vals``, using matrix notation. This is as solving *neqn* linear
+equations simultaneously, where the i'th equation is::
 
-Returns: a 1D array of size nunk giving the parameters that
-yield the least-squares fit to the given equation. That is,
-the values give the best solution (in a least-squares sense)
-to the neqn equations. The i'th equation is
-
-vals[i] = coeffs[i,0] * retval[0] + ... +
-  coeffs[i,nunk-1] * retval[nunk-1]
+  vals[i] = coeffs[i,0] * retval[0] + ... + coeffs[i,nunk-1] * retval[nunk-1]
 """
-    
+
     from _mirgood import llsqu
     
     coeffs = N.asarray (coeffs, dtype=N.float32, order='F')

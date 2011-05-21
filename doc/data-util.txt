@@ -1,0 +1,137 @@
+.. Copyright 2009, 2010, 2011 Peter Williams
+
+   This file is part of miriad-python.
+
+   Miriad-python is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+
+   Miriad-python is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
+.. _datautil:
+.. sectionauthor:: Peter Williams <peter@newton.cx>
+
+MIRIAD Data Utilities: :mod:`mirtask.util`
+===============================================
+
+.. module:: mirtask.util
+   :synopsis: Utilities for working with MIRIAD data
+.. moduleauthor:: Peter Williams <peter@newton.cx>
+
+The module :mod:`mirtask.util` contains miscellaneous utilities for
+working with MIRIAD data. It is located in the :mod:`mirtask` package because
+some of these utilities make calls into the MIRIAD subroutine library,
+unlike the general, pure-Python tools in the :mod:`miriad` module.
+
+There are functions in :mod:`mirtask.util` dealing with the following topics:
+
+* Basic infrastructure for user-written tasks
+* Encoding and decoding baseline values
+* Polarization utilities
+* "Antpol" and "basepol" values
+* Julian Date / text conversions
+* Least-squares optimization
+* Coordinate transformations
+
+Antpols and Basepols
+--------------------
+
+Docs here.
+
+Document FPOL_XYRLIQUV.
+
+Textual Conversion
+^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: fmtAP
+
+.. autodata:: fPolNames
+
+.. autofunction:: parseAP
+
+.. autofunction:: fmtAPs
+
+.. autofunction:: fmtBP
+
+.. autofunction:: parseBP
+
+Data Conversion
+^^^^^^^^^^^^^^^
+
+.. autofunction:: apAnt
+
+.. autofunction:: apFPol
+
+.. autofunction:: antpol2ap
+
+.. autofunction:: aps2ants
+
+.. autofunction:: aps2blpol
+
+.. autofunction:: mir2aps
+
+.. autofunction:: apsAreInten
+
+.. autofunction:: bp2aps
+
+.. autofunction:: aps2bp
+
+.. autofunction:: mir2bp
+
+.. autofunction:: bpIsInten
+
+Utilities for Writing Tasks
+----------------------------------------
+
+.. autofunction:: printBannerSvn
+
+.. autofunction:: die
+
+
+MIRIAD Constants and Conventions
+----------------------------------------
+
+Document LINETYPE\_, POL\_.
+
+.. autofunction:: decodeBaseline
+
+.. autofunction:: encodeBaseline
+
+.. autofunction:: polarizationName
+
+.. autofunction:: polarizationNumber
+
+.. autofunction:: polarizationIsInten
+
+
+Julian Dates
+----------------------------------------
+
+.. autofunction:: jdToFull
+
+.. autofunction:: jdToPartial
+
+.. autofunction:: dateOrTimeToJD
+
+
+Optimizers
+----------------------------------------
+
+.. autofunction:: nlLeastSquares
+
+.. autofunction:: linLeastSquares
+
+
+Coordinate Manipulations
+----------------------------------------
+
+.. autofunction:: precess
+
+.. autofunction:: equToHorizon
