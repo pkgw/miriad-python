@@ -58,9 +58,9 @@ Textual Conversion
 
 .. autofunction:: fmtAPs
 
-.. autofunction:: fmtBP
+.. autofunction:: fmtPBP32
 
-.. autofunction:: parseBP
+.. autofunction:: parsePBP32
 
 Data Conversion
 ^^^^^^^^^^^^^^^
@@ -79,13 +79,13 @@ Data Conversion
 
 .. autofunction:: apsAreInten
 
-.. autofunction:: bp2aps
+.. autofunction:: pbp32ToAps
 
-.. autofunction:: aps2bp
+.. autofunction:: apsToPBP32
 
-.. autofunction:: mir2bp
+.. autofunction:: mir2pbp32
 
-.. autofunction:: bpIsInten
+.. autofunction:: pbp32IsInten
 
 Utilities for Writing Tasks
 ----------------------------------------
