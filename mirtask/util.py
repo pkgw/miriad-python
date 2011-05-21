@@ -112,11 +112,10 @@ def polarizationIsInten (polnum):
 # a MIRIAD polarization number, values given above.
 #
 # First, a "feed polarization" (f-pol) is a polarization that an
-# individual feed can respond to. I am pretty sure that all or some of
-# the I, Q, U, V values given below are inappropriate, but I do
-# think MIRIAD can work with UV datasets given in Stokes parameters,
-# so for completeness we include them here, even if there can't be
-# a physical feed that corresponds to such an entity.
+# individual feed can respond to. We include Stokes parameters here,
+# even though such feeds can't operate physically, to allow sensible
+# roundtripping with MIRIAD/FITS polarization values in the code
+# below.
 
 FPOL_X = 0
 FPOL_Y = 1
@@ -129,26 +128,25 @@ FPOL_V = 7
 
 fPolNames = 'XYRLIQUV'
 
-# This table helps split a MIRIAD/FITS pol code into a pair of f-pol values.
-# The pair is packed into 8 bits, the upper 3 being for the left pol
-# and the lower 4 being for the right. If the high bit is 1, the pol code
-# cannot legally be split. An offset of 8 is required because the pol codes range
-# from -8 to +6
+# This table helps split a MIRIAD/FITS pol code into a pair of f-pol
+# values.  The pair is packed into 8 bits, the upper 3 being for the
+# left pol and the lower 4 being for the right. An offset of 8 is
+# required because the pol codes range from -8 to +6
 
 _polToFPol = [0x10, 0x01, 0x11, 0x00, # YX XY YY XX
               0x32, 0x23, 0x33, 0x22, # LR RL LL RR
               0x44, # II
-              0x44, 0x80, 0x80, 0x80, # I Q U V
+              0x44, 0x55, 0x66, 0x77, # I Q U V
               0x55, 0x66] # QQ UU
 
 # This table performs the reverse mapping, with index being the two
-# f-pol values packed into four bits each. A value of 99 indicates
+# f-pol values packed into four bits each. A value of 0xFF indicates
 # an illegal pairing. Correlations written in Stokes space are
 # indicated with the single-letter FITS codes; the "II", "QQ", and
 # "UU" codes are only used during pol conversion inside UVDAT.
 
-_fpolToPol = N.ndarray (128, dtype=N.int)
-_fpolToPol.fill (99)
+_fpolToPol = N.ndarray (128, dtype=N.int8)
+_fpolToPol.fill (0xFF)
 _fpolToPol[0x00] = POL_XX
 _fpolToPol[0x01] = POL_XY
 _fpolToPol[0x10] = POL_YX
@@ -162,9 +160,9 @@ _fpolToPol[0x55] = POL_Q
 _fpolToPol[0x66] = POL_U
 _fpolToPol[0x77] = POL_V
 
-# A "antpol" (AP) is a >=8-bit integer identifying an
-# antenna/feed-polarization combination. It can be decoded without any
-# external information.  The translation between AP and M,FP is:
+# A "antpol" (AP) is an integer identifying an antenna/f-pol pair. It
+# can be decoded without any external information.  The translation
+# between AP and M,FP is:
 #
 #   AP = (M - 1) << 3 + FP
 #
@@ -174,7 +172,10 @@ _fpolToPol[0x77] = POL_V
 #   P = AP & 0x7
 #
 # Note that arbitrarily-large antenna numbers can be encoded
-# if sufficiently many bits are used to store the AP.
+# if sufficiently many bits are used to store the AP. Also note that
+# if you think of the antpol "antenna number" as AP >> 3, antpol
+# antenna numbers start at zero, while MIRIAD antenna numbers start at
+# one.
 
 def fmtAP (ap):
     m = (ap >> 3) + 1
@@ -227,7 +228,7 @@ def aps2ants (pair):
 
     idx = ((ap1 & 0x7) << 4) + (ap2 & 0x7)
     pol = _fpolToPol[idx]
-    assert pol != 99, 'AP value represents illegal polarization pairing'
+    assert pol != 0xFF, 'AP value represents illegal polarization pairing'
 
     return (m1, m2, pol)
 
@@ -244,7 +245,6 @@ def mir2aps (inp, preamble):
 
     pol = inp.getVarInt ('pol')
     fps = _polToFPol[pol + 8]
-    assert (fps & 0x80) == 0, 'Un-breakable polarization code'
 
     m1, m2 = ll.basants (preamble[4], True)
 
@@ -287,7 +287,6 @@ def fmtBP (bp32):
 def mir2bp (inp, preamble):
     pol = inp.getVarInt ('pol')
     fps = _polToFPol[pol + 8]
-    assert (fps & 0x80) == 0, 'Un-breakable polarization code'
 
     m1, m2 = ll.basants (preamble[4], True)
     
@@ -331,28 +330,6 @@ def parseBP (text):
         raise Exception ('Text does not encode a valid BP: ' + text)
 
     return ((m1 - 1) << 19) + (fp1 << 16) + ((m2 - 1) << 3) + fp2
-
-# FIXME: following not implemented. Not sure if it is actually
-# necessary since in practice we condense down lists of basepols into
-# customized arrays, since a basepol might be missing.
-
-# An "local antpol" (LAP) encodes the same information as a AP, but can only
-# encode two possible polarizations. This means that external
-# information is needed to decode an AP, but that it can be used to
-# index into arrays efficiently (assuming a full-pol correlator
-# that doesn't skip many MIRIAD antenna numbers). The assumption is that
-# a set of antpols will include FPs of X & Y or R & L. In the former case
-# the "reference feed polarzation" (RFP) is X; in the latter it is R.
-#
-# The translation between AP, RFP and M, FP is:
-#
-#  AP = (M - 1) << 1 + (FP - RFP)
-#
-# or
-#
-#  M = (AP >> 1) + 1
-#  FP = (AP & 0x1) + RFP
-
 
 
 # Date stuff
