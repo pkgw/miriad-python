@@ -18,8 +18,7 @@
 ## (This copyright notice is delimited with double hashes to prevent it
 ## from being confusingly included in Makefile.in by automake.)
 
-mtpydir = $(pythondir)/mirtask
-mtpyexecdir = $(pyexecdir)/mirtask
+mtpydir = $(pyexecdir)/mirtask
 
 mtpy_PYTHON = \
   __init__.py \
@@ -36,7 +35,7 @@ mtpy_PYTHON = \
   _uvdat_compat_default.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
-mtpyexec_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
+mtpy_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
 
 AM_CPPFLAGS = -I$(NUMPY_INCLUDEDIR) $(MIR_CPPFLAGS) $(PYTHON_INCLUDES)
 AM_CFLAGS = -Wall -g -O2
