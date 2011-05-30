@@ -204,11 +204,17 @@ def parseAP (text):
 
     return antpol2ap (m, fpol)
 
-# A "basepol" is a baseline between two antpols. It can be encoded as
-# a pair of antpols.
 
-def fmtAPs (pair):
-    ap1, ap2 = pair
+# A "basepol" is a baseline between two antpols. It is expressed as a
+# 2-tuple of antpols.
+
+def fmtBP (bp):
+    ap1, ap2 = bp
+
+    if ap1 < 0:
+        raise ValueError ('first antpol %d is negative' % ap1)
+    if ap2 < 0:
+        raise ValueError ('second antpol %d is negative' % ap2)
 
     m1 = (ap1 >> 3) + 1
     fp1 = ap1 & 0x7
@@ -217,45 +223,81 @@ def fmtAPs (pair):
 
     return '%d%c-%d%c' % (m1, fPolNames[fp1], m2, fPolNames[fp2])
 
-def aps2ants (pair):
-    """Converts a tuple of two APs into a tuple of (ant1, ant2, pol)."""
 
-    ap1, ap2 = pair
+def bp2aap (bp):
+    """Converts a basepol into a tuple of (ant1, ant2, pol)."""
+
+    ap1, ap2 = bp
+
+    if ap1 < 0:
+        raise ValueError ('first antpol %d is negative' % ap1)
+    if ap2 < 0:
+        raise ValueError ('second antpol %d is negative' % ap2)
+
     m1 = (ap1 >> 3) + 1
     m2 = (ap2 >> 3) + 1
-    assert m1 > 0, 'Illegal AP value: m1 <= 0'
-    assert m1 <= m2, 'Illegal AP value: m1 > m2'
+    pol = _fpolToPol[((ap1 & 0x7) << 4) + (ap2 & 0x7)]
 
-    idx = ((ap1 & 0x7) << 4) + (ap2 & 0x7)
-    pol = _fpolToPol[idx]
-    assert pol != 0xFF, 'AP value represents illegal polarization pairing'
+    if pol == 0xFF:
+        raise ValueError ('no FITS polarization code for pairing '
+                          '%c-%c' % (fPolNames[ap1 & 0x7],
+                                     fPolNames[ap2 & 0x7]))
 
-    return (m1, m2, pol)
+    return m1, m2, pol
 
-def aps2blpol (pair):
-    """Converts a tuple of two APs into a tuple of (bl, pol) where
+
+def bp2blpol (bp):
+    """Converts a basepol into a tuple of (bl, pol) where
 'bl' is the MIRIAD-encoded baseline number."""
 
-    m1, m2, pol = aps2ants (pair)
-    return (encodeBaseline (m1, m2), pol)
+    m1, m2, pol = bp2aap (bp)
+    return encodeBaseline (m1, m2), pol
 
-def mir2aps (inp, preamble):
-    """Uses a UV dataset and a preamble array to return a tuple of
-(ap1, ap2)."""
+
+def mir2bp (inp, preamble):
+    """Uses a UV dataset and a preamble array to return a basepol."""
 
     pol = inp.getVarInt ('pol')
     fps = _polToFPol[pol + 8]
-
-    m1, m2 = ll.basants (preamble[4], True)
+    m1, m2 = decodeBaseline (preamble[4])
 
     ap1 = ((m1 - 1) << 3) + ((fps >> 4) & 0x07)
     ap2 = ((m2 - 1) << 3) + (fps & 0x07)
 
     return ap1, ap2
 
-def apsAreInten (pair):
-    ap1, ap2 = pair
-    return ap1 & 0x7 == ap2 & 0x7
+
+def bpIsInten (bp):
+    ap1, ap2 = bp
+
+    if ap1 < 0:
+        raise ValueError ('first antpol %d is negative' % ap1)
+    if ap2 < 0:
+        raise ValueError ('second antpol %d is negative' % ap2)
+
+    fp1, fp2 = ap1 & 0x7, ap2 & 0x7
+    return (fp1 >= 0 and fp1 < 5 and fp2 == fp1)
+
+
+def parseBP (text):
+    t1, t2 = text.split ('-', 1)
+
+    try:
+        fp1 = fPolNames.find (t1[-1].upper ())
+        assert fp1 >= 0
+
+        m1 = int (t1[:-1])
+        assert m1 > 0
+
+        fp2 = fPolNames.find (t2[-1].upper ())
+        assert fp2 >= 0
+
+        m2 = int (t2[:-1])
+        assert m2 > 0
+    except Exception:
+        raise ValueError ('text does not encode a basepol: ' + text)
+
+    return ((m1 - 1) << 3) + fp1, ((m2 - 1) << 3) + fp2
 
 
 # A "packed 32-bit basepol" (PBP32) encodes a basepol in a single
@@ -301,14 +343,14 @@ def mir2pbp32 (handle, preamble):
         + (fps & 0x7)
 
 
-def pbp32ToAps (pbp32):
+def pbp32ToBP (pbp32):
     if pbp32 < 0 or pbp32 > 0xFFFFFFFF:
         raise ValueError ('illegal PBP32 %x' % pbp32)
     return ((pbp32 >> 16) & 0xFFFF, pbp32 & 0xFFFF)
 
 
-def apsToPBP32 (pair):
-    ap1, ap2 = pair
+def bpToPBP32 (bp):
+    ap1, ap2 = bp
 
     if ap1 < 0:
         raise ValueError ('first antpol %d is negative' % ap1)

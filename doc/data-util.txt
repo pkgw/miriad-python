@@ -56,7 +56,9 @@ Textual Conversion
 
 .. autofunction:: parseAP
 
-.. autofunction:: fmtAPs
+.. autofunction:: fmtBP
+
+.. autofunction:: parseBP
 
 .. autofunction:: fmtPBP32
 
@@ -71,17 +73,17 @@ Data Conversion
 
 .. autofunction:: antpol2ap
 
-.. autofunction:: aps2ants
+.. autofunction:: bp2aap
 
-.. autofunction:: aps2blpol
+.. autofunction:: bp2blpol
 
-.. autofunction:: mir2aps
+.. autofunction:: mir2bp
 
-.. autofunction:: apsAreInten
+.. autofunction:: bpIsInten
 
-.. autofunction:: pbp32ToAps
+.. autofunction:: pbp32ToBP
 
-.. autofunction:: apsToPBP32
+.. autofunction:: bpToPBP32
 
 .. autofunction:: mir2pbp32
 
