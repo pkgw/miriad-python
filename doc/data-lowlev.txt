@@ -21,4 +21,30 @@
 Low-Level Access to MIRIAD Data
 ================================
 
+.. module:: mirtask
+   :synopsis: Open and manipulate MIRIAD datasets
+.. moduleauthor:: Peter Williams <peter@newton.cx>
+
 Is awesome. But the documentation will be written a bit later.
+
+:mod:`mirtask` API Reference
+----------------------------
+.. _mirtaskapiref:
+
+.. autoclass:: DataSet
+   :members:
+
+.. autoclass:: DataItem
+   :members:
+
+.. autoclass:: UserDataSet
+   :members:
+
+.. autoclass:: UVDataSet
+   :members:
+
+.. autoclass:: UVVarTracker
+   :members:
+
+.. autoclass:: MaskItem
+   :members:
