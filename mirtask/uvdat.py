@@ -265,7 +265,7 @@ Zero indicates that this number could not be determined.
 def getPols ():
     """Return the polarizations being returned by readData, an array of the size
 returned by getNPol (). Zeros indicate an error. Polarization values are as in FITS
-and are defined in mirtask.util.POL_??. """
+and are defined in mirtask.util.POL\_??. """
 
     a = N.zeros (getNPol (), dtype=N.int32)
     ll.uvdatgti ('pols', a)

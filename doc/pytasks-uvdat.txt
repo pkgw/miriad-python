@@ -44,3 +44,23 @@ This section presents a detailed API reference for the
 .. autofunction:: singleInputSet
 
 .. autoclass:: UVDatDataSet
+
+.. autofunction:: getNPol
+
+.. autofunction:: getPols
+
+.. autofunction:: getPol
+
+.. autofunction:: getNChan
+
+.. autofunction:: getNFiles
+
+.. autofunction:: getVisNum
+
+.. autofunction:: getVariance
+
+.. autofunction:: getJyPerK
+
+.. autofunction:: getCurrentName
+
+.. autofunction:: getLinetype
