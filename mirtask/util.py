@@ -246,6 +246,39 @@ def bp2aap (bp):
     return m1, m2, pol
 
 
+def aap2bp (m1, m2, pol):
+    """\
+Create a basepol from antenna numbers and a FITS/MIRIAD polarization
+code.
+
+:arg int m1: the first antenna number; *one*-based as used
+  internally by MIRIAD, not zero based
+:arg int m2: the second antenna number; also one-based
+:type pol: FITS/MIRIAD polarization code
+:arg pol: the polarization
+:returns: the corresponding basepol
+:raises: :exc:`ValueError` if *m1* or *m2* is below one, or
+  *pol* is not a known polarization code.
+
+Note that the input antenna numbers should be one-based, not
+zero-based as more conventional for C and Python. (This
+is consistent with :func:`bp2aap`.) *m1* need not be
+smaller than *m2*, although this is the typical convention.
+"""
+
+    if m1 < 1:
+        raise ValueError ('first antenna is below 1: %s' % m1)
+    if m2 < 0:
+        raise ValueError ('second antenna is below 1: %s' % m2)
+    if pol < POL_YX or pol > POL_UU:
+        raise ValueError ('illegal polarization code %s' % pol)
+
+    fps = _polToFPol[pol + 8]
+    ap1 = ((m1 - 1) << 3) + ((fps >> 4) & 0x07)
+    ap2 = ((m2 - 1) << 3) + (fps & 0x07)
+    return ap1, ap2
+
+
 def bp2blpol (bp):
     """Converts a basepol into a tuple of (bl, pol) where
 'bl' is the MIRIAD-encoded baseline number."""

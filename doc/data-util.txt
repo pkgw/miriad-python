@@ -75,6 +75,8 @@ Data Conversion
 
 .. autofunction:: bp2aap
 
+.. autofunction:: aap2bp
+
 .. autofunction:: bp2blpol
 
 .. autofunction:: mir2bp
