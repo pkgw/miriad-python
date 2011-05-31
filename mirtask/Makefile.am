@@ -22,12 +22,10 @@ mtpydir = $(pyexecdir)/mirtask
 
 mtpy_PYTHON = \
   __init__.py \
-  lowlevel.py \
-  \
-  base.py \
   cliutil.py \
   emucal.py \
   keys.py \
+  lowlevel.py \
   readgains.py \
   util.py \
   uvdat.py \

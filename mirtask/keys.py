@@ -17,7 +17,7 @@
 
 '''mirtask.keys - process task arguments in the MIRIAD style'''
 
-from base import MiriadError
+from mirtask.lowlevel import MiriadError
 import lowlevel as ll
 
 class KeyHolder (object):
