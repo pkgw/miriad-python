@@ -650,7 +650,7 @@ Solve for parameters in a linear least-squares problem.  The problem
 has *neqn* equations used to solve for *nunk* unknown parameters.
 
 :type coeffs: 2D ndarray
-:arg coeffs: an array of shape (neqn, nunk). With *vals*, defines the
+:arg coeffs: an array of shape (*nunk*, *neqn*). With *vals*, defines the
   linear equations specifying the problem.
 :type vals: 1D ndarray
 :arg vals: data array of size *neqn*.
@@ -659,11 +659,11 @@ has *neqn* equations used to solve for *nunk* unknown parameters.
   least-squares fit to the given equation.
 
 The linear least squares problem is that of finding best solution (in
-a least-squares sense), *retval*, such that ``coeffs * retval =
-vals``, using matrix notation. This is as solving *neqn* linear
-equations simultaneously, where the i'th equation is::
+a least-squares sense), *retval*, such that ``coeffs.T * retval =
+vals``, using matrix notation. This is the same as solving *neqn*
+linear equations simultaneously, where the i'th equation is::
 
-  vals[i] = coeffs[i,0] * retval[0] + ... + coeffs[i,nunk-1] * retval[nunk-1]
+  vals[i] = coeffs[0,i] * retval[0] + ... + coeffs[nunk-1,i] * retval[nunk-1]
 """
 
     from _mirgood import llsqu
