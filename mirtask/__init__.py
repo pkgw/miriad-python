@@ -703,10 +703,10 @@ win0.
         diameter.
 
         In order for this function to operate, you must apply a UV
-        selection of the form "shadow(1e9)". This is a necessary hack
-        to enable the internal UVW recomputation needed for shadow
-        testing. The extremely large argument means that no data will
-        actually be filtered out by the selection. If the selection is
+        selection of the form "auto,or,-auto,or,shadow(1)". This is a
+        necessary hack to enable the internal UVW recomputation needed
+        for shadow testing. Obviously, the example selection doesn't
+        filter out any data. If an appropriate "shadow()" selection is
         not applied, a :exc:`MiriadError` will be raised.
 
         This function depends on an API in the MIRIAD UV I/O library
