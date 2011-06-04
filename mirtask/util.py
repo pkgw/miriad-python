@@ -593,6 +593,8 @@ Implemented using the Miriad function NLLSQU.
             raise TypeError ('"derivative" is not callable?!')
         stepSizes = arr ((nunk, ))
     else:
+        def derivative (params, dfdx):
+            raise NotImplementedError ()
         stepSizes = N.asarray (stepSizes)
         if stepSizes.shape != (nunk, ):
             raise ValueError ('"stepSizes" array is wrong shape!')
