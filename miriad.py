@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
-from os.path import join, islink
+import sys, os, os.path
+from os.path import join
 from stat import ST_MTIME
 
 
@@ -140,7 +140,7 @@ attribute::
         # the mtime of the directory. But, assuming normal Miriad operating
         # conditions, the history file should always be modified when the
         # dataset is modified, and the history file should always be there.
-        return os.stat (join (self.base, 'history'))[ST_MTIME]
+        return os.stat (self.path ('history'))[ST_MTIME]
     
     @property
     def umtime (self):
@@ -149,7 +149,7 @@ time of this dataset -- equivalent to :attr:`mtime`, but zero is
 returned if the dataset does not exist. See the example in
 :attr:`mtime` for potential uses."""
         try:
-            return os.stat (join (self.base, 'history'))[ST_MTIME]
+            return os.stat (self.path ('history'))[ST_MTIME]
         except OSError, e:
             if e.errno == 2: return 0
             raise e
@@ -231,7 +231,7 @@ through the copy.
         os.mkdir (dest)
 
         for f in os.listdir (self.base):
-            copy (join (self.base, f), join (dest, f))
+            copy (self.path (f), os.path.join (dest, f))
 
         return self
 
@@ -253,12 +253,12 @@ a symbolic link, only the link is deleted.
 
         trace (['[delete]', 'in=%s' % self])
 
-        if islink (self.base):
+        if os.path.islink (self.base):
             os.remove (self.base)
             return self
 
         for e in os.listdir (self.base):
-            os.remove (join (self.base, e))
+            os.remove (self.path (e))
         os.rmdir (self.base)
 
         return self
@@ -719,8 +719,8 @@ the destination dataset.
             for fn in os.listdir (self.base):
                 # We use realPath to prevent confusion
                 # arising from relative symlinks.
-                sfn = join (self.realPath (), fn)
-                dfn = join (dest.base, fn)
+                sfn = os.path.join (self.realPath (), fn)
+                dfn = os.path.join (dest.base, fn)
 
                 if fn in skip:
                     continue
