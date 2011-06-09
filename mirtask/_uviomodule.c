@@ -2176,11 +2176,11 @@ static PyMethodDef uvio_methods[] = {
  */
 
 #ifndef PyMODINIT_FUNC
-#       if defined(__cplusplus)
-#               define PyMODINIT_FUNC extern "C" void
-#       else /* __cplusplus */
-#               define PyMODINIT_FUNC void
-#       endif /* __cplusplus */
+#  if defined(__cplusplus)
+#    define PyMODINIT_FUNC extern "C" void
+#  else
+#    define PyMODINIT_FUNC void
+#  endif
 #endif
 
 PyMODINIT_FUNC
