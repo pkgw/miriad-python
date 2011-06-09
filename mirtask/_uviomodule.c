@@ -2188,7 +2188,7 @@ init_uvio (void)
 {
     PyObject *mod, *dict;
 
-    mts_setup ("_uvio.MiriadError");
+    mts_setup ("mirtask._uvio.MiriadError");
 
     if (PyErr_Occurred ()) {
 	PyErr_SetString (PyExc_ImportError, "Can't initialize module _uvio: failed to import numpy");
