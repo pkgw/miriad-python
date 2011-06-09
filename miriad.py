@@ -679,13 +679,15 @@ interval={interval} {params...}`.
         self.apply (TaskUVAver (), out=dest, interval=interval,
                     **params).run ()
 
-    def lwcpTo (self, dest, skip=()):
+    def lwcpTo (self, dest, skip=(), forceabs=False):
         """Make a lightweight copy of this dataset in *dest*.
 
 :arg dest: the destination dataset
 :type dest: :class:`Data`, str, or any other stringable
 :arg skip: names of dataset files to skip when copying
 :type skip: collection of str
+:arg forceabs: if the link should be to an absolute path
+:type foreceabs: bool
 :rtype: :const:`None`
 
 Creates a "lightweight" copy of the source dataset. This
@@ -703,12 +705,21 @@ the source dataset is copied to the destination directory, except
 for 'visdata' which is handled as described above. Other items
 are ignored. If any errors occur, the function attempts to delete
 the destination dataset.
+
+The symbolic link is to an absolute path unless the paths of
+both *self* and *dest* are relative and *forceabs* is :const:`False`.
 """
         import shutil
         self.checkExists ()
 
         if not isinstance (dest, Data):
             dest = VisData (str (dest))
+
+        if (os.path.isabs (self.base) or os.path.isabs (dest.base)
+            or forceabs):
+            srcrelpath = self.realPath ()
+        else:
+            srcrelpath = os.path.relpath (self.base, dest.base)
 
         dest.delete ()
 
@@ -717,17 +728,14 @@ the destination dataset.
             os.mkdir (dest.base)
 
             for fn in os.listdir (self.base):
-                # We use realPath to prevent confusion
-                # arising from relative symlinks.
-                sfn = os.path.join (self.realPath (), fn)
                 dfn = os.path.join (dest.base, fn)
 
                 if fn in skip:
                     continue
                 elif fn == 'visdata':
-                    os.symlink (sfn, dfn)
-                elif os.path.isfile (sfn):
-                    shutil.copy (sfn, dfn)
+                    os.symlink (os.path.join (srcrelpath, fn), dfn)
+                elif os.path.isfile (self.path (fn)):
+                    shutil.copy (self.path (fn), dfn)
 
             trace (['[lwcp]', 'vis=%s' % self, 'out=%s' % dest])
             success = True
