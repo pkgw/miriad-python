@@ -18,7 +18,7 @@
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
-from os.path import join
+from os.path import join, islink
 from stat import ST_MTIME
 
 
@@ -245,12 +245,18 @@ through the copy.
 Deletes the dataset from disk. If the dataset doesn't exist,
 silently does nothing. Approximately equivalent to the shell command
 :command:`rm -r {self}`. If deletion occurs, :func:`trace` is called
-with a "[delete]" operation.
+with a "[delete]" operation. If the dataset path corresponds to
+a symbolic link, only the link is deleted.
 """
-        if not self.exists: return
+        if not self.exists:
+            return self
 
         trace (['[delete]', 'in=%s' % self])
-        
+
+        if islink (self.base):
+            os.remove (self.base)
+            return self
+
         for e in os.listdir (self.base):
             os.remove (join (self.base, e))
         os.rmdir (self.base)
