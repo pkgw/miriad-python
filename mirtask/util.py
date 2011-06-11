@@ -290,7 +290,7 @@ def bp2blpol (bp):
 def mir2bp (inp, preamble):
     """Uses a UV dataset and a preamble array to return a basepol."""
 
-    pol = inp.getVarInt ('pol')
+    pol = inp.getVarFirstInt ('pol', POL_I)
     fps = _polToFPol[pol + 8]
     m1, m2 = decodeBaseline (preamble[4])
 
@@ -362,7 +362,7 @@ def fmtPBP32 (pbp32):
 
 
 def mir2pbp32 (handle, preamble):
-    fps = _polToFPol[handle.getVarInt ('pol') + 8]
+    fps = _polToFPol[handle.getVarFirstInt ('pol', POL_I) + 8]
     m1, m2 = ll.basants (preamble[4], True)
 
     if m1 > 0x2000:
