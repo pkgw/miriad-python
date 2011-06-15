@@ -200,7 +200,7 @@ def parseAP (text):
         m = int (text[:-1])
         assert m > 0
     except:
-        raise Exception ('Text does not encode a valid AP: ' + text)
+        raise ValueError ('text does not specify an antpol: ' + text)
 
     return antpol2ap (m, fpol)
 
@@ -328,7 +328,7 @@ def parseBP (text):
         m2 = int (t2[:-1])
         assert m2 > 0
     except Exception:
-        raise ValueError ('text does not encode a basepol: ' + text)
+        raise ValueError ('text does not specify a basepol: ' + text)
 
     return ((m1 - 1) << 3) + fp1, ((m2 - 1) << 3) + fp2
 
