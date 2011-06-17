@@ -36,15 +36,30 @@ EXTRA_DIST = static/.gitignore
 SCANNEDPY = \
  $(top_srcdir)/miriad.py
 
-BUILD = eval `$(top_builddir)/libtool --config |$(GREP) objdir=` ; PYTHONPATH=$(top_srcdir):$(top_builddir)/mirtask/$$objdir:$$PYTHONPATH $(SPHINXBUILD) -d doctrees -c .
-
 HTML_STAMP = sphinx-html.stamp
 
 all-local: $(HTML_STAMP)
 
+# Want to see something terrible? In order for the Sphinx autodoc module
+# to work, it needs to be able to import our Python modules, so we need
+# to futz with $PYTHONPATH to work with our uninstalled data. Furthermore,
+# some of these modules import the native extension modules within the
+# mirtask package. The needed shared libraries live within .libs directories,
+# so Python won't find them. Right now, my solution is to do a mini
+# "make install" into a $DESTDIR in our build tree, because by definition
+# that will give us our modules in the correct directory hierarchy with
+# some easy munging of $PYTHONPATH.
+
 $(HTML_STAMP): $(dist_noinst_DATA) $(SCANNEDPY)
-	$(MKDIR_P) html doctrees
-	$(BUILD) -b html $(srcdir) html
+	echo ================ Begin scratch doc installation && \
+	rm -rf module_staging && \
+	$(MKDIR_P) html doctrees module_staging && \
+	dest=`cd module_staging && pwd` && \
+	(cd $(top_builddir) && $(MAKE) install SUBDIRS=". mirtask" DESTDIR=$$dest) && \
+	PYTHONPATH=$$dest$(pyexecdir):$$dest$(pythondir):$$PYTHONPATH \
+	  $(SPHINXBUILD) -d doctrees -c . -b html $(srcdir) html && \
+	rm -rf module_staging && \
+	echo ================ End scratch doc installation && \
 	touch $@
 
 clean-local:

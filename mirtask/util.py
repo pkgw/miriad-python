@@ -19,6 +19,7 @@
 
 import lowlevel as ll
 import numpy as N
+from mirtask import _miriad_c, _miriad_f
 
 # Banner printing (and Id string decoding)
 
@@ -432,10 +433,39 @@ def parsePBP32 (text):
 
 # Date stuff
 
-def jdToFull (jd):
-    """Return a string representing the given Julian date as date
-    and time of the form 'YYMMDD:HH:MM:SS.S'."""
-    return ll.julday (jd, 'H')
+def jdToFull (jd, form='H'):
+    """Return a textual representation of a Julian date.
+
+:arg double jd: a Julian date
+:arg character form: the output format, described below.
+  Defaults to "H".
+:returns: the textualization of the Julian date
+:raises: :exc:`MiriadError` in case of buffer overflow
+  (should never happen)
+
+The possible output formats are:
+
+==========  ====================================
+Character   Result
+==========  ====================================
+*H*         "yyMONdd:mm:mm:ss.s" ("MON" is the three-letter abbreviation
+            of the month name.)
+*T*         "yyyy-mm-ddThh:mm:ss.s" (The "T" is literal.)
+*D*         "yyMONdd.dd"
+*V*         "dd-MON-yyyy" (loses fractional day)
+*F*         "dd/mm/yy" (loses fractional day)
+==========  ====================================
+"""
+
+    calday = N.chararray (120)
+    _miriad_f.julday (jd, form, calday)
+
+    for i in xrange (calday.size):
+        if calday[i] == '':
+            return calday[:i].tostring ()
+
+    raise MiriadError ('Output from julday exceeded buffer size')
+
 
 def jdToPartial (jd):
     """Return a string representing the time-of-day portion of the

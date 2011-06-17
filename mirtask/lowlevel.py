@@ -25,18 +25,6 @@ from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
-def julday (julian, form):
-    """Wrapper for julday. Form is one of 'D', 'F', 'H', 'T', or 'V'."""
-
-    calday = N.chararray (120)
-    _miriad_f.julday (julian, form, calday)
-
-    for i in xrange (0, calday.size):
-        if calday[i] == '': return calday[0:i].tostring ()
-    
-    raise MiriadError ('Output from julday exceeded buffer size')
-
-
 def hisinput (tno, name, args=None):
     """Wrapper for hisinput. The Fortran implementation is not usable
     because it relies on iargc() and getarg(), which may not contain
