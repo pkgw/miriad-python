@@ -19,7 +19,7 @@
 
 import lowlevel as ll
 import numpy as N
-from mirtask import MiriadError, UVDataSet
+from mirtask import _miriad_c, _miriad_f, MiriadError, UVDataSet
 from miriad import VisData, commasplice
 
 __all__ = []
@@ -256,6 +256,19 @@ def _getOneInt (kw):
     ll.uvdatgti (kw, a)
     return a[0]
 
+
+def _getString (kw):
+    buf = N.chararray (120)
+    _miriad_f.uvdatgta (kw, buf)
+
+    # Better way?
+    for i in xrange (buf.size):
+        if buf[i] == '':
+            return buf[:i].tostring ()
+
+    raise MiriadError ('output from uvdatgta exceeded buffer size')
+
+
 def getNPol ():
     """Return the number of simultaneous polarizations being returned by readData.
 Zero indicates that this number could not be determined.
@@ -297,10 +310,26 @@ def getJyPerK ():
     """Return the Jansky-per-Kelvin value of the current visibility."""
     return ll.uvdatgtr ('jyperk')
 
+
 def getCurrentName ():
-    """Return the name of the file currently being processed."""
-    return ll.uvdatgta ('name')
+    """Get the path of the file currently being processed.
+
+:returns: the path of the file currently being processed
+:rtype: string
+
+Maps to a call of MIRIAD's UVDATGTA function with an "object" of "name".
+"""
+    return _getString ('name')
+
 
 def getLinetype ():
-    """Return the linetype of the current visibility."""
-    return ll.uvdatgta ('ltype')
+    """Get the linetype of the current record.
+
+:returns: the linetype
+:rtype: string
+
+The linetype is one of "channel", "velocity", "felocity", "wide", or
+"" (if not explicitly specified on the commandline). Maps to a call of
+MIRIAD's UVDATGTA function with an "object" of "ltype".
+"""
+    return _getString ('ltype')

@@ -25,21 +25,6 @@ from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
-def uvdatgta (obj):
-    """Wrapper for uvdatgta that handles Fortran text inputs and outputs
-    correctly... I think. Ugly."""
-
-    aval = N.chararray (120)
-    _miriad_f.uvdatgta (obj, aval)
-
-    # Better way?
-
-    for i in xrange (0, aval.size):
-        if aval[i] == '': return aval[0:i].tostring ()
-    
-    raise MiriadError ('Output from uvdatgta exceeded buffer size')
-
-
 def uvinfo_line (tno):
     info = N.zeros (6, dtype=N.double)
     _miriad_c.uvinfo (tno, 'line', info)

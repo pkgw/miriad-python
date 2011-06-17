@@ -57,15 +57,15 @@ all-local: $(HTML_STAMP)
 # some easy munging of $PYTHONPATH.
 
 $(HTML_STAMP): $(dist_noinst_DATA) $(SCANNEDPY)
-	echo ================ Begin scratch doc installation && \
 	rm -rf module_staging && \
 	$(MKDIR_P) html doctrees module_staging && \
 	dest=`cd module_staging && pwd` && \
+	echo ================ Begin scratch doc installation && \
 	(cd $(top_builddir) && $(MAKE) install SUBDIRS=". mirtask" DESTDIR=$$dest) && \
+	echo ================ End scratch doc installation && \
 	PYTHONPATH=$$dest$(pyexecdir):$$dest$(pythondir):$$PYTHONPATH \
 	  $(SPHINXBUILD) -d doctrees -c . -b html $(srcdir) html && \
 	rm -rf module_staging && \
-	echo ================ End scratch doc installation && \
 	touch $@
 
 clean-local:
