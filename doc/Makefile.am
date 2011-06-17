@@ -34,7 +34,13 @@ dist_noinst_DATA = \
 EXTRA_DIST = static/.gitignore
 
 SCANNEDPY = \
- $(top_srcdir)/miriad.py
+ $(top_srcdir)/mirexec.py \
+ $(top_srcdir)/miriad.py \
+ $(top_srcdir)/mirtask/__init__.py \
+ $(top_srcdir)/mirtask/cliutil.py \
+ $(top_srcdir)/mirtask/keys.py \
+ $(top_srcdir)/mirtask/util.py \
+ $(top_srcdir)/mirtask/uvdat.py
 
 HTML_STAMP = sphinx-html.stamp
 
