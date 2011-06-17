@@ -18,7 +18,7 @@
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 import _miriad_c, _miriad_f
-import numpy as _N
+import numpy as N
 
 from _miriad_c import *
 from _miriad_f import *
@@ -28,7 +28,7 @@ from _miriad_f import *
 def julday (julian, form):
     """Wrapper for julday. Form is one of 'D', 'F', 'H', 'T', or 'V'."""
 
-    calday = _N.chararray (120)
+    calday = N.chararray (120)
     _miriad_f.julday (julian, form, calday)
 
     for i in xrange (0, calday.size):
@@ -77,7 +77,7 @@ def uvdatgta (obj):
     """Wrapper for uvdatgta that handles Fortran text inputs and outputs
     correctly... I think. Ugly."""
 
-    aval = _N.chararray (120)
+    aval = N.chararray (120)
     _miriad_f.uvdatgta (obj, aval)
 
     # Better way?
@@ -89,9 +89,9 @@ def uvdatgta (obj):
 
 
 def uvinfo_line (tno):
-    info = _N.zeros (6, dtype=_N.double)
+    info = N.zeros (6, dtype=N.double)
     _miriad_c.uvinfo (tno, 'line', info)
-    info = info.astype (_N.int)
+    info = info.astype (N.int)
     # Convert Fortran 1-based index to 0-based
     info[2] -= 1
     info[5] -= 1
@@ -99,7 +99,7 @@ def uvinfo_line (tno):
 
 
 def uvinfo_visno (tno):
-    info = _N.zeros (1, dtype=_N.double)
+    info = N.zeros (1, dtype=N.double)
     _miriad_c.uvinfo (tno, 'visno', info)
     # Convert Fortran 1-based index to 0-based
     return int (info[0]) - 1
@@ -108,7 +108,7 @@ def uvinfo_visno (tno):
 def mkeyf (key, nmax, bufsz=120):
     """Wrapper for mkeyf with extra layer of string sanity."""
 
-    value = _N.chararray ((nmax, bufsz))
+    value = N.chararray ((nmax, bufsz))
     n = _miriad_f.mkeyf (key, value, nmax)
 
     # Can't find a better way to make this work. Sigh.
@@ -129,7 +129,7 @@ def mkeyf (key, nmax, bufsz=120):
 def mkeya (key, nmax, bufsz=120):
     """Wrapper for mkeya with extra layer of string sanity."""
 
-    value = _N.chararray ((nmax, bufsz))
+    value = N.chararray ((nmax, bufsz))
     n = _miriad_f.mkeya (key, value, nmax)
 
     # Can't find a better way to make this work. Sigh.
@@ -161,7 +161,7 @@ def keymatch (key, types, maxout):
         s = str (t)
         tarr.append (s.ljust (ml, ' '))
 
-    out = _N.chararray ((maxout, ml))
+    out = N.chararray ((maxout, ml))
     # Not sure why f2py thinks maxout is optional here.
     nout = _miriad_f.keymatch (key, tarr, out, len (types), maxout)
 
