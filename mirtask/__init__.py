@@ -1169,13 +1169,18 @@ __all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
 
 
 class XYDataSet (DataSet):
-    def __init__ (self, refobj, mode, naxis, axes=None):
+    def __init__ (self, refobj, mode, naxis=None, axes=None):
         if mode == 'rw':
             modestr = 'old'
         elif mode == 'c':
             modestr = 'new'
         else:
             raise ValueError ('unsupported mode "%s"; expect "rw" or "c"' % mode)
+
+        if naxis is None:
+            if mode == 'c':
+                raise ValueError ('naxis must be specified when creating a new XY dataset')
+            naxis = 16 # "more than anyone could ever possibly need", right?
 
         if axes is None:
             if mode == 'c':
@@ -1217,29 +1222,44 @@ class XYDataSet (DataSet):
         return self._masked
 
 
-    def readRows (self):
+    def readRows (self, topIsZero=False):
         self._checkOpen ()
+        nrow = self.axes[1]
 
-        for i in xrange (1, self.axes[1] + 1):
-            _miriad_c.xyread (self.tno, i, self._databuf)
-            _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
-            N.logical_not (self._flagbuf, self._npmaskbuf)
-            yield self._masked
+        if not topIsZero:
+            for i in xrange (1, nrow + 1):
+                _miriad_c.xyread (self.tno, i, self._databuf)
+                _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+                N.logical_not (self._flagbuf, self._npmaskbuf)
+                yield self._masked
+        else:
+            for i in xrange (nrow, 0, -1):
+                _miriad_c.xyread (self.tno, i, self._databuf)
+                _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+                N.logical_not (self._flagbuf, self._npmaskbuf)
+                yield self._masked
 
 
-    def readPlane (self, axes=[]):
-        """note pixel 0, 0 is bottom left corner, not top left"""
+    def readPlane (self, axes=[], topIsZero=False):
+        """note that by default pixel 0, 0 is bottom left corner, not top left"""
         self._checkOpen ()
         self.setPlane (axes)
 
-        data = N.empty ((self.axes[1], self.axes[0]), dtype=N.float32)
-        mask = N.empty ((self.axes[1], self.axes[0]), dtype=N.bool)
+        nrow = self.axes[1]
+        data = N.empty ((nrow, self.axes[0]), dtype=N.float32)
+        mask = N.empty ((nrow, self.axes[0]), dtype=N.bool)
         masked = N.ma.masked_array (data, mask, copy=False)
 
-        for i in xrange (1, self.axes[1] + 1):
-            _miriad_c.xyread (self.tno, i, data[i-1])
-            _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
-            N.logical_not (self._flagbuf, mask[i-1])
+        if not topIsZero:
+            for i in xrange (1, nrow + 1):
+                _miriad_c.xyread (self.tno, i, data[i-1])
+                _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+                N.logical_not (self._flagbuf, mask[i-1])
+        else:
+            for i in xrange (1, nrow + 1):
+                _miriad_c.xyread (self.tno, i, data[nrow - i])
+                _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+                N.logical_not (self._flagbuf, mask[nrow - i])
 
         return masked
 
@@ -1259,22 +1279,29 @@ class XYDataSet (DataSet):
         return self
 
 
-    def writePlane (self, maskeddata, axes=[]):
+    def writePlane (self, maskeddata, axes=[], topIsZero=False):
         maskeddata = N.ma.atleast_2d (maskeddata)
+        ncol, nrow = self.axes[:2]
 
         if maskeddata.ndim != 2:
             raise ValueError ('maskeddata must be 2d')
-        if maskeddata.shape != (self.axes[1], self.axes[0]):
+        if maskeddata.shape != (nrow, ncol):
             raise ValueError ('maskeddata must be of shape (%d, %d)' %
-                              (self.axes[1], self.axes[0]))
+                              (nrow, ncol))
 
         self._checkOpen ()
         self.setPlane (axes)
 
-        for i in xrange (1, self.axes[1] + 1):
-            N.logical_not (maskeddata.mask[i-1], self._flagbuf)
-            _miriad_c.xywrite (self.tno, i, maskeddata[i-1])
-            _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
+        if not topIsZero:
+            for i in xrange (1, nrow + 1):
+                N.logical_not (maskeddata.mask[i-1], self._flagbuf)
+                _miriad_c.xywrite (self.tno, i, maskeddata[i-1])
+                _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
+        else:
+            for i in xrange (1, nrow + 1):
+                N.logical_not (maskeddata.mask[nrow - i], self._flagbuf)
+                _miriad_c.xywrite (self.tno, i, maskeddata[nrow - i])
+                _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
 
         return self
 

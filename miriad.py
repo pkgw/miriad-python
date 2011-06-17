@@ -756,7 +756,7 @@ This subclass of :class:`Data` is for referring to image datasets. It
 inherits many generic features from the :class:`Data` class.
 """
 
-    def open (self, mode, naxis, axes=None):
+    def open (self, mode, naxis=None, axes=None):
         from mirtask import XYDataSet
         return XYDataSet (self, mode, naxis, axes)
 
