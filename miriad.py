@@ -756,8 +756,10 @@ This subclass of :class:`Data` is for referring to image datasets. It
 inherits many generic features from the :class:`Data` class.
 """
 
-    # FIXME: haven't yet wrapped XYIO routines to
-    # make it possible to open and read images.
+    def open (self, mode, naxis, axes=None):
+        from mirtask import XYDataSet
+        return XYDataSet (self, mode, naxis, axes)
+
 
     def apply (self, task, **params):
         return task.set (in_=self, **params)

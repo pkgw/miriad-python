@@ -1166,3 +1166,117 @@ class MaskItem (object):
 
 
 __all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
+
+
+class XYDataSet (DataSet):
+    def __init__ (self, refobj, mode, naxis, axes=None):
+        if mode == 'rw':
+            modestr = 'old'
+        elif mode == 'c':
+            modestr = 'new'
+        else:
+            raise ValueError ('unsupported mode "%s"; expect "rw" or "c"' % mode)
+
+        if axes is None:
+            if mode == 'c':
+                raise ValueError ('axes must be specified when creating a new XY dataset')
+            axes = N.zeros (naxis, dtype=N.int)
+
+        self.axes = axes
+        self.name = str (refobj)
+        self.tno = _miriad_c.xyopen (str (refobj), modestr, naxis, axes)
+        self._databuf = N.empty (axes[0], dtype=N.float32)
+        self._flagbuf = N.empty (axes[0], dtype=N.int)
+        self._npmaskbuf = N.empty (axes[0], dtype=N.bool)
+        self._masked = N.ma.masked_array (self._databuf, self._npmaskbuf,
+                                          copy=False)
+
+
+    def _close (self):
+        _miriad_c.xyclose (self.tno)
+
+
+    def flush (self):
+        self._checkOpen ()
+        _miriad_c.xyflush (self.tno)
+        return self
+
+
+    def setPlane (self, axes=[]):
+        self._checkOpen ()
+        axes = N.asarray (axes).astype (N.int)
+        _miriad_c.xysetpl (self.tno, axes.size, axes)
+        return self
+
+
+    def readRow (self, rownum):
+        self._checkOpen ()
+        _miriad_c.xyread (self.tno, rownum + 1, self._databuf)
+        _miriad_c.xyflgrd (self.tno, rownum + 1, self._flagbuf)
+        N.logical_not (self._flagbuf, self._npmaskbuf)
+        return self._masked
+
+
+    def readRows (self):
+        self._checkOpen ()
+
+        for i in xrange (1, self.axes[1] + 1):
+            _miriad_c.xyread (self.tno, i, self._databuf)
+            _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+            N.logical_not (self._flagbuf, self._npmaskbuf)
+            yield self._masked
+
+
+    def readPlane (self, axes=[]):
+        """note pixel 0, 0 is bottom left corner, not top left"""
+        self._checkOpen ()
+        self.setPlane (axes)
+
+        data = N.empty ((self.axes[1], self.axes[0]), dtype=N.float32)
+        mask = N.empty ((self.axes[1], self.axes[0]), dtype=N.bool)
+        masked = N.ma.masked_array (data, mask, copy=False)
+
+        for i in xrange (1, self.axes[1] + 1):
+            _miriad_c.xyread (self.tno, i, data[i-1])
+            _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
+            N.logical_not (self._flagbuf, mask[i-1])
+
+        return masked
+
+
+    def writeRow (self, rownum, maskeddata):
+        maskeddata = N.ma.atleast_1d (maskeddata)
+
+        if maskeddata.ndim != 1:
+            raise ValueError ('maskeddata must be 1d')
+        if maskeddata.size != self.axes[0]:
+            raise ValueError ('maskeddata must be of size %d' % self.axes[0])
+
+        self._checkOpen ()
+        N.logical_not (maskeddata.mask, self._flagbuf)
+        _miriad_c.xywrite (self.tno, rownum + 1, self._databuf)
+        _miriad_c.xyflgwr (self.tno, rownum + 1, self._flagbuf)
+        return self
+
+
+    def writePlane (self, maskeddata, axes=[]):
+        maskeddata = N.ma.atleast_2d (maskeddata)
+
+        if maskeddata.ndim != 2:
+            raise ValueError ('maskeddata must be 2d')
+        if maskeddata.shape != (self.axes[1], self.axes[0]):
+            raise ValueError ('maskeddata must be of shape (%d, %d)' %
+                              (self.axes[1], self.axes[0]))
+
+        self._checkOpen ()
+        self.setPlane (axes)
+
+        for i in xrange (1, self.axes[1] + 1):
+            N.logical_not (maskeddata.mask[i-1], self._flagbuf)
+            _miriad_c.xywrite (self.tno, i, maskeddata[i-1])
+            _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
+
+        return self
+
+
+__all__ += ['XYDataSet']
