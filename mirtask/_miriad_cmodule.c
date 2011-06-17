@@ -42,6 +42,53 @@ check_iostat (int iostat)
 
 #define CHECK_IOSTAT(iostat) if (check_iostat (iostat)) return NULL
 
+
+/* Array-checking utilities */
+
+static int
+check_int_array (PyObject *array, char *argname)
+{
+    if (!PyArray_ISINTEGER (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be an integer ndarray", argname);
+	return 1;
+    }
+
+    if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_INT) {
+	PyErr_Format (PyExc_ValueError, "%s must be a int-sized ndarray", argname);
+	return 1;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be a contiguous ndarray", argname);
+	return 1;
+    }
+
+    return 0;
+}
+
+
+static int
+check_float_array (PyObject *array, char *argname)
+{
+    if (!PyArray_ISFLOAT (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be an float ndarray", argname);
+	return 1;
+    }
+
+    if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_FLOAT) {
+	PyErr_Format (PyExc_ValueError, "%s must be a float-sized ndarray", argname);
+	return 1;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be a contiguous ndarray", argname);
+	return 1;
+    }
+
+    return 0;
+}
+
+
 /* hio.c */
 
 static PyObject *
@@ -1495,7 +1542,149 @@ py_probe_uvchkshadow (PyObject *self, PyObject *args)
 }
 #endif
 
-/* xyio */
+
+/* xyio
+
+Skipped because not used by clients: xymkrd, xymkwr
+*/
+
+static PyObject *
+py_xyopen (PyObject *self, PyObject *args)
+{
+    int tno, naxis;
+    char *path, *status;
+    PyObject *axes;
+
+    if (!PyArg_ParseTuple (args, "ssiO!", &path, &status, &naxis,
+			   &PyArray_Type, &axes))
+	return NULL;
+
+    if (check_int_array (axes, "axes"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyopen_c (&tno, path, status, naxis, PyArray_DATA (axes));
+    return Py_BuildValue ("i", tno);
+}
+
+
+static PyObject *
+py_xyclose (PyObject *self, PyObject *args)
+{
+    int tno;
+
+    if (!PyArg_ParseTuple (args, "i", &tno))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyclose_c (tno);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyflush (PyObject *self, PyObject *args)
+{
+    int tno;
+
+    if (!PyArg_ParseTuple (args, "i", &tno))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyflush_c (tno);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyread (PyObject *self, PyObject *args)
+{
+    int tno, index;
+    PyObject *data;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &index, &PyArray_Type, &data))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyread_c (tno, index, PyArray_DATA (data));
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xywrite (PyObject *self, PyObject *args)
+{
+    int tno, index;
+    PyObject *data;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &index, &PyArray_Type, &data))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xywrite_c (tno, index, PyArray_DATA (data));
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyflgrd (PyObject *self, PyObject *args)
+{
+    int tno, index;
+    PyObject *flags;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &index, &PyArray_Type, &flags))
+	return NULL;
+
+    if (check_int_array (flags, "flags"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyflgrd_c (tno, index, PyArray_DATA (flags));
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyflgwr (PyObject *self, PyObject *args)
+{
+    int tno, index;
+    PyObject *flags;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &index, &PyArray_Type, &flags))
+	return NULL;
+
+    if (check_int_array (flags, "flags"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyflgwr_c (tno, index, PyArray_DATA (flags));
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xysetpl (PyObject *self, PyObject *args)
+{
+    int tno, naxis;
+    PyObject *axes;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &naxis, &PyArray_Type, &axes))
+	return NULL;
+
+    if (check_int_array (axes, "axes"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xysetpl_c (tno, naxis, PyArray_DATA (axes));
+    Py_RETURN_NONE;
+}
+
 
 /* maskio */
 
@@ -1652,7 +1841,236 @@ py_mkflush (PyObject *self, PyObject *args)
 }
 
 
-/* xyzio */
+/* xyzio
+
+Skipped, due to extremely rare usage: xyzplnrd, xyzpixwr, xyzplnwr
+ */
+
+static PyObject *
+py_xyzopen (PyObject *self, PyObject *args)
+{
+    int tno, naxis;
+    char *path, *status;
+    PyObject *axlen;
+
+    if (!PyArg_ParseTuple (args, "ssiO!", &path, &status, &naxis,
+			   &PyArray_Type, &axlen))
+	return NULL;
+
+    if (check_int_array (axlen, "axlen"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzopen_c (&tno, path, status, &naxis, PyArray_DATA (axlen));
+    return Py_BuildValue ("ii", tno, naxis);
+}
+
+
+static PyObject *
+py_xyzclose (PyObject *self, PyObject *args)
+{
+    int tno;
+
+    if (!PyArg_ParseTuple (args, "i", &tno))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzclose_c (tno);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyzflush (PyObject *self, PyObject *args)
+{
+    int tno;
+
+    if (!PyArg_ParseTuple (args, "i", &tno))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzflush_c (tno);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyzsetup (PyObject *self, PyObject *args)
+{
+    int tno;
+    char *subcube;
+    PyObject *blc, *trc, *viraxlen, *vircubesize;
+    npy_intp dims[1];
+
+    if (!PyArg_ParseTuple (args, "isO!O!", &tno, &subcube, &PyArray_Type, &blc,
+			   &PyArray_Type, &trc))
+	return NULL;
+
+    if (check_int_array (blc, "blc"))
+	return NULL;
+
+    if (check_int_array (trc, "trc"))
+	return NULL;
+
+    dims[0] = PyArray_DIM (blc, 0);
+    viraxlen = PyArray_SimpleNew (1, dims, NPY_INT);
+    vircubesize = PyArray_SimpleNew (1, dims, NPY_INT);
+
+    MTS_CHECK_BUG;
+    xyzsetup_c (tno, subcube, PyArray_DATA (blc), PyArray_DATA (trc),
+		PyArray_DATA (viraxlen), PyArray_DATA (vircubesize));
+    return Py_BuildValue ("OO", viraxlen, vircubesize);
+}
+
+
+static PyObject *
+py_xyzs2c (PyObject *self, PyObject *args)
+{
+    int tno, subcubenr;
+    PyObject *coords;
+
+    if (!PyArg_ParseTuple (args, "iiO!", &tno, &subcubenr, &PyArray_Type, &coords))
+	return NULL;
+
+    if (check_int_array (coords, "coords"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzs2c_c (tno, subcubenr, PyArray_DATA (coords));
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyzc2s (PyObject *self, PyObject *args)
+{
+    int tno, subcubenr;
+    PyObject *coords;
+
+    if (!PyArg_ParseTuple (args, "iO!", &tno, &PyArray_Type, &coords))
+	return NULL;
+
+    if (check_int_array (coords, "coords"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzc2s_c (tno, PyArray_DATA (coords), &subcubenr);
+    return Py_BuildValue ("i", subcubenr);
+}
+
+
+static PyObject *
+py_xyzread (PyObject *self, PyObject *args)
+{
+    int tno, ndata;
+    PyObject *coords, *data, *mask;
+
+    if (!PyArg_ParseTuple (args, "iO!O!O!", &tno, &PyArray_Type, &coords,
+	    &PyArray_Type, &data, &PyArray_Type, &mask))
+	return NULL;
+
+    if (check_int_array (coords, "coords"))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    if (check_int_array (mask, "mask"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzread_c (tno, PyArray_DATA (coords), PyArray_DATA (data), PyArray_DATA (mask),
+	       &ndata);
+    return Py_BuildValue ("i", ndata);
+}
+
+
+static PyObject *
+py_xyzpixrd (PyObject *self, PyObject *args)
+{
+    int tno, pixnum, mask;
+    float data;
+
+    if (!PyArg_ParseTuple (args, "ii", &tno, &pixnum))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzpixrd_c (tno, pixnum, &data, &mask);
+    return Py_BuildValue ("fi", data, mask);
+}
+
+
+static PyObject *
+py_xyzprfrd (PyObject *self, PyObject *args)
+{
+    int tno, profnum, ndata;
+    PyObject *data, *mask;
+
+    if (!PyArg_ParseTuple (args, "iiO!O!", &tno, &profnum, &PyArray_Type, &data,
+			   &PyArray_Type, &mask))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    if (check_int_array (mask, "mask"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzprfrd_c (tno, profnum, PyArray_DATA (data), PyArray_DATA (mask), &ndata);
+    return Py_BuildValue ("i", ndata);
+}
+
+
+static PyObject *
+py_xyzwrite (PyObject *self, PyObject *args)
+{
+    int tno, ndata;
+    PyObject *coords, *data, *mask;
+
+    if (!PyArg_ParseTuple (args, "iO!O!O!i", &tno, &PyArray_Type, &coords,
+			   &PyArray_Type, &data, &PyArray_Type, &mask, &ndata))
+	return NULL;
+
+    if (check_int_array (coords, "coords"))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    if (check_int_array (mask, "mask"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzwrite_c (tno, PyArray_DATA (coords), PyArray_DATA (data), PyArray_DATA (mask),
+		&ndata);
+    /* even though ndata is a pointer arg, it's not modified when writing */
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_xyzprfwr (PyObject *self, PyObject *args)
+{
+    int tno, profnum, ndata;
+    PyObject *data, *mask;
+
+    if (!PyArg_ParseTuple (args, "iiO!O!i", &tno, &profnum, &PyArray_Type, &data,
+			   &PyArray_Type, &mask, &ndata))
+	return NULL;
+
+    if (check_float_array (data, "data"))
+	return NULL;
+
+    if (check_int_array (mask, "mask"))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    xyzprfwr_c (tno, profnum, PyArray_DATA (data), PyArray_DATA (mask), &ndata);
+    /* even though ndata is a pointer arg, it's not modified when writing */
+    Py_RETURN_NONE;
+}
+
 
 /* bug */
 
@@ -2111,6 +2529,15 @@ static PyMethodDef methods[] = {
 
     /* xyio */
 
+    DEF(xyopen, "(str path, str mode, int naxis, int-ndarray axes) => int tno"),
+    DEF(xyclose, "(int tno) => void"),
+    DEF(xyflush, "(int tno) => void"),
+    DEF(xyread, "(int tno, int index, float-ndarray data) => void"),
+    DEF(xywrite, "(int tno, int index, float-ndarray data) => void"),
+    DEF(xyflgrd, "(int tno, int index, int-ndarray flags) => void"),
+    DEF(xyflgwr, "(int tno, int index, int-ndarray flags) => void"),
+    DEF(xysetpl, "(int tno, int naxis, int-ndarray axes) => void"),
+
     /* maskio */
 
     DEF(mkopen, "(int tno, str name, str status) => int handle"),
@@ -2120,6 +2547,23 @@ static PyMethodDef methods[] = {
     DEF(mkflush, "(int handle) => void"),
 
     /* xyzio */
+
+    DEF(xyzopen, "(str path, str mode, int naxis, int-ndarray axlen) => (int tno, int naxis)"),
+    DEF(xyzclose, "(int tno) => void"),
+    DEF(xyzflush, "(int tno) => void"),
+    DEF(xyzsetup, "(int tno, str subcube, int-ndarray blc, int-ndarray trc) => "
+	"(int-ndarray viraxlen, int-ndarray vircubesize)"),
+    DEF(xyzs2c, "(int tno, int subcubenr, int-ndarray coords) => void"),
+    DEF(xyzc2s, "(int tno, int-ndarray coords) => int subcubenr"),
+    DEF(xyzread, "(int tno, int-ndarray coords, float-ndarray data, int-ndarray mask) => "
+	"int ndata"),
+    DEF(xyzpixrd, "(int tno, int pixnum) => (float data, int mask)"),
+    DEF(xyzprfrd, "(int tno, int profnum, float-ndarray data, int-ndarray mask) => "
+	"int ndata"),
+    DEF(xyzwrite, "(int tno, int-ndarray coords, float-ndarray data, int-ndarray mask, "
+	"int ndata) => void"),
+    DEF(xyzprfwr, "(int tno, int profnum, float-ndarray data, int-ndarray mask, "
+	"int ndata) => void"),
 
     /* bug */
 
