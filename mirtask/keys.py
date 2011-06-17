@@ -18,8 +18,8 @@
 '''mirtask.keys - process task arguments in the MIRIAD style'''
 
 import numpy as N
-from mirtask import _miriad_f, MiriadError
-import lowlevel as ll
+from mirtask import _miriad_c, _miriad_f, MiriadError
+
 
 class KeyHolder (object):
     """:synopsis: Methodless object that holds keyword data
@@ -154,11 +154,11 @@ def _make_getters (coerce, useFormat, llget, llmget):
 
 _typeinfo = {
     # Mapping is (kind) -> (single-key-fetch-func, multi-key-fetch-func)
-    'i': _make_getters (int, False, ll.keyi, ll.mkeyi),
-    'd': _make_getters (float, False, ll.keyd, ll.mkeyd),
-    'f': _make_getters (str, False, ll.keyf, _mkeyf),
+    'i': _make_getters (int, False, _miriad_c.keyi, _miriad_c.mkeyi),
+    'd': _make_getters (float, False, _miriad_c.keyd, _miriad_c.mkeyd),
+    'f': _make_getters (str, False, _miriad_c.keyf, _mkeyf),
     'a': _make_getters (str, False, _get_string, _mkeya),
-    't': _make_getters (str, True, ll.keyt, ll.mkeyt),
+    't': _make_getters (str, True, _miriad_f.keyt, _miriad_f.mkeyt),
 }
 
 _formatinfo = {
@@ -347,7 +347,7 @@ argument, the *name* of the keyword. The keyword will take on whatever
 value is returned by *handler*.
 
 The intended usage is for *handler* to manually invoke the lowlevel
-MIRIAD value-fetching routines found in :mod:`mirtask.lowlevel`, but
+MIRIAD value-fetching routines found in :mod:`mirtask._miriad_f`, but
 you can obtain a value however you like.
 
 This function returns *self* for convenience in chaining calls.
@@ -508,9 +508,9 @@ issued.
         from sys import argv
 
         if args is None:
-            ll.keyini (argv)
+            _miriad_c.keyini (argv)
         else:
-            ll.keyini ([argv[0]] + list (args))
+            _miriad_c.keyini ([argv[0]] + list (args))
 
         res = KeyHolder ()
 
@@ -549,7 +549,7 @@ issued.
         for name in names:
             optarr.append (name.ljust (ml, ' '))
 
-        present = ll.options ('options', optarr)
+        present = _miriad_f.options ('options', optarr)
 
         for i, name in enumerate (names):
             setattr (res, name, present[i] != 0)
@@ -568,12 +568,12 @@ issued.
                 if not res.nopol:
                     f += 'e'
 
-            ll.uvdatinp (self._uvdatViskey, f)
+            _miriad_f.uvdatinp (self._uvdatViskey, f)
 
         # All done. Check for any unexhausted keywords.
 
-        ll.keyfin ()
+        _miriad_c.keyfin ()
         return res
 
 
-__all__ = ['KeySpec']
+__all__ = ['KeyHolder', 'KeySpec']

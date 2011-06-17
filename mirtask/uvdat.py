@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-import lowlevel as ll
 import numpy as N
 from mirtask import _miriad_c, _miriad_f, MiriadError, UVDataSet
 from miriad import VisData, commasplice
@@ -57,7 +56,7 @@ You should not construct a :class:`UVDatDataSet` yourself.
         self.refobj = VisData (self.name)
 
     def _close (self):
-        ll.uvdatcls ()
+        _miriad_f.uvdatcls ()
 
 
 def inputSets ():
@@ -121,7 +120,7 @@ enforce this condition, use :func:`inputSets`.
     #
     # Similar code is relevant in _uvdat_compat_*:inputSets.
 
-    (status, tin) = ll.uvdatopn ()
+    status, tin = _miriad_f.uvdatopn ()
 
     if not status:
         raise RuntimeError ('No input datasets?!')
@@ -253,7 +252,7 @@ Character       Feature behavior
 
 def _getOneInt (kw):
     a = N.zeros (1, dtype=N.int32)
-    ll.uvdatgti (kw, a)
+    _miriad_f.uvdatgti (kw, a)
     return a[0]
 
 
@@ -281,7 +280,7 @@ returned by getNPol (). Zeros indicate an error. Polarization values are as in F
 and are defined in mirtask.util.POL\_??. """
 
     a = N.zeros (getNPol (), dtype=N.int32)
-    ll.uvdatgti ('pols', a)
+    _miriad_f.uvdatgti ('pols', a)
     return a
 
 def getPol ():
@@ -304,11 +303,11 @@ def getVisNum ():
 
 def getVariance ():
     """Return the variance of the current visibility."""
-    return ll.uvdatgtr ('variance')
+    return _miriad_f.uvdatgtr ('variance')
 
 def getJyPerK ():
     """Return the Jansky-per-Kelvin value of the current visibility."""
-    return ll.uvdatgtr ('jyperk')
+    return _miriad_f.uvdatgtr ('jyperk')
 
 
 def getCurrentName ():

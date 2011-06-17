@@ -18,7 +18,7 @@ See _uvdat_compat_default.py for the reference implementations."""
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-import lowlevel as ll
+from mirtask import _miriad_f
 
 def _inputSets (UVDatDataSet):
     """Generate a sequence of DataSet objects representing the
@@ -27,7 +27,7 @@ visdata input sets."""
     try:
         while True:
             if ds is not None and ds.isOpen (): ds.close ()
-            (status, tin) = ll.uvdatopn ()
+            (status, tin) = _miriad_f.uvdatopn ()
             if not status: break
             ds = UVDatDataSet (tin)
             yield ds
@@ -40,7 +40,7 @@ visdata input sets."""
 
 
 def _read_gen (saveFlags, UVDatDataSet, maxchan):
-    from lowlevel import uvdatopn, uvdatrd
+    from mirtask._miriad_f import uvdatopn, uvdatrd
     from numpy import zeros, double, complex64, int32
     inp = None
     preamble = zeros (5, dtype=double)

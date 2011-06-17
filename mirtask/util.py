@@ -17,9 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-import lowlevel as ll
 import numpy as N
-from mirtask import _miriad_c, _miriad_f
+from mirtask import _miriad_f
 
 # Banner printing (and Id string decoding)
 
@@ -49,12 +48,12 @@ def die (format, *args):
 
 def decodeBaseline (encoded, check=True):
     """Decode an encoded baseline double into two antenna numbers."""
-    return ll.basants (encoded, check)
+    return _miriad_f.basants (encoded, check)
 
 def encodeBaseline (ant1, ant2):
     """Encode a pair of antenna numbers into one baseline number
 suitable for use in UV data preambles."""
-    return ll.antbas (ant1, ant2)
+    return _miriad_f.antbas (ant1, ant2)
 
 # Linetype constants. From subs/uvio.c
 
@@ -104,7 +103,7 @@ def polarizationIsInten (polnum):
     """Return True if the given polarization is intensity-type, e.g.,
     is I, XX, YY, RR, or LL."""
     
-    return ll.polspara (polnum)
+    return _miriad_f.polspara (polnum)
 
 # And, merging them together: antpol and basepol handling.
 #
@@ -364,7 +363,7 @@ def fmtPBP32 (pbp32):
 
 def mir2pbp32 (handle, preamble):
     fps = _polToFPol[handle.getVarFirstInt ('pol', POL_I) + 8]
-    m1, m2 = ll.basants (preamble[4], True)
+    m1, m2 = _miriad_f.basants (preamble[4], True)
 
     if m1 > 0x2000:
         raise ValueError ('cannot encode baseline %d-%d in PBP32: '
@@ -476,7 +475,7 @@ def jdToPartial (jd):
     # do the same except maybe a bit better because I use jul2ut.
 
     from math import floor, pi
-    fullhrs = ll.jul2ut (jd) * 12 / pi
+    fullhrs = _miriad_f.jul2ut (jd) * 12 / pi
 
     hr = int (floor (fullhrs))
     mn = int (floor (60 * (fullhrs - hr)))
@@ -500,7 +499,7 @@ See the documentation to Miriad function DAYJUL for a more detailed
 description of the parser behavior. The returned Julian date is of
 moderate accuracy only, e.g. good to a few seconds (I think?)."""
 
-    return ll.dayjul (calendar)
+    return _miriad_f.dayjul (calendar)
 
 # Wrapper around NLLSQU, the non-linear least squares solver
 
@@ -749,7 +748,7 @@ Astronomical Almanac, 1993, pp 105-106. Does not account
 for atmospheric refraction, nutation, aberration, or
 gravitational deflection.
 """
-    return ll.precess (jd1, ra1, dec1, jd2)
+    return _miriad_f.precess (jd1, ra1, dec1, jd2)
 
 def equToHorizon (ra, dec, lst, lat):
     """Convert equatorial coordinates to horizon coordinates.
@@ -767,4 +766,4 @@ el - The elevation coordinate in radians
 If available, this should be superseded by the RALP/NOVAS conversion
 function, which I suspect will be superior to the MIRIAD function.
 """
-    return ll.azel (ra, dec, lst, lat)
+    return _miriad_f.azel (ra, dec, lst, lat)

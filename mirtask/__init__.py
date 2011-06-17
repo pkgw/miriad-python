@@ -18,12 +18,11 @@
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as N
-from mirtask import _miriad_c, _miriad_f, util, lowlevel
+from mirtask import _miriad_c, _miriad_f, util
 from mirtask._miriad_c import MiriadError
 
 __all__ = 'util MiriadError'.split ()
 
-ll = lowlevel
 
 # Very simple wrapper classes. Shouldn't necessarily be used,
 # given that there are standard APIs like uvdat*
@@ -38,7 +37,8 @@ class DataSet (object):
         # tno can be None if we got an exception inside hopen,
         # or if we are deleteAll'ed
 
-        if ll is None or self.tno is None: return
+        if _miriad_c is None or self.tno is None:
+            return
 
         self._close ()
 
@@ -82,21 +82,21 @@ class DataSet (object):
         """Write any changed items in the data set out to disk."""
 
         self._checkOpen ()
-        ll.hflush (self.tno)
+        _miriad_c.hflush (self.tno)
 
     def deleteAll (self):
         """Completely delete this data set. After calling this function,
         this object cannot be used."""
 
         self._checkOpen ()
-        ll.hrm (self.tno)
+        _miriad_c.hrm (self.tno)
         self.tno = None
 
     def deleteItem (self, name):
         """Delete an item from this data-set."""
 
         self._checkOpen ()
-        ll.hdelete (self.tno, name)
+        _miriad_c.hdelete (self.tno, name)
 
     MODE_UNKNOWN, MODE_RD, MODE_RDWR = range (0, 3)
 
@@ -106,7 +106,7 @@ class DataSet (object):
         return values."""
 
         self._checkOpen ()
-        mode = ll.hmode (self.tno)
+        mode = _miriad_c.hmode (self.tno)
 
         if mode == '': return self.MODE_UNKNOWN
         elif mode == 'r': return self.MODE_RD
@@ -120,7 +120,7 @@ class DataSet (object):
         """Return whether this data-set contains an item with the given name."""
 
         self._checkOpen ()
-        return ll.hexists (self.tno, name)
+        return _miriad_c.hexists (self.tno, name)
 
     def getItem (self, keyword, mode):
         """Return a DataItem object representing the desired item
@@ -161,14 +161,14 @@ class DataSet (object):
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
         self._checkOpen ()
-        ll.hisopen (self.tno, modestr)
+        _miriad_c.hisopen (self.tno, modestr)
         self._histOpen = True
 
     def writeHistory (self, text):
         """Write text into this data set's history file."""
 
         self._checkOpen ()
-        ll.hiswrite (self.tno, text)
+        _miriad_c.hiswrite (self.tno, text)
 
 
     def logInvocation (self, ident, args=None):
@@ -223,7 +223,7 @@ Note that *args* should not start with an ``argv[0]`` entry.
         """Close this data set's history item."""
 
         self._checkOpen ()
-        ll.hisclose (self.tno)
+        _miriad_c.hisclose (self.tno)
         self._histOpen = False
 
     # Header variables
@@ -232,74 +232,74 @@ Note that *args* should not start with an ``argv[0]`` entry.
         """Retrieve the value of a float-valued header variable."""
 
         self._checkOpen ()
-        return ll.rdhdr (self.tno, keyword, float (default))
+        return _miriad_c.rdhdr (self.tno, keyword, float (default))
 
     def getHeaderInt (self, keyword, default):
         """Retrieve the value of an int32-valued header variable."""
 
         self._checkOpen ()
-        return ll.rdhdi (self.tno, keyword, int (default))
+        return _miriad_c.rdhdi (self.tno, keyword, int (default))
 
     def getHeaderLong (self, keyword, default):
         """Retrieve the value of an int64-valued header variable."""
 
         self._checkOpen ()
-        return ll.rdhdl (self.tno, keyword, N.int64 (default))
+        return _miriad_c.rdhdl (self.tno, keyword, N.int64 (default))
 
     def getHeaderDouble (self, keyword, default):
         """Retrieve the value of a double-valued header variable."""
 
         self._checkOpen ()
-        return ll.rdhdd (self.tno, keyword, float (default))
+        return _miriad_c.rdhdd (self.tno, keyword, float (default))
 
     def getHeaderComplex (self, keyword, default):
         """Retrieve the value of a complex-valued header variable."""
 
         self._checkOpen ()
-        return ll.rdhdc (self.tno, keyword, complex (default))
+        return _miriad_c.rdhdc (self.tno, keyword, complex (default))
 
     def getHeaderString (self, keyword, default):
         """Retrieve the value of a string-valued header variable.
         Maximum value length is 512."""
 
         self._checkOpen ()
-        return ll.rdhda (self.tno, keyword, str (default))
+        return _miriad_c.rdhda (self.tno, keyword, str (default))
 
     def writeHeaderFloat (self, keyword, value):
         """Write a float-valued header variable."""
         self._checkOpen ()
-        ll.wrhdr (self.tno, keyword, float (value))
+        _miriad_c.wrhdr (self.tno, keyword, float (value))
 
     def writeHeaderInt (self, keyword, value):
         """Write an int-valued header variable."""
         self._checkOpen ()
-        ll.wrhdi (self.tno, keyword, int (value))
+        _miriad_c.wrhdi (self.tno, keyword, int (value))
 
     def writeHeaderLong (self, keyword, value):
         """Write a long-int-valued header variable."""
         self._checkOpen ()
-        ll.wrhdl (self.tno, keyword, int (value))
+        _miriad_c.wrhdl (self.tno, keyword, int (value))
 
     def writeHeaderDouble (self, keyword, value):
         """Write a double-valued header variable."""
         self._checkOpen ()
-        ll.wrhdd (self.tno, keyword, float (value))
+        _miriad_c.wrhdd (self.tno, keyword, float (value))
 
     def writeHeaderComplex (self, keyword, value):
         """Write a complex-valued header variable."""
         self._checkOpen ()
-        ll.wrhdc (self.tno, keyword, complex (value))
+        _miriad_c.wrhdc (self.tno, keyword, complex (value))
 
     def writeHeaderString (self, keyword, value):
         """Write a string-valued header variable."""
         self._checkOpen ()
-        ll.wrhda (self.tno, keyword, str (value))
+        _miriad_c.wrhda (self.tno, keyword, str (value))
 
     def copyHeader (self, dest, keyword):
         """Copy a header variable from this data-set to another."""
 
         self._checkOpen ()
-        ll.hdcopy (self.tno, dest.tno, keyword)
+        _miriad_c.hdcopy (self.tno, dest.tno, keyword)
 
     # skip hdprsnt: same thing as hexists
 
@@ -314,7 +314,7 @@ Note that *args* should not start with an ``argv[0]`` entry.
         """
 
         self._checkOpen ()
-        (desc, type, n) = ll.hdprobe (self.tno, keyword)
+        (desc, type, n) = _miriad_c.hdprobe (self.tno, keyword)
 
         if n == 0: raise MiriadError ('Error probing header ' + keyword)
 
@@ -431,16 +431,17 @@ class DataItem (object):
         elif mode == 's': modestr = 'scratch'
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
-        self.itno = ll.haccess (dataset.tno, keyword, modestr)
+        self.itno = _miriad_c.haccess (dataset.tno, keyword, modestr)
 
     def __del__ (self):
         # itno can be None if we got an exception inside haccess.
 
-        if ll is None or self.itno is None: return
+        if _miriad_c is None or self.itno is None:
+            return
         self.close ()
 
     def close (self):
-        ll.hdaccess (self.itno)
+        _miriad_c.hdaccess (self.itno)
         self.itno = None
 
     def _checkOpen (self):
@@ -455,26 +456,26 @@ class DataItem (object):
         """Return the size of this data item."""
 
         self._checkOpen ()
-        return ll.hsize (self.itno)
+        return _miriad_c.hsize (self.itno)
 
     def seek (self, offset):
         """Seek to the specified position within this data item."""
 
         self._checkOpen ()
-        ll.hseek (self.itno, int (offset))
+        _miriad_c.hseek (self.itno, int (offset))
 
     def getPosition (self):
         """Retrieve the current position within this data item."""
 
         self._checkOpen ()
-        return ll.htell (self.itno)
+        return _miriad_c.htell (self.itno)
 
     def seqReadString (self):
         """Read until newline from the current position within this
         data item. Maximum string length of 512."""
 
         self._checkOpen ()
-        return ll.hreada (self.itno)
+        return _miriad_c.hreada (self.itno)
 
     def seqWriteString (self, line, length=None):
         """Write a textual string into the data item, terminating
@@ -484,7 +485,7 @@ class DataItem (object):
 
         if length is None: length = len (line)
         self._checkOpen ()
-        ll.hwritea (self.itno, str (line), length)
+        _miriad_c.hwritea (self.itno, str (line), length)
 
     # Reading buffers
 
@@ -495,7 +496,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
-        ll.hreadb (self.itno, buf, offset, length)
+        _miriad_c.hreadb (self.itno, buf, offset, length)
 
     def readInts (self, buf, offset, length=None):
         """Read an array of 32-bit integers from the given location in the data
@@ -504,7 +505,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int32)
         if length is None: length = buf.size
-        ll.hreadi (self.itno, buf, offset, length)
+        _miriad_c.hreadi (self.itno, buf, offset, length)
 
     def readShorts (self, buf, offset, length=None):
         """Read an array of 16-bit integers from the given location in the data
@@ -513,7 +514,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int16)
         if length is None: length = buf.size
-        ll.hreadj (self.itno, buf, offset, length)
+        _miriad_c.hreadj (self.itno, buf, offset, length)
 
     def readLongs (self, buf, offset, length=None):
         """Read an array of 64-bit integers from the given location in the data
@@ -522,7 +523,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int64)
         if length is None: length = buf.size
-        ll.hreadl (self.itno, buf, offset, length)
+        _miriad_c.hreadl (self.itno, buf, offset, length)
 
     def readFloats (self, buf, offset, length=None):
         """Read an array of floats from the given location in the data
@@ -531,7 +532,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.float32)
         if length is None: length = buf.size
-        ll.hreadr (self.itno, buf, offset, length)
+        _miriad_c.hreadr (self.itno, buf, offset, length)
 
     def readDoubles (self, buf, offset, length=None):
         """Read an array of doubles from the given location in the data
@@ -540,7 +541,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
-        ll.hreadd (self.itno, buf, offset, length)
+        _miriad_c.hreadd (self.itno, buf, offset, length)
 
     def readComplex (self, buf, offset, length=None):
         """Read an array of complexes from the given location in the data
@@ -549,7 +550,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
-        ll.hreadc (self.itno, buf, offset, length)
+        _miriad_c.hreadc (self.itno, buf, offset, length)
 
     # Writing
 
@@ -560,7 +561,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.byte)
         if length is None: length = buf.size
-        ll.hwriteb (self.itno, buf, offset, length)
+        _miriad_c.hwriteb (self.itno, buf, offset, length)
 
     def writeInts (self, buf, offset, length=None):
         """Write an array of integers to the given location in the data
@@ -569,7 +570,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int32)
         if length is None: length = buf.size
-        ll.hwritei (self.itno, buf, offset, length)
+        _miriad_c.hwritei (self.itno, buf, offset, length)
 
     def writeShorts (self, buf, offset, length=None):
         """Write an array of 16-bit integers to the given location in the data
@@ -578,7 +579,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int16)
         if length is None: length = buf.size
-        ll.hwritej (self.itno, buf, offset, length)
+        _miriad_c.hwritej (self.itno, buf, offset, length)
 
     def writeLongs (self, buf, offset, length=None):
         """Write an array of 64-bit integers to the given location in the data
@@ -587,7 +588,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.int64)
         if length is None: length = buf.size
-        ll.hwritel (self.itno, buf, offset, length)
+        _miriad_c.hwritel (self.itno, buf, offset, length)
 
     def writeFloats (self, buf, offset, length=None):
         """Write an array of floats to the given location in the data
@@ -596,7 +597,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.float32)
         if length is None: length = buf.size
-        ll.hwriter (self.itno, buf, offset, length)
+        _miriad_c.hwriter (self.itno, buf, offset, length)
 
     def writeDoubles (self, buf, offset, length=None):
         """Write an array of doubles to the given location in the data
@@ -605,7 +606,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.double)
         if length is None: length = buf.size
-        ll.hwrited (self.itno, buf, offset, length)
+        _miriad_c.hwrited (self.itno, buf, offset, length)
 
     def writeComplex (self, buf, offset, length=None):
         """Write an array of complexes to the given location in the data
@@ -614,7 +615,7 @@ class DataItem (object):
         self._checkOpen ()
         buf = N.asarray (buf, dtype=N.complex64)
         if length is None: length = buf.size
-        ll.hwritec (self.itno, buf, offset, length)
+        _miriad_c.hwritec (self.itno, buf, offset, length)
 
 __all__ += ['DataSet', 'DataItem']
 
@@ -623,12 +624,12 @@ class UserDataSet (DataSet):
         if create: mode = 'new'
         else: mode = 'old'
 
-        self.tno = ll.hopen (refobj.base, mode)
+        self.tno = _miriad_c.hopen (refobj.base, mode)
         self.refobj = refobj
         self.name = refobj.base
 
     def _close (self):
-        ll.hclose (self.tno)
+        _miriad_c.hclose (self.tno)
 
 __all__ += ['UserDataSet']
 
@@ -641,12 +642,12 @@ class UVDataSet (DataSet):
         elif mode == 'a': modestr = 'append'
         else: raise ValueError ('Unsupported mode "%s"; "rw", "c", and "a" are allowed' % mode)
 
-        self.tno = ll.uvopen (refobj.base, modestr)
+        self.tno = _miriad_c.uvopen (refobj.base, modestr)
         self.refobj = refobj
         self.name = refobj.base
 
     def _close (self):
-        ll.uvclose (self.tno)
+        _miriad_c.uvclose (self.tno)
 
     # These override the basic DataSet operations
 
@@ -654,7 +655,7 @@ class UVDataSet (DataSet):
         """Write out any unbuffered changes to the UV data set."""
 
         self._checkOpen ()
-        ll.uvflush (self.tno)
+        _miriad_c.uvflush (self.tno)
 
     # UV-specific operations
 
@@ -663,14 +664,14 @@ class UVDataSet (DataSet):
         end-of-record mark to be written."""
 
         self._checkOpen ()
-        ll.uvnext (self.tno)
+        _miriad_c.uvnext (self.tno)
 
     def rewind (self):
         """Rewind to the beginning of the file, allowing the UV data to
         be reread from the start."""
 
         self._checkOpen ()
-        ll.uvrewind (self.tno)
+        _miriad_c.uvrewind (self.tno)
 
     def lowlevelRead (self, preamble, data, flags, length=None):
         """Read a visibility record from the file. This function should
@@ -683,7 +684,7 @@ class UVDataSet (DataSet):
         if length is None: length = flags.size
 
         self._checkOpen ()
-        return ll.uvread (self.tno, preamble, data, flags, length)
+        return _miriad_c.uvread (self.tno, preamble, data, flags, length)
 
     def write (self, preamble, data, flags, length=None):
         """Write a visibility record consisting of the given preamble,
@@ -693,7 +694,7 @@ class UVDataSet (DataSet):
         if length is None: length = flags.size
 
         self._checkOpen ()
-        ll.uvwrite (self.tno, preamble, data, flags, length)
+        _miriad_c.uvwrite (self.tno, preamble, data, flags, length)
 
     def rewriteFlags (self, flags):
         """Rewrite the channel flagging data for the current
@@ -701,7 +702,7 @@ class UVDataSet (DataSet):
         same length and dtype returned by a uvread call."""
 
         self._checkOpen ()
-        ll.uvflgwr (self.tno, flags)
+        _miriad_c.uvflgwr (self.tno, flags)
 
     # uvinfo exploders
 
@@ -771,7 +772,7 @@ Counting begins at zero.
         function will raise a :exc:`NotImplementedError`. You can
         check in advance whether this function is available by
         checking the return value of
-        :func:`mirtask.lowlevel.probe_uvchkshadow`, :const:`True`
+        :func:`mirtask._miriad_c.probe_uvchkshadow`, :const:`True`
         indicating availability.
 
         *diameter_meters* - the diameter within which an antenna is
@@ -780,14 +781,14 @@ Counting begins at zero.
         Returns: boolean."""
 
         self._checkOpen ()
-        return ll.uvchkshadow (self.tno, diameter_meters)
+        return _miriad_c.uvchkshadow (self.tno, diameter_meters)
 
 
     # uvset exploders
 
     def _uvset (self, object, type, n, p1, p2, p3):
         self._checkOpen ()
-        ll.uvset (self.tno, object, type, n, p1, p2, p3)
+        _miriad_c.uvset (self.tno, object, type, n, p1, p2, p3)
 
     def setPreambleType (self, *vars):
         """Specify up to five variables to put in the preamble block.
@@ -848,14 +849,14 @@ Counting begins at zero.
         'copy'."""
 
         self._checkOpen ()
-        ll.uvcopyvr (self.tno, output.tno)
+        _miriad_c.uvcopyvr (self.tno, output.tno)
 
     def updated (self):
         """Return true if any user-specified 'important variables' have
         been updated in the last chunk of data read."""
 
         self._checkOpen ()
-        return bool (ll.uvupdate (self.tno))
+        return bool (_miriad_c.uvupdate (self.tno))
 
     def initVarsAsInput (self, linetype):
         """Initialize the UV reading functions to copy variables from
@@ -863,7 +864,7 @@ Counting begins at zero.
         'wide', or 'velocity'. Maps to Miriad's varinit() call."""
 
         self._checkOpen ()
-        ll.varinit (self.tno, linetype)
+        _miriad_f.varinit (self.tno, linetype)
 
     def initVarsAsOutput (self, input, linetype):
         """Initialize this dataset as the output file for the UV
@@ -871,14 +872,14 @@ Counting begins at zero.
         or 'velocity'. Maps to Miriad's varonit() call."""
 
         self._checkOpen ()
-        ll.varonit (input.tno, self.tno, linetype)
+        _miriad_f.varonit (input.tno, self.tno, linetype)
 
     def copyLineVars (self, output):
         """Copy UV variables to the output dataset that describe the
         current line in the input set."""
 
         self._checkOpen ()
-        ll.varcopy (self.tno, output.tno)
+        _miriad_f.varcopy (self.tno, output.tno)
 
     def makeVarTracker (self):
         """Create a UVVarTracker object, which can be used to track
@@ -899,7 +900,7 @@ Counting begins at zero.
         """
 
         self._checkOpen ()
-        (type, length, updated) = ll.uvprobvr (self.tno, varname)
+        (type, length, updated) = _miriad_c.uvprobvr (self.tno, varname)
 
         if type == '' or type == ' ': return None
         return (type, length, updated)
@@ -909,14 +910,14 @@ Counting begins at zero.
         variable. Maximum length of 512 characters."""
 
         self._checkOpen ()
-        return ll.uvgetvra (self.tno, varname)
+        return _miriad_c.uvgetvra (self.tno, varname)
 
     def getVarInt (self, varname, n=1):
         """Retrieve the current value or values of an int32-valued UV
         variable."""
 
         self._checkOpen ()
-        ret = ll.uvgetvri (self.tno, varname, n)
+        ret = _miriad_c.uvgetvri (self.tno, varname, n)
 
         if n == 1:
             return ret[0]
@@ -927,7 +928,7 @@ Counting begins at zero.
         variable."""
 
         self._checkOpen ()
-        ret = ll.uvgetvrj (self.tno, varname, n)
+        ret = _miriad_c.uvgetvrj (self.tno, varname, n)
 
         if n == 1:
             return ret[0]
@@ -938,7 +939,7 @@ Counting begins at zero.
         variable."""
 
         self._checkOpen ()
-        ret = ll.uvgetvrr (self.tno, varname, n)
+        ret = _miriad_c.uvgetvrr (self.tno, varname, n)
 
         if n == 1:
             return ret[0]
@@ -949,7 +950,7 @@ Counting begins at zero.
         variable."""
 
         self._checkOpen ()
-        ret = ll.uvgetvrd (self.tno, varname, n)
+        ret = _miriad_c.uvgetvrd (self.tno, varname, n)
 
         if n == 1:
             return ret[0]
@@ -960,7 +961,7 @@ Counting begins at zero.
         variable."""
 
         self._checkOpen ()
-        ret = ll.uvgetvrc (self.tno, varname, n)
+        ret = _miriad_c.uvgetvrc (self.tno, varname, n)
 
         if n == 1:
             return ret[0]
@@ -972,28 +973,28 @@ Counting begins at zero.
         Maximum length of 512 characters."""
 
         self._checkOpen ()
-        return ll.uvrdvra (self.tno, varname, dflt)
+        return _miriad_c.uvrdvra (self.tno, varname, dflt)
 
     def getVarFirstInt (self, varname, dflt):
         """Retrieve the first value of an int-valued UV
         variable with a default if the variable is not present."""
 
         self._checkOpen ()
-        return ll.uvrdvri (self.tno, varname, dflt)
+        return _miriad_c.uvrdvri (self.tno, varname, dflt)
 
     def getVarFirstFloat (self, varname, dflt):
         """Retrieve the first value of a float-valued UV
         variable with a default if the variable is not present."""
 
         self._checkOpen ()
-        return ll.uvrdvrr (self.tno, varname, dflt)
+        return _miriad_c.uvrdvrr (self.tno, varname, dflt)
 
     def getVarFirstDouble (self, varname, dflt):
         """Retrieve the first value of a double-valued UV
         variable with a default if the variable is not present."""
 
         self._checkOpen ()
-        return ll.uvrdvrd (self.tno, varname, dflt)
+        return _miriad_c.uvrdvrd (self.tno, varname, dflt)
 
     def getVarFirstComplex (self, varname, dflt):
         """Retrieve the first value of a complex-valued UV
@@ -1001,7 +1002,7 @@ Counting begins at zero.
 
         dflt = complex (dflt)
         self._checkOpen ()
-        retval = ll.uvrdvrd (self.tno, varname, (dflt.real, dflt.imag))
+        retval = _miriad_c.uvrdvrd (self.tno, varname, (dflt.real, dflt.imag))
         return complex (retval[0], retval[1])
 
     def trackVar (self, varname, watch, copy):
@@ -1016,7 +1017,7 @@ Counting begins at zero.
         if copy: switches += 'c'
 
         self._checkOpen ()
-        ll.uvtrack (self.tno, varname, switches)
+        _miriad_c.uvtrack (self.tno, varname, switches)
 
     def scanUntilChange (self, varname):
         """Scan through the UV data until the given variable changes. Reads
@@ -1024,7 +1025,7 @@ Counting begins at zero.
         if end-of-file was reached, True otherwise."""
 
         self._checkOpen ()
-        return ll.uvscan (self.tno, varname) == 0
+        return _miriad_c.uvscan (self.tno, varname) == 0
 
     def writeVarInt (self, name, val):
         """Write an integer UV variable. val can either be a single value or
@@ -1037,7 +1038,7 @@ Counting begins at zero.
             v2[0] = int (val)
             val = v2
 
-        ll.uvputvri (self.tno, name, val)
+        _miriad_c.uvputvri (self.tno, name, val)
 
     def writeVarFloat (self, name, val):
         """Write an float UV variable. val can either be a single value or
@@ -1050,7 +1051,7 @@ Counting begins at zero.
             v2[0] = float (val)
             val = v2
 
-        ll.uvputvrr (self.tno, name, val)
+        _miriad_c.uvputvrr (self.tno, name, val)
 
     def writeVarDouble (self, name, val):
         """Write a double UV variable. val can either be a single value or
@@ -1063,40 +1064,40 @@ Counting begins at zero.
             v2[0] = float (val)
             val = v2
 
-        ll.uvputvrd (self.tno, name, val)
+        _miriad_c.uvputvrd (self.tno, name, val)
 
     def writeVarString (self, name, val):
         """Write a string UV variable. val will be stringified."""
 
         self._checkOpen ()
-        ll.uvputvra (self.tno, name, str (val))
+        _miriad_c.uvputvra (self.tno, name, str (val))
 
 
 class UVVarTracker (object):
     def __init__ (self, owner):
         self.dataset = owner
         self.refobj = owner.refobj
-        self.vhnd = ll.uvvarini (owner.tno)
+        self.vhnd = _miriad_c.uvvarini (owner.tno)
 
     def track (self, *vars):
         """Indicate that the specified variable(s) should be tracked by this
         tracker. Returns *self* for convenience."""
 
         for var in vars:
-            ll.uvvarset (self.vhnd, var)
+            _miriad_c.uvvarset (self.vhnd, var)
         return self
 
     def copyTo (self, output):
         """Copy the variables tracked by this tracker into the output
         data set."""
 
-        ll.uvvarcpy (self.vhnd, output.tno)
+        _miriad_c.uvvarcpy (self.vhnd, output.tno)
 
     def updated (self):
         """Return true if one of the variables tracked by this tracker
         was updated in the last UV data read."""
 
-        return bool (ll.uvvarupd (self.vhnd))
+        return bool (_miriad_c.uvvarupd (self.vhnd))
 
 __all__ += ['UVDataSet', 'UVVarTracker']
 
@@ -1117,14 +1118,14 @@ class MaskItem (object):
         elif mode == 'c': modestr = 'new'
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
-        self.handle = ll.mkopen (dataset.tno, keyword, modestr)
+        self.handle = _miriad_c.mkopen (dataset.tno, keyword, modestr)
 
 
     def read (self, mode, flags, offset, n):
         if mode not in _maskModes:
             raise ValueError ('Unexpected mask mode %d' % mode)
         self._checkOpen ()
-        return ll.mkread (self.handle, mode, flags, offset, n)
+        return _miriad_c.mkread (self.handle, mode, flags, offset, n)
 
 
     def write (self, mode, flags, offset, n=None):
@@ -1133,17 +1134,17 @@ class MaskItem (object):
         if n is None:
             n = flags.size
         self._checkOpen ()
-        ll.mkwrite (self.handle, mode, flags, offset, n)
+        _miriad_c.mkwrite (self.handle, mode, flags, offset, n)
 
 
     def flush (self):
         self._checkOpen ()
-        ll.mkflush (self.handle)
+        _miriad_c.mkflush (self.handle)
 
 
     def close (self):
         self._checkOpen ()
-        ll.mkclose (self.handle)
+        _miriad_c.mkclose (self.handle)
         self.handle = None
 
 
@@ -1158,7 +1159,7 @@ class MaskItem (object):
 
 
     def __del__ (self):
-        if ll is None or self.handle is None:
+        if _miriad_c is None or self.handle is None:
             return
 
         self.close ()
