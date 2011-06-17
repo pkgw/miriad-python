@@ -25,42 +25,6 @@ from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
-def hisinput (tno, name, args=None):
-    """Wrapper for hisinput. The Fortran implementation is not usable
-    because it relies on iargc() and getarg(), which may not contain
-    the arguments we are actually using."""
-
-    if args is None:
-        import sys
-        args = sys.argv
-
-    # I can't figure out what all the parsing of name is supposed
-    # to accomplish. Ignore it all.
-    
-    prefix = name.upper () + ': '
-    
-    julian = _miriad_f.todayjul ()
-    file = julday (julian, 'T')
-    _miriad_c.hiswrite (tno, prefix + 'Executed on: ' + file)
-    _miriad_c.hiswrite (tno, prefix + 'Command line inputs follow:')
-    
-    prefix += '  '
-    dofile = False
-
-    for arg in args[1:]:
-        if dofile:
-            f = file (arg, 'r')
-
-            for l in f:
-                _miriad_c.hiswrite (tno, prefix + l)
-
-            f.close ()
-            dofile = False
-        else:
-            if arg == '-f': dofile = True
-            else: _miriad_c.hiswrite (tno, prefix + arg)
-
-
 def uvdatgta (obj):
     """Wrapper for uvdatgta that handles Fortran text inputs and outputs
     correctly... I think. Ugly."""

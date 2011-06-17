@@ -18,10 +18,10 @@
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as N
-from mirtask import lowlevel, util
-from mirtask.lowlevel import MiriadError
+from mirtask import _miriad_c, _miriad_f, util, lowlevel
+from mirtask._miriad_c import MiriadError
 
-__all__ = 'lowlevel util MiriadError'.split ()
+__all__ = 'util MiriadError'.split ()
 
 ll = lowlevel
 
@@ -170,14 +170,54 @@ class DataSet (object):
         self._checkOpen ()
         ll.hiswrite (self.tno, text)
 
-    def logInvocation (self, taskname, args=None):
-        """Write text into this data set's history file logging the invocation
-        of this task: when it was run and what parameters it was given. Can
-        optionally be given an argument list if that contained in sys.argv
-        does not represent this task."""
+
+    def logInvocation (self, ident, args=None):
+        """Log a the date, a task name, and an argument list to this dataset's history.
+
+:arg string ident: an identifier that will prefix the history entries
+:arg args: a list of arguments, or :const:`None` (the default); if the latter,
+  ``sys.argv[1:]`` is used.
+:type args: string iterable or :const:`None`
+:returns: *self*
+
+This function emulates the MIRIAD library function HISINPUT. It logs
+the date, some arguments, and an identifier to the dataset's history file,
+with the identifier traditionally being the name of a MIRIAD task. This
+implementation attempts to mimic the behavior of HISINPUT as closely as
+possible -- except for its truncation of very long arguments.
+
+Note that *args* should not start with an ``argv[0]`` entry.
+"""
 
         self._checkOpen ()
-        ll.hisinput (self.tno, taskname, args)
+
+        if args is None:
+            import sys
+            args = sys.argv[1:]
+
+        prefix = ident + ': '
+        date = util.jdToFull (_miriad_f.todayjul (), 'T')
+        _miriad_c.hiswrite (tno, prefix + 'Executed on: ' + date)
+        _miriad_c.hiswrite (tno, prefix + 'Command line inputs follow:')
+
+        prefix += '  '
+        dofile = False
+
+        for arg in args:
+            if dofile:
+                f = open (arg, 'r')
+                for line in f:
+                    _miriad_c.hiswrite (tno, prefix + line)
+                f.close ()
+                dofile = False
+            else:
+                if arg == '-f':
+                    dofile = True
+                else:
+                    _miriad_c.hiswrite (tno, prefix + arg)
+
+        return self
+
 
     def closeHistory (self):
         """Close this data set's history item."""

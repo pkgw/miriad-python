@@ -311,11 +311,6 @@ subroutine varonit(tin,tout,linetype) ! in subs/var.f
     character*(*) :: linetype
 end subroutine varonit
 
-subroutine hisinput(tno,name) ! in subs/hisinput.f
-    integer :: tno
-    character*(*) :: name
-end subroutine hisinput
-
 subroutine uvdatgti(object,ival) ! in subs/uvdat.f
     character*(*) :: object
     integer dimension(*) :: ival
