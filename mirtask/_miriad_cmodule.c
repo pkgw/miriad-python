@@ -1936,86 +1936,6 @@ py_xyzprfwr (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-
-/* bug */
-
-#if 0 /* Python code should never call these functions - just raise
-       * an exception. So say I. */
-
-static PyObject *
-py_bugseverity (PyObject *self, PyObject *args)
-{
-    char retval;
-
-    if (!PyArg_ParseTuple (args, ""))
-	return NULL;
-
-    MTS_CHECK_BUG; /*???*/
-    retval = bugseverity_c ();
-
-    return Py_BuildValue ("c", retval);
-}
-
-static PyObject *
-py_bugmessage (PyObject *self, PyObject *args)
-{
-    char *retval;
-
-    if (!PyArg_ParseTuple (args, ""))
-	return NULL;
-
-    MTS_CHECK_BUG; /*???*/
-    retval = bugmessage_c ();
-
-    return Py_BuildValue ("s", retval);
-}
-
-static PyObject *
-py_buglabel (PyObject *self, PyObject *args)
-{
-    char *name;
-
-    if (!PyArg_ParseTuple (args, "s", &name))
-	return NULL;
-
-    MTS_CHECK_BUG; /*???*/
-    buglabel_c (name);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_bugno (PyObject *self, PyObject *args)
-{
-    char s;
-    int n;
-
-    if (!PyArg_ParseTuple (args, "ci", &s, &n))
-	return NULL;
-
-    MTS_CHECK_BUG; /*???*/
-    bugno_c (s, n);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_bug (PyObject *self, PyObject *args)
-{
-    char s, *m;
-
-    if (!PyArg_ParseTuple (args, "cs", &s, &m))
-	return NULL;
-
-    MTS_CHECK_BUG; /*???*/
-    bug_c (s, m);
-
-    Py_RETURN_NONE;
-}
-#endif
-
-/* no bugv -- no point in dealing with that */
-
 /* scrio */
 
 /* key */
@@ -2429,17 +2349,6 @@ static PyMethodDef methods[] = {
 	"int ndata) => void"),
     DEF(xyzprfwr, "(int tno, int profnum, float-ndarray data, int-ndarray mask, "
 	"int ndata) => void"),
-
-    /* bug */
-
-#if 0
-    DEF(bugseverity, "(void) => char retval"),
-    DEF(bugmessage, "(void) => str retval"),
-    DEF(buglabel, "(str name) => void"),
-    DEF(bugno, "(char s, int n) => void"),
-    DEF(bug, "(char s, str m) => void"),
-    /* no bugv -- no point */
-#endif
 
     /* scrio */
 
