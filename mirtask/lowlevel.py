@@ -25,23 +25,6 @@ from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
-def uvinfo_line (tno):
-    info = N.zeros (6, dtype=N.double)
-    _miriad_c.uvinfo (tno, 'line', info)
-    info = info.astype (N.int)
-    # Convert Fortran 1-based index to 0-based
-    info[2] -= 1
-    info[5] -= 1
-    return info
-
-
-def uvinfo_visno (tno):
-    info = N.zeros (1, dtype=N.double)
-    _miriad_c.uvinfo (tno, 'visno', info)
-    # Convert Fortran 1-based index to 0-based
-    return int (info[0]) - 1
-
-
 def mkeyf (key, nmax, bufsz=120):
     """Wrapper for mkeyf with extra layer of string sanity."""
 

@@ -706,10 +706,12 @@ class UVDataSet (DataSet):
     # uvinfo exploders
 
     def getLineInfo (self):
-        """\
-Returns line information about the most recently-read UV record.
-Returns an array of 6 integers: linetype, nchan, chan0, width, step,
-win0.
+        """Get line information about the current UV record.
+
+:returns: line information, described below.
+:rtype: six-element integer ndarray
+
+The six integers are ``[linetype, nchan, chan0, width, step, win0]``.
 
 * **linetype** -- the kind of data being read. 1 indicates spectral
   data; 2 indicates wideband data; 3 indicates velocity-space data.
@@ -727,14 +729,29 @@ win0.
   to be 0-based here.)
 """
         self._checkOpen ()
-        return ll.uvinfo_line (self.tno)
+        info = N.zeros (6, dtype=N.double)
+        _miriad_c.uvinfo (self.tno, 'line', info)
+        info = info.astype (N.int)
+        # Convert Fortran 1-based index to 0-based
+        info[2] -= 1
+        info[5] -= 1
+        return info
 
 
     def getCurrentVisNum (self):
-        """Returns the serial number of the UV record that was just read.
-        Counting begins at zero."""
+        """Get the serial number of the current UV record.
+
+:returns: the serial number
+:rtype: int
+
+Counting begins at zero.
+"""
         self._checkOpen ()
-        return ll.uvinfo_visno (self.tno)
+        info = N.zeros (1, dtype=N.double)
+        _miriad_c.uvinfo (self.tno, 'visno', info)
+        # Convert Fortran 1-based index to 0-based
+        return int (info[0]) - 1
+
 
 
     def baselineShadowed (self, diameter_meters):
