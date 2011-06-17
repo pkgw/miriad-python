@@ -3,7 +3,7 @@
 ! This file is derived from the automatically-extracted subroutine
 ! headers listed in mirugly.fproto. When a MIRIAD function is wrapped,
 ! the prototype is moved into this file and corrected for correct use
-! in Python. (This usually just involves correctly annotating 
+! in Python. (This usually just involves correctly annotating
 ! intent(out) parameters.)
 !
 ! Copyright 2009, 2010, 2011 Peter Williams
@@ -609,8 +609,8 @@ subroutine dayjul(calday,julian) ! in subs/julday.f
     double precision intent(out) :: julian
 end subroutine dayjul
 
-python module nllsqu__user__routines 
-    interface nllsqu_user_interface 
+python module nllsqu__user__routines
+    interface nllsqu_user_interface
         subroutine func(x,f,n,m) ! in subs/nllsqu.f:nllsqu:unknown_interface
             real dimension(n) :: x
             real dimension(m) :: f

@@ -278,7 +278,7 @@ py_hwritea (PyObject *self, PyObject *args)
 enum hio_dtype { HD_INTEGER, HD_FLOAT, HD_COMPLEX };
 
 static PyObject *
-hio_generic (PyObject *self, PyObject *args, int dowrite, int type, 
+hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
 	     enum hio_dtype dtype, size_t objsize)
 {
     int item, iostat, typeok = 0;
@@ -321,7 +321,7 @@ hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
     /* do it */
 
     MTS_CHECK_BUG;
-    hio_c (item, dowrite, type, PyArray_DATA (buf), (off_t) offset, 
+    hio_c (item, dowrite, type, PyArray_DATA (buf), (off_t) offset,
 	   (size_t) length * objsize, &iostat);
     CHECK_IOSTAT(iostat);
 
@@ -400,7 +400,7 @@ py_wrhdr (PyObject *self, PyObject *args)
     int tno;
     char *keyword;
     double value;
-    
+
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
 	return NULL;
 
@@ -416,7 +416,7 @@ py_wrhdd (PyObject *self, PyObject *args)
     int tno;
     char *keyword;
     double value;
-    
+
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
 	return NULL;
 
@@ -431,7 +431,7 @@ py_wrhdi (PyObject *self, PyObject *args)
 {
     int tno, value;
     char *keyword;
-    
+
     if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &value))
 	return NULL;
 
@@ -498,7 +498,7 @@ py_rdhdr (PyObject *self, PyObject *args)
     char *keyword;
     float value;
     double defval;
-    
+
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
 	return NULL;
 
@@ -514,7 +514,7 @@ py_rdhdi (PyObject *self, PyObject *args)
     int tno;
     char *keyword;
     int value, defval;
-    
+
     if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &defval))
 	return NULL;
 
@@ -551,7 +551,7 @@ py_rdhdd (PyObject *self, PyObject *args)
     int tno;
     char *keyword;
     double value, defval;
-    
+
     if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
 	return NULL;
 
@@ -568,7 +568,7 @@ py_rdhdc (PyObject *self, PyObject *args)
     char *keyword;
     Py_complex cmplx;
     float value[2], defval[2];
-    
+
     if (!PyArg_ParseTuple (args, "isD", &tno, &keyword, &cmplx))
 	return NULL;
 
@@ -588,7 +588,7 @@ py_rdhda (PyObject *self, PyObject *args)
     int tno;
     char *keyword, *defval;
     char value[BUFSZ];
-    
+
     if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &defval))
 	return NULL;
 
@@ -1142,7 +1142,7 @@ py_uvread (PyObject *self, PyObject *args)
 
     /* finally ... */
     MTS_CHECK_BUG;
-    uvread_c (tno, PyArray_DATA (preamble), PyArray_DATA (data), 
+    uvread_c (tno, PyArray_DATA (preamble), PyArray_DATA (data),
 	      PyArray_DATA (flags), n, &nread);
 
     return PyInt_FromLong ((long) nread);
@@ -1234,9 +1234,9 @@ py_uvwrite (PyObject *self, PyObject *args)
 
     /* finally ... */
     MTS_CHECK_BUG;
-    uvwrite_c (tno, PyArray_DATA (preamble), PyArray_DATA (data), 
+    uvwrite_c (tno, PyArray_DATA (preamble), PyArray_DATA (data),
 	       PyArray_DATA (flags), n);
-    
+
     Py_RETURN_NONE;
 }
 
@@ -1304,7 +1304,7 @@ py_uvflgwr (PyObject *self, PyObject *args)
     }
 
     MTS_CHECK_BUG;
-    
+
     uvflgwr_c (tno, PyArray_DATA (flags));
 
     Py_RETURN_NONE;
@@ -1417,7 +1417,7 @@ py_uvputvrd (PyObject *self, PyObject *args)
     char *name;
     PyObject *value;
 
-    if (!PyArg_ParseTuple (args, "isO!", &tno, &name, 
+    if (!PyArg_ParseTuple (args, "isO!", &tno, &name,
 			   &PyArray_Type, &value))
 	return NULL;
 
@@ -1669,7 +1669,7 @@ py_bugseverity (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG; /*???*/
     retval = bugseverity_c ();
-    
+
     return Py_BuildValue ("c", retval);
 }
 
@@ -1683,7 +1683,7 @@ py_bugmessage (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG; /*???*/
     retval = bugmessage_c ();
-    
+
     return Py_BuildValue ("s", retval);
 }
 
@@ -1697,7 +1697,7 @@ py_buglabel (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG; /*???*/
     buglabel_c (name);
-    
+
     Py_RETURN_NONE;
 }
 
@@ -1712,7 +1712,7 @@ py_bugno (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG; /*???*/
     bugno_c (s, n);
-    
+
     Py_RETURN_NONE;
 }
 
@@ -1726,7 +1726,7 @@ py_bug (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG; /*???*/
     bug_c (s, m);
-    
+
     Py_RETURN_NONE;
 }
 #endif
@@ -1780,7 +1780,7 @@ py_keyini (PyObject *self, PyObject *args)
     /* We must copy the strings individually because keyini
      * modifies them. Could be smarter about memory allocation,
      * but this isn't exactly a performance-sensitive routine. */
-    
+
     len = PyList_Size (list);
     argv = PyMem_Malloc (sizeof (char *) * len);
 
@@ -2027,11 +2027,11 @@ static PyMethodDef methods[] = {
     /* hio macros */
 
 #define HIO_ENTRY(ident, buftype) \
-  	DEF(hread##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
+	DEF(hread##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
 	  "long length) => void"), \
-  	DEF(hwrite##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
+	DEF(hwrite##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \
 	  "long length) => void")
-    
+
     HIO_ENTRY(b, byte),
     HIO_ENTRY(i, int),
     HIO_ENTRY(j, int2),
@@ -2061,10 +2061,8 @@ static PyMethodDef methods[] = {
     DEF(hdprsnt, "(int tno, str keyword) => int retval"),
     DEF(hdprobe, "(int tno, str keyword) => (str descr, str type, int n)"),
 
-    /* XXX headio incomplete ... */
-
     /* dio */
-    
+
     /* uvio */
 
     DEF(uvopen, "(str name, str status) => int tno"),
@@ -2162,8 +2160,8 @@ static PyMethodDef methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-/* finally ... 
- * This PyMODINIT_FUNC is copied from the Python 2.3 pyport.h, which 
+/* finally ...
+ * This PyMODINIT_FUNC is copied from the Python 2.3 pyport.h, which
  * defines portability macros. Python 2.2 does not have this macro.
  * Ideally, we should also include a "__declspec(dllexport)" item
  * on Windows machines, but the check for that will be complicated.
