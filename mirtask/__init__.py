@@ -1240,15 +1240,26 @@ class XYDataSet (DataSet):
                 yield self._masked
 
 
-    def readPlane (self, axes=[], topIsZero=False):
+    def readPlane (self, axes=[], buf=None, topIsZero=False):
         """note that by default pixel 0, 0 is bottom left corner, not top left"""
+        ncol, nrow = self.axes[:2]
+
+        if buf is None:
+            data = N.empty ((nrow, ncol), dtype=N.float32)
+            mask = N.empty ((nrow, ncol), dtype=N.bool)
+            buf = N.ma.masked_array (data, mask, copy=False)
+        else:
+            buf = N.ma.atleast_2d (buf)
+
+            if buf.ndim != 2:
+                raise ValueError ('buf must be 2d')
+            if buf.shape != (nrow, ncol):
+                raise ValueError ('buf must have shape (%d, %d)' % (nrow, ncol))
+
+            data, mask = buf.data, buf.mask
+
         self._checkOpen ()
         self.setPlane (axes)
-
-        nrow = self.axes[1]
-        data = N.empty ((nrow, self.axes[0]), dtype=N.float32)
-        mask = N.empty ((nrow, self.axes[0]), dtype=N.bool)
-        masked = N.ma.masked_array (data, mask, copy=False)
 
         if not topIsZero:
             for i in xrange (1, nrow + 1):
@@ -1261,7 +1272,7 @@ class XYDataSet (DataSet):
                 _miriad_c.xyflgrd (self.tno, i, self._flagbuf)
                 N.logical_not (self._flagbuf, mask[nrow - i])
 
-        return masked
+        return buf
 
 
     def writeRow (self, rownum, maskeddata):
