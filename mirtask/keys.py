@@ -17,7 +17,8 @@
 
 '''mirtask.keys - process task arguments in the MIRIAD style'''
 
-from mirtask.lowlevel import MiriadError
+import numpy as N
+from mirtask import _miriad_f, MiriadError
 import lowlevel as ll
 
 class KeyHolder (object):
@@ -29,6 +30,64 @@ of it are created in and returned by
 arguments to a task.
 """
     pass
+
+# I don't think I have the Fortran prototype of these string-array
+# functions right, and the use of chararray is discouraged, but I
+# can't get anything more elegant to work right now.
+
+def _mkeya (key, nmax, bufsz=120):
+    value = N.chararray ((nmax, bufsz))
+    n = _miriad_f.mkeya (key, value, nmax)
+    ret = []
+
+    for i in xrange (n):
+        s = ''
+        for j in xrange (bufsz):
+            if value[i,j] == '':
+                break
+            s += value[i,j]
+        ret.append (s)
+
+    return ret
+
+
+def _mkeyf (key, nmax, bufsz=120):
+    value = N.chararray ((nmax, bufsz))
+    n = _miriad_f.mkeyf (key, value, nmax)
+    ret = []
+
+    for i in xrange (n):
+        s = ''
+        for j in xrange (bufsz):
+            if value[i,j] == '':
+                break
+            s += value[i,j]
+        ret.append (s)
+
+    return ret
+
+
+def _keymatch (key, types, maxout):
+    ml = 0
+
+    for t in types:
+        ml = max (ml, len (str (t)))
+
+    tarr = [str (t).ljust (ml, ' ') for t in types]
+    out = N.chararray ((maxout, ml))
+    # f2py thinks maxout is optional here, not surew why.
+    nout = _miriad_f.keymatch (key, tarr, out, len (types), maxout)
+    ret = []
+
+    for i in xrange (nout):
+        s = ''
+        for j in xrange (ml):
+            if out[i,j] == '':
+                break
+            s += out[i,j]
+        ret.append (s)
+
+    return ret
 
 
 def _get_unlimited (name, mget):
@@ -72,7 +131,7 @@ def _get_string (name, default):
     # This can be somewhat confusing, so in the case that a single
     # string value is requested, use mkeya to get every value (from
     # MIRIAD's point of view) and stitch them into a single string.
-    vals = _get_unlimited (name, ll.mkeya)
+    vals = _get_unlimited (name, _mkeya)
     if len (vals) == 0:
         return default
     return ','.join (vals)
@@ -97,8 +156,8 @@ _typeinfo = {
     # Mapping is (kind) -> (single-key-fetch-func, multi-key-fetch-func)
     'i': _make_getters (int, False, ll.keyi, ll.mkeyi),
     'd': _make_getters (float, False, ll.keyd, ll.mkeyd),
-    'f': _make_getters (str, False, ll.keyf, ll.mkeyf),
-    'a': _make_getters (str, False, _get_string, ll.mkeya),
+    'f': _make_getters (str, False, ll.keyf, _mkeyf),
+    'a': _make_getters (str, False, _get_string, _mkeya),
     't': _make_getters (str, True, ll.keyt, ll.mkeyt),
 }
 
@@ -468,7 +527,7 @@ issued.
                 val = mget (name, format, nmax)
             elif kt == KT_KEYMATCH:
                 nmax, allowed = info[1:]
-                val = ll.keymatch (name, allowed, nmax)
+                val = _keymatch (name, allowed, nmax)
             elif kt == KT_CUSTOM:
                 handler = info[1]
                 val = handler (name)
