@@ -298,8 +298,17 @@ def getNFiles ():
     return _getOneInt ('nfiles')
 
 def getVisNum ():
-    """Return the current visibility number."""
-    return _getOneInt ('visno')
+    """Get the serial number of the current UV record.
+
+:returns: the serial number
+:rtype: int
+
+Counting begins at zero. The return value may vary from what
+:meth:`mirtask.UVDataSet.getCurrentVisNum` returns if polarization
+processing is active, because the underlying data records may
+be merged.
+"""
+    return _getOneInt ('visno') - 1
 
 def getVariance ():
     """Return the variance of the current visibility."""
