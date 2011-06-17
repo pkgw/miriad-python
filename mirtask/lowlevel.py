@@ -17,14 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-import _uvio, _mirgood
+import _miriad_c, _miriad_f
 import numpy as _N
 
-# Migrate functions from _mirugly to _mirgood as their binding
-# into python is verified.
-
-from _uvio import *
-from _mirgood import *
+from _miriad_c import *
+from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
@@ -48,7 +45,7 @@ def julday (julian, form):
     """Wrapper for julday. Form is one of 'D', 'F', 'H', 'T', or 'V'."""
 
     calday = _N.chararray (120)
-    _mirgood.julday (julian, form, calday)
+    _miriad_f.julday (julian, form, calday)
 
     for i in xrange (0, calday.size):
         if calday[i] == '': return calday[0:i].tostring ()
@@ -70,10 +67,10 @@ def hisinput (tno, name, args=None):
     
     prefix = name.upper () + ': '
     
-    julian = _mirgood.todayjul ()
+    julian = _miriad_f.todayjul ()
     file = julday (julian, 'T')
-    _uvio.hiswrite (tno, prefix + 'Executed on: ' + file)
-    _uvio.hiswrite (tno, prefix + 'Command line inputs follow:')
+    _miriad_c.hiswrite (tno, prefix + 'Executed on: ' + file)
+    _miriad_c.hiswrite (tno, prefix + 'Command line inputs follow:')
     
     prefix += '  '
     dofile = False
@@ -83,13 +80,13 @@ def hisinput (tno, name, args=None):
             f = file (arg, 'r')
 
             for l in f:
-                _uvio.hiswrite (tno, prefix + l)
+                _miriad_c.hiswrite (tno, prefix + l)
 
             f.close ()
             dofile = False
         else:
             if arg == '-f': dofile = True
-            else: _uvio.hiswrite (tno, prefix + arg)
+            else: _miriad_c.hiswrite (tno, prefix + arg)
 
 
 def uvdatgta (obj):
@@ -97,7 +94,7 @@ def uvdatgta (obj):
     correctly... I think. Ugly."""
 
     aval = _N.chararray (120)
-    _mirgood.uvdatgta (obj, aval)
+    _miriad_f.uvdatgta (obj, aval)
 
     # Better way?
 
@@ -109,7 +106,7 @@ def uvdatgta (obj):
 
 def uvinfo_line (tno):
     info = _N.zeros (6, dtype=_N.double)
-    _uvio.uvinfo (tno, 'line', info)
+    _miriad_c.uvinfo (tno, 'line', info)
     info = info.astype (_N.int)
     # Convert Fortran 1-based index to 0-based
     info[2] -= 1
@@ -119,7 +116,7 @@ def uvinfo_line (tno):
 
 def uvinfo_visno (tno):
     info = _N.zeros (1, dtype=_N.double)
-    _uvio.uvinfo (tno, 'visno', info)
+    _miriad_c.uvinfo (tno, 'visno', info)
     # Convert Fortran 1-based index to 0-based
     return int (info[0]) - 1
 
@@ -128,7 +125,7 @@ def mkeyf (key, nmax, bufsz=120):
     """Wrapper for mkeyf with extra layer of string sanity."""
 
     value = _N.chararray ((nmax, bufsz))
-    n = _mirgood.mkeyf (key, value, nmax)
+    n = _miriad_f.mkeyf (key, value, nmax)
 
     # Can't find a better way to make this work. Sigh.
     
@@ -149,7 +146,7 @@ def mkeya (key, nmax, bufsz=120):
     """Wrapper for mkeya with extra layer of string sanity."""
 
     value = _N.chararray ((nmax, bufsz))
-    n = _mirgood.mkeya (key, value, nmax)
+    n = _miriad_f.mkeya (key, value, nmax)
 
     # Can't find a better way to make this work. Sigh.
     
@@ -182,7 +179,7 @@ def keymatch (key, types, maxout):
 
     out = _N.chararray ((maxout, ml))
     # Not sure why f2py thinks maxout is optional here.
-    nout = _mirgood.keymatch (key, tarr, out, len (types), maxout)
+    nout = _miriad_f.keymatch (key, tarr, out, len (types), maxout)
 
     # Can't find a better way to make this work. Sigh.
     

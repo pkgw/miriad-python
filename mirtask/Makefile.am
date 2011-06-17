@@ -33,7 +33,7 @@ mtpy_PYTHON = \
   _uvdat_compat_default.py
 
 lib_LTLIBRARIES = libmirtasksupport.la
-mtpy_LTLIBRARIES = _uvio.la _mirgood.la #_mirugly.la
+mtpy_LTLIBRARIES = _miriad_c.la _miriad_f.la
 
 AM_CPPFLAGS = -I$(NUMPY_INCLUDEDIR) $(MIR_CPPFLAGS) $(PYTHON_INCLUDES)
 AM_CFLAGS = -Wall -g -O2
@@ -45,17 +45,13 @@ libmirtasksupport_la_SOURCES = \
   fortranobject.c fortranobject.h \
   mirtasksupport.c mirtasksupport.h
 
-_uvio_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_uvio
-_uvio_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
-_uvio_la_SOURCES = _uviomodule.c
+_miriad_c_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_miriad_c
+_miriad_c_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
+_miriad_c_la_SOURCES = _miriad_cmodule.c
 
-_mirgood_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirgood
-_mirgood_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
-_mirgood_la_SOURCES = _mirgoodmodule.c _mirgood-f2pywrappers.f
-
-#_mirugly_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_mirugly
-#_mirugly_la_LIBADD = libmirtasksupport.la
-#_mirugly_la_SOURCES = _miruglymodule.c _mirugly-f2pywrappers.f
+_miriad_f_la_LDFLAGS = $(mod_ldflags) -export-symbols-regex init_miriad_f
+_miriad_f_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
+_miriad_f_la_SOURCES = _miriad_fmodule.c _miriad_f-f2pywrappers.f
 
 # f2py doesn't specify what license(s) may be applied to the files
 # it generates. These generated files are distributed, however, so 

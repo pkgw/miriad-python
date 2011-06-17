@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_INIT([miriad-python], [0.7])
-AC_CONFIG_SRCDIR([mirtask/_uviomodule.c])
+AC_CONFIG_SRCDIR([mirtask/_miriad_cmodule.c])
 AC_CONFIG_MACRO_DIR(.)
 AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE
@@ -82,7 +82,7 @@ AC_CHECK_LIB([mir], [uvchkshadow_c], [
     chkshadow=0 chkshadowstr=no
   ],[$mirextra])
 AC_DEFINE_UNQUOTED([HAVE_UVCHKSHADOW], [$chkshadow],
-  [Define if the MIRIAD UVIO library provides uvchkshadow_c().])
+  [Define if the MIRIAD library provides uvchkshadow_c().])
 
 MIR_LIBS="$MIR_LIBS -lmir $mirextra"
 LIBS="$orig_LIBS"

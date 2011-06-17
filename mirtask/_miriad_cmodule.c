@@ -1342,8 +1342,6 @@ py_uvinfo (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* XXX uvio incomplete! .... */
-
 /* uvio macros */
 
 static PyObject *
@@ -1486,7 +1484,7 @@ static PyObject *
 py_uvchkshadow (PyObject *self, PyObject *args)
 {
     PyErr_SetString (PyExc_NotImplementedError,
-		     "no uvchkshadow_c() in underlying MIRIAD UVIO library");
+		     "no uvchkshadow_c() in underlying MIRIAD library");
     return NULL;
 }
 
@@ -2004,7 +2002,7 @@ py_mkeyi (PyObject *self, PyObject *args)
 
 /* vtable */
 
-static PyMethodDef uvio_methods[] = {
+static PyMethodDef methods[] = {
 
     /* hio */
 
@@ -2106,16 +2104,12 @@ static PyMethodDef uvio_methods[] = {
     DEF(uvchkshadow, "(int tno, double diameter_meters) => bool"),
     DEF(probe_uvchkshadow, "() => bool"),
 
-    /* XXX uvio incomplete ... */
-
     /* uvio macros */
 
     DEF(uvputvri, "(int tno, str name, int-ndarray value) => void"),
     DEF(uvputvrr, "(int tno, str name, float-ndarray value) => void"),
     DEF(uvputvrd, "(int tno, str name, double-ndarray value) => void"),
     DEF(uvputvra, "(int tno, str name, str value) => void"),
-
-    /* XXX uvio macros incomplete ... */
 
     /* xyio */
 
@@ -2184,18 +2178,19 @@ static PyMethodDef uvio_methods[] = {
 #endif
 
 PyMODINIT_FUNC
-init_uvio (void)
+init_miriad_c (void)
 {
     PyObject *mod, *dict;
 
-    mts_setup ("mirtask._uvio.MiriadError");
+    mts_setup ("mirtask._miriad_c.MiriadError");
 
     if (PyErr_Occurred ()) {
-	PyErr_SetString (PyExc_ImportError, "Can't initialize module _uvio: failed to import numpy");
+	PyErr_SetString (PyExc_ImportError,
+			 "Can't initialize module _miriad_c: failed to import numpy");
 	return;
     }
 
-    mod = Py_InitModule("_uvio", uvio_methods);
+    mod = Py_InitModule("_miriad_c", methods);
     dict = PyModule_GetDict (mod);
     PyDict_SetItemString (dict, "MiriadError", mts_exc_miriad_err);
 }

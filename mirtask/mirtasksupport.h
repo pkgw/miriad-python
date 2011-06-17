@@ -22,7 +22,7 @@
 
 #include <Python.h>
 
-#define PY_ARRAY_UNIQUE_SYMBOL py_uvio_array_api
+#define PY_ARRAY_UNIQUE_SYMBOL py_mirtask_array_api
 #ifndef __MIR_TASK_SUPPORT_C
 #define NO_IMPORT_ARRAY
 #define import_array() do {} while (0)

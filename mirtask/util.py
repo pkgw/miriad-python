@@ -569,7 +569,7 @@ with the following meanings:
 Implemented using the Miriad function NLLSQU.
 """
 
-    from _mirgood import nllsqu
+    from _miriad_f import nllsqu
     arr = lambda shape: N.zeros (shape, dtype=N.float32, order='F')
     
     # Verify arguments
@@ -668,7 +668,7 @@ linear equations simultaneously, where the i'th equation is::
   vals[i] = coeffs[0,i] * retval[0] + ... + coeffs[nunk-1,i] * retval[nunk-1]
 """
 
-    from _mirgood import llsqu
+    from _miriad_f import llsqu
     
     coeffs = N.asarray (coeffs, dtype=N.float32, order='F')
     if coeffs.ndim != 2:
