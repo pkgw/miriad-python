@@ -54,7 +54,7 @@ check_int_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_INT) {
-	PyErr_Format (PyExc_ValueError, "%s must be a int-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s must be a plain-int-sized ndarray", argname);
 	return 1;
     }
 
@@ -76,7 +76,51 @@ check_float_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_FLOAT) {
-	PyErr_Format (PyExc_ValueError, "%s must be a float-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s must be a plain-float-sized ndarray", argname);
+	return 1;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be a contiguous ndarray", argname);
+	return 1;
+    }
+
+    return 0;
+}
+
+
+static int
+check_double_array (PyObject *array, char *argname)
+{
+    if (!PyArray_ISFLOAT (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be an float ndarray", argname);
+	return 1;
+    }
+
+    if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_DOUBLE) {
+	PyErr_Format (PyExc_ValueError, "%s must be a double-sized ndarray", argname);
+	return 1;
+    }
+
+    if (!PyArray_ISCONTIGUOUS (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be a contiguous ndarray", argname);
+	return 1;
+    }
+
+    return 0;
+}
+
+
+static int
+check_complexf_array (PyObject *array, char *argname)
+{
+    if (!PyArray_ISCOMPLEX (array)) {
+	PyErr_Format (PyExc_ValueError, "%s must be a complex ndarray", argname);
+	return 1;
+    }
+
+    if (PyArray_ITEMSIZE (array) != 2*NPY_SIZEOF_FLOAT) {
+	PyErr_Format (PyExc_ValueError, "%s must be a plain-complex-sized ndarray", argname);
 	return 1;
     }
 
@@ -1113,56 +1157,14 @@ py_uvread (PyObject *self, PyObject *args)
 			   &PyArray_Type, &data, &PyArray_Type, &flags, &n))
 	return NULL;
 
-    /* verify preamble */
-
-    if (!PyArray_ISFLOAT (preamble)) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be float ndarray");
+    if (check_double_array (preamble, "preamble"))
 	return NULL;
-    }
 
-    if (PyArray_ITEMSIZE (preamble) != NPY_SIZEOF_DOUBLE) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be double-sized ndarray");
+    if (check_complexf_array (data, "data"))
 	return NULL;
-    }
 
-    if (!PyArray_ISCONTIGUOUS (preamble)) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be contiguous ndarray");
+    if (check_int_array (flags, "flags"))
 	return NULL;
-    }
-
-    /* data */
-
-    if (!PyArray_ISCOMPLEX (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be complex ndarray");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (data) != 2*NPY_SIZEOF_FLOAT) {
-	PyErr_SetString (PyExc_TypeError, "data must be plain-complex-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be contiguous ndarray");
-	return NULL;
-    }
-
-    /* flags */
-
-    if (!PyArray_ISINTEGER (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be integer ndarray");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (flags) != NPY_SIZEOF_INT) {
-	PyErr_SetString (PyExc_TypeError, "flags must be plain-int-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
-	return NULL;
-    }
 
     /* higher-level checks */
 
@@ -1205,56 +1207,14 @@ py_uvwrite (PyObject *self, PyObject *args)
 			   &PyArray_Type, &data, &PyArray_Type, &flags, &n))
 	return NULL;
 
-    /* verify preamble */
-
-    if (!PyArray_ISFLOAT (preamble)) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be float ndarray");
+    if (check_double_array (preamble, "preamble"))
 	return NULL;
-    }
 
-    if (PyArray_ITEMSIZE (preamble) != NPY_SIZEOF_DOUBLE) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be double-sized ndarray");
+    if (check_complexf_array (data, "data"))
 	return NULL;
-    }
 
-    if (!PyArray_ISCONTIGUOUS (preamble)) {
-	PyErr_SetString (PyExc_TypeError, "preamble must be contiguous ndarray");
+    if (check_int_array (flags, "flags"))
 	return NULL;
-    }
-
-    /* data */
-
-    if (!PyArray_ISCOMPLEX (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be complex ndarray");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (data) != 2*NPY_SIZEOF_FLOAT) {
-	PyErr_SetString (PyExc_TypeError, "data must be plain-complex-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be contiguous ndarray");
-	return NULL;
-    }
-
-    /* flags */
-
-    if (!PyArray_ISINTEGER (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be integer ndarray");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (flags) != NPY_SIZEOF_INT) {
-	PyErr_SetString (PyExc_TypeError, "flags must be plain-int-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
-	return NULL;
-    }
 
     /* higher-level checks */
 
@@ -1335,25 +1295,11 @@ py_uvflgwr (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "iO!", &tno, &PyArray_Type, &flags))
 	return NULL;
 
-    if (!PyArray_ISINTEGER (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be int ndarray");
+    if (check_int_array (flags, "flags"))
 	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (flags) != NPY_SIZEOF_INT) {
-	PyErr_SetString (PyExc_TypeError, "flags must be plain-int-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
-	return NULL;
-    }
 
     MTS_CHECK_BUG;
-
     uvflgwr_c (tno, PyArray_DATA (flags));
-
     Py_RETURN_NONE;
 }
 
@@ -1369,20 +1315,8 @@ py_uvinfo (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isO!", &tno, &object, &PyArray_Type, &data))
 	return NULL;
 
-    if (!PyArray_ISFLOAT (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be float ndarray");
+    if (check_double_array (data, "data"))
 	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (data) != NPY_SIZEOF_DOUBLE) {
-	PyErr_SetString (PyExc_TypeError, "data must be double-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (data)) {
-	PyErr_SetString (PyExc_TypeError, "data must be contiguous ndarray");
-	return NULL;
-    }
 
     MTS_CHECK_BUG;
     uvinfo_c (tno, object, PyArray_DATA (data));
@@ -1401,26 +1335,11 @@ py_uvputvri (PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple (args, "isO!", &tno, &name, &PyArray_Type, &value))
 	return NULL;
 
-    if (!PyArray_ISINTEGER (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be integer ndarray");
+    if (check_int_array (value, "value"))
 	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (value) != NPY_SIZEOF_INT) {
-	PyErr_Format (PyExc_TypeError, "value must be plain-int-sized ndarray "
-		      "(want %d, got %d)", NPY_SIZEOF_INT, PyArray_ITEMSIZE (value));
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be contiguous ndarray");
-	return NULL;
-    }
 
     MTS_CHECK_BUG;
-
     uvputvri_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
-
     Py_RETURN_NONE;
 }
 
@@ -1435,25 +1354,11 @@ py_uvputvrr (PyObject *self, PyObject *args)
 			   &PyArray_Type, &value))
 	return NULL;
 
-    if (!PyArray_ISFLOAT (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be float ndarray");
+    if (check_float_array (value, "value"))
 	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (value) != NPY_SIZEOF_FLOAT) {
-	PyErr_SetString (PyExc_TypeError, "value must be plain-float-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be contiguous ndarray");
-	return NULL;
-    }
 
     MTS_CHECK_BUG;
-
     uvputvrr_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
-
     Py_RETURN_NONE;
 }
 
@@ -1468,25 +1373,11 @@ py_uvputvrd (PyObject *self, PyObject *args)
 			   &PyArray_Type, &value))
 	return NULL;
 
-    if (!PyArray_ISFLOAT (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be float ndarray");
+    if (check_double_array (value, "value"))
 	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (value) != NPY_SIZEOF_DOUBLE) {
-	PyErr_SetString (PyExc_TypeError, "value must be double-sized ndarray");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (value)) {
-	PyErr_SetString (PyExc_TypeError, "value must be contiguous ndarray");
-	return NULL;
-    }
 
     MTS_CHECK_BUG;
-
     uvputvrd_c (tno, name, PyArray_DATA (value), PyArray_SIZE (value));
-
     Py_RETURN_NONE;
 }
 
@@ -1741,23 +1632,10 @@ py_mkread (PyObject *self, PyObject *args)
 			   &flags, &offset, &n))
 	return NULL;
 
+    if (check_int_array (flags, "flags"))
+	return NULL;
+
     handle = (char *) handint;
-
-    if (!PyArray_ISINTEGER (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags ndarray must be integer");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (flags) != sizeof (int)) {
-	PyErr_SetString (PyExc_TypeError, "flags ndarray must have integer itemsize");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
-	return NULL;
-    }
-
     nsize = PyArray_SIZE (flags);
 
     /* handle: handle to flags state item
@@ -1788,23 +1666,10 @@ py_mkwrite (PyObject *self, PyObject *args)
 			   &flags, &offset, &n))
 	return NULL;
 
+    if (check_int_array (flags, "flags"))
+	return NULL;
+
     handle = (char *) handint;
-
-    if (!PyArray_ISINTEGER (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags ndarray must be integer");
-	return NULL;
-    }
-
-    if (PyArray_ITEMSIZE (flags) != sizeof (int)) {
-	PyErr_SetString (PyExc_TypeError, "flags ndarray must have integer itemsize");
-	return NULL;
-    }
-
-    if (!PyArray_ISCONTIGUOUS (flags)) {
-	PyErr_SetString (PyExc_TypeError, "flags must be contiguous ndarray");
-	return NULL;
-    }
-
     nsize = PyArray_SIZE (flags);
 
     /* handle: handle to flags state item
