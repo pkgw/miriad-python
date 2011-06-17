@@ -25,22 +25,6 @@ from _miriad_f import *
 
 # Overwite a few bound methods in a more sane manner.
 
-def bug (sev, msg):
-    """Signal that a bug has occurred, or invalid input has been
-    passed to your task. Just raises MiriadError with the given
-    message if sev is 'f'.
-
-    In hand-written code, you should just raise MiriadError yourself,
-    but this routine allows more direct mapping of existing Fortran
-    code to Python."""
-    
-    if sev == 'f':
-        raise MiriadError (msg)
-    else:
-        from warnings import warn
-        warn ('MIRIAD warning (severity %c): %s' % (sev, msg), UserWarning, 2)
-
-
 def julday (julian, form):
     """Wrapper for julday. Form is one of 'D', 'F', 'H', 'T', or 'V'."""
 
