@@ -755,6 +755,22 @@ Counting begins at zero.
         return int (info[0]) - 1
 
 
+    def getPol (self):
+        """Get the polarization code of the current record.
+
+:returns: the polarization code
+:rtype: int
+
+For a regular UV dataset, this is just equivalent to reading
+the "pol" UV variable. :class:`mirtask.uvdat.UVDatDataSet` instances
+require more complicated processing.
+
+The default polarization is Stokes I. See the constants in
+:mod:`mirtask.util`.
+"""
+        return self.getVarFirstInt ('pol', 1)
+
+
     def getJyPerK (self):
         """Get the Jy/K calibration of the current record
 
