@@ -82,6 +82,12 @@ You should not construct a :class:`UVDatDataSet` yourself.
     def getCurrentVisNum (self):
         return _getOneInt ('visno') - 1
 
+    def getJyPerK ():
+        return _miriad_f.uvdatgtr ('jyperk')
+
+    def getVariance (self):
+        return _miriad_f.uvdatgtr ('variance')
+
 
 def inputSets ():
     """Retrieve handles to the datasets to be read by the UVDAT

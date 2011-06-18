@@ -754,6 +754,38 @@ Counting begins at zero.
         return int (info[0]) - 1
 
 
+    def getJyPerK (self):
+        """Get the Jy/K calibration of the current record
+
+:returns: the Jy/K value
+:rtype: float
+
+For a regular UV dataset, this is just equivalent to reading
+the "jyperk" UV variable. :class:`mirtask.uvdat.UVDatDataSet` instances
+require more complicated processing.
+
+Returns zero if the value could not be determined.
+"""
+        return self.getVarFirstFloat ('jyperk', 0.)
+
+
+    def getVariance (self):
+        """Get the variance of the first channel of the current UV record.
+
+:returns: the variance
+:rtype: double
+
+Keep in mind that if the read-in data comprise multiple windows
+with different channel bandwidths, the variance needs to be scaled
+appropriately: ``variance ~ 1 / sqrt (bandwidth)``.
+
+Returns zero if the variance could not be determined.
+"""
+        self._checkOpen ()
+        info = N.zeros (1, dtype=N.double)
+        _miriad_c.uvinfo (self.tno, 'variance', info)
+        return info[0]
+
 
     def baselineShadowed (self, diameter_meters):
         """Returns whether the most recently-read UV record comes from
