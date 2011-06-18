@@ -1169,7 +1169,27 @@ __all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
 
 
 class XYDataSet (DataSet):
-    def __init__ (self, refobj, mode, naxis=None, axes=None):
+    """:synopsis: an opened image dataset
+
+This class provides access to MIRIAD image data. It allows whole image
+planes to be read in easily using the :meth:`XYDataSet.readPlane`
+function.
+
+You shouldn't create :class:`XYDataSet` instances directly. Instead,
+use :meth:`miriad.ImData.open`.
+"""
+
+    axes = None
+    """An integer ndarray of axis sizes. Stored in "inside-out"
+    format: ``axes[0]`` is the most quickly-varying axis, almost
+    always the image column number. ``axes[1]`` is the second-most
+    quickly-varying axis, almost always the image row number.
+
+    TODO: think through whether we want *axes* to be full of
+    unnecessary ones, or what.
+    """
+
+    def __init__ (self, refobj, mode, axes=None):
         if mode == 'rw':
             modestr = 'old'
         elif mode == 'c':
@@ -1177,19 +1197,16 @@ class XYDataSet (DataSet):
         else:
             raise ValueError ('unsupported mode "%s"; expect "rw" or "c"' % mode)
 
-        if naxis is None:
-            if mode == 'c':
-                raise ValueError ('naxis must be specified when creating a new XY dataset')
-            naxis = 16 # "more than anyone could ever possibly need", right?
-
-        if axes is None:
+        if axes is not None:
+            axes = N.atleast_1d (axes).copy ()
+        else:
             if mode == 'c':
                 raise ValueError ('axes must be specified when creating a new XY dataset')
-            axes = N.zeros (naxis, dtype=N.int)
+            axes = N.zeros (16, dtype=N.int)
 
         self.axes = axes
         self.name = str (refobj)
-        self.tno = _miriad_c.xyopen (str (refobj), modestr, naxis, axes)
+        self.tno = _miriad_c.xyopen (str (refobj), modestr, axes.size, axes)
         self._databuf = N.empty (axes[0], dtype=N.float32)
         self._flagbuf = N.empty (axes[0], dtype=N.int)
         self._npmaskbuf = N.empty (axes[0], dtype=N.bool)
@@ -1202,19 +1219,65 @@ class XYDataSet (DataSet):
 
 
     def flush (self):
+        """Write any pending changes to disk.
+
+:returns: *self*
+"""
+
         self._checkOpen ()
         _miriad_c.xyflush (self.tno)
         return self
 
 
     def setPlane (self, axes=[]):
+        """Set the active plane for reading or writing.
+
+:type axes: int ndarray
+:arg axes: the pixel coordinates of the non-plane axes (default zeros)
+:returns: *self*
+
+A MIRIAD image can have any (reasonable) number of dimensions, but is
+typically read one "plane" at a time. A plane comprises a subcube of
+the first two axes of data with the coordinates of the other axes held
+constant. This routine sets the pixel coordinate values of the other axes.
+
+If an image has *n* axes, *axes* should have at most ``n - 2`` elements,
+because two axes refer to the plane being read. However, *axes* may
+have fewer elements, with the pixel values of the outer axes being set
+to zero. It is valid for *axes* to be an empty list, specifying that
+all non-axis coordinates should be set to zero, and this is in fact the
+default argument.
+
+Note that in MIRIAD, array indices are Fortran style and begin at one;
+in this function, as in Python in general, array indices begin at zero.
+"""
+
         self._checkOpen ()
-        axes = N.asarray (axes).astype (N.int)
+        # C/Python to Fortran index convention:
+        axes = N.asarray (axes).astype (N.int) + 1
         _miriad_c.xysetpl (self.tno, axes.size, axes)
         return self
 
 
     def readRow (self, rownum):
+        """Read a row of data from the current plane
+
+:arg int rownum: the zero-based for number to read
+:returns: a masked ndarray of data
+
+The method :meth:`setPlane` must be called before the first attempt to
+read or write image data.
+
+Reads one row of data and flags from the current plane into a
+buffer. The returned array has a shape of ``(self.axes[0], )``.
+The buffer is stored in the object instance and is shared
+between all I/O calls, so be careful with concurrent access.
+
+See also :meth:`readRows` and :meth:`readPlane`.
+"""
+        if rownum < 0 or rownum >= self.axes[1]:
+            raise ValueError ('rownum must be >= 0 and < %d' % self.axes[1])
+
         self._checkOpen ()
         _miriad_c.xyread (self.tno, rownum + 1, self._databuf)
         _miriad_c.xyflgrd (self.tno, rownum + 1, self._flagbuf)
@@ -1223,6 +1286,29 @@ class XYDataSet (DataSet):
 
 
     def readRows (self, topIsZero=False):
+        """Read all rows of data from the current plane
+
+:arg bool topIsZero: whether to invert the image ordering from
+  MIRIAD's bottom-to-top ordering to top-to-bottom
+:returns: generator yielding masked ndarray of data
+
+Reads all rows of data and flags from the current plane into a
+buffer. The returned arrays have a shape of ``(self.axes[0], )``.  The
+buffer is stored in the object instance and is shared between all I/O
+calls, so be careful with concurrent access.
+
+The method :meth:`setPlane` must be called before the first attempt to
+read or write image data.
+
+MIRIAD's image coordinate system is "bottom-to-top", where pixel ``(0,
+0)`` in a plane is its bottom-left pixel. This can be counterintuitive,
+but all of MIRIAD's coordinate routines rely on this system, so you
+should attempt to get used to it. However, in certain cases it can be
+useful to read in a plane such that pixel ``(0, 0)`` is its top-right
+pixel. Setting *topIsZero* to :const:`True` does this.
+
+See also :meth:`readPlane` and :meth:`readRow`.
+"""
         self._checkOpen ()
         nrow = self.axes[1]
 
@@ -1240,8 +1326,38 @@ class XYDataSet (DataSet):
                 yield self._masked
 
 
-    def readPlane (self, axes=[], buf=None, topIsZero=False):
-        """note that by default pixel 0, 0 is bottom left corner, not top left"""
+    def readPlane (self, axes=None, buf=None, topIsZero=False):
+        """Read the current plane.
+
+:arg axes: the pixel coordinates of the non-plane axes, or :const:`None`
+  (the default) to use the current axes
+:type axes: int ndarray
+:arg buf: the buffer into which the data are stored, or :const:`None`
+  (the default) to allocate a new buffer
+:type buf: masked ndarray of shape (nrow, ncol)
+:arg bool topIsZero: whether to invert the image ordering from
+  MIRIAD's bottom-to-top ordering to top-to-bottom
+:returns: the buffer
+
+Reads the current plane into a buffer. If *buf* is not :const:`None`,
+it must be of shape ``(nrow, ncol)`` (equivalently, ``(self.axes[1],
+self.axes[0])``) and be a masked ndarray. Otherwise, a new buffer is
+allocated.
+
+The method :meth:`setPlane` must be called before the first attempt to
+read or write image data. If *axes* is not :const:`None`,
+:meth:`setPlane` will be called with axes as an argument before
+performing the read.
+
+MIRIAD's image coordinate system is "bottom-to-top", where pixel ``(0,
+0)`` in a plane is its bottom-left pixel. This can be counterintuitive,
+but all of MIRIAD's coordinate routines rely on this system, so you
+should attempt to get used to it. However, in certain cases it can be
+useful to read in a plane such that pixel ``(0, 0)`` is its top-right
+pixel. Setting *topIsZero* to :const:`True` does this.
+
+See also :meth:`readRows` and :meth:`readRow`.
+"""
         ncol, nrow = self.axes[:2]
 
         if buf is None:
@@ -1259,7 +1375,9 @@ class XYDataSet (DataSet):
             data, mask = buf.data, buf.mask
 
         self._checkOpen ()
-        self.setPlane (axes)
+
+        if axes is not None:
+            self.setPlane (axes)
 
         if not topIsZero:
             for i in xrange (1, nrow + 1):
@@ -1276,21 +1394,73 @@ class XYDataSet (DataSet):
 
 
     def writeRow (self, rownum, maskeddata):
+        """Write a row of data to the current plane
+
+:arg int rownum: the zero-based for number to read
+:arg maskeddata: the data to write
+:type maskeddata: numpy maskedarray
+:returns: *self*
+
+Writes one row of data and flags to the current plane. The argument
+*maskeddata* must have a shape of ``(self.axes[0], )``.  *rownum*
+should be between zero and ``self.axes[1] - 1``.
+
+The method :meth:`setPlane` must be called before the first attempt to
+read or write image data.
+
+See also :meth:`writePlane`.
+"""
         maskeddata = N.ma.atleast_1d (maskeddata)
 
+        if rownum < 0 or rownum >= self.axes[1]:
+            raise ValueError ('rownum must be >= 0 and < %d' % self.axes[1])
         if maskeddata.ndim != 1:
             raise ValueError ('maskeddata must be 1d')
         if maskeddata.size != self.axes[0]:
             raise ValueError ('maskeddata must be of size %d' % self.axes[0])
 
         self._checkOpen ()
+        if maskeddata.data.dtype == N.float32:
+            data = maskeddata.data
+        else:
+            data = maskeddata.data.astype (N.float32)
         N.logical_not (maskeddata.mask, self._flagbuf)
-        _miriad_c.xywrite (self.tno, rownum + 1, self._databuf)
+        _miriad_c.xywrite (self.tno, rownum + 1, data)
         _miriad_c.xyflgwr (self.tno, rownum + 1, self._flagbuf)
         return self
 
 
-    def writePlane (self, maskeddata, axes=[], topIsZero=False):
+    def writePlane (self, maskeddata, axes=None, topIsZero=False):
+        """Write a plane of data.
+
+:arg maskeddata: the data buffer
+:type maskeddata: masked ndarray of shape (nrow, ncol)
+:arg axes: the pixel coordinates of the non-plane axes, or :const:`None`
+  (the default) to use the current axes
+:type axes: int ndarray
+:arg bool topIsZero: whether to invert the image ordering from
+  MIRIAD's bottom-to-top ordering to top-to-bottom
+:returns: *self*
+
+Writes data to the current plane. *buf* must be of shape ``(nrow,
+ncol)`` (equivalently, ``(self.axes[1], self.axes[0])``) and be a
+masked ndarray.
+
+The method :meth:`setPlane` must be called before the first attempt to
+read or write image data. If *axes* is not :const:`None`,
+:meth:`setPlane` will be called with axes as an argument before
+performing the read.
+
+MIRIAD's image coordinate system is "bottom-to-top", where pixel ``(0,
+0)`` in a plane is its bottom-left pixel. This can be
+counterintuitive, but all of MIRIAD's coordinate routines rely on this
+system, so data will likely come in this format. Howeve, if
+*maskeddata* is stored in a top-to-bottom system, where pixel ``(0,
+0)`` is its top-right pixel, setting *topIsZero* to :const:`True` will
+write out the data in the correct order.
+
+See also :meth:`writeRow`.
+"""
         maskeddata = N.ma.atleast_2d (maskeddata)
         ncol, nrow = self.axes[:2]
 
@@ -1301,7 +1471,9 @@ class XYDataSet (DataSet):
                               (nrow, ncol))
 
         self._checkOpen ()
-        self.setPlane (axes)
+
+        if axes is not None:
+            self.setPlane (axes)
 
         if not topIsZero:
             for i in xrange (1, nrow + 1):

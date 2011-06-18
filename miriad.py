@@ -756,9 +756,37 @@ This subclass of :class:`Data` is for referring to image datasets. It
 inherits many generic features from the :class:`Data` class.
 """
 
-    def open (self, mode, naxis=None, axes=None):
+    def open (self, mode, axes=None):
+        """Open the dataset that this object references.
+
+:arg mode: the mode in which to open the dataset; either "rw" or "c"
+:type mode: string
+:arg axes: when creating a dataset, the number of pixels along each
+  axis; ignored otherwise. Default is :const:`None`.
+:type axes: int ndarray, or :const:`None`.
+:returns: an opened :class:`mirtask.XYDataSet` instance.
+:throws: :exc:`MiriadError` if there's an error opening an existing
+  dataset or creating a new one
+
+This function opens the dataset and returns a handle to it. Methods
+such as :meth:`mirtask.XYDataSet.readPlane` can then be used to access
+the image data.
+
+If *mode* is "rw", an existing dataset is opened, and *axes* is
+ignored.
+
+If *mode* is "c", a new dataset is created. *axes* specifies the sizes
+of the axes of the datacube. The number of axes should be small:
+nominally less than about six, but anything more than four will
+probably not work. *axes* is specified in "inside-out" order, where
+``axes[0]`` is the axis along which the data vary most rapidly; this
+is usually a row-type axis. The second-most quickly-varying axis is
+``axes[1]``, which is usually a column-type axis. Subsequent axes
+often correspond to different frequencies, velocities, or Stokes
+parameters.
+"""
         from mirtask import XYDataSet
-        return XYDataSet (self, mode, naxis, axes)
+        return XYDataSet (self, mode, axes)
 
 
     def apply (self, task, **params):

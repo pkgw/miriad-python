@@ -46,5 +46,8 @@ Is awesome. But the documentation will be written a bit later.
 .. autoclass:: UVVarTracker
    :members:
 
+.. autoclass:: XYDataSet
+   :members:
+
 .. autoclass:: MaskItem
    :members:
