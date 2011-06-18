@@ -63,6 +63,70 @@ LINETYPE_WIDE = 2
 LINETYPE_VELOCITY = 3
 LINETYPE_FELOCITY = 4
 
+_ltNames = { LINETYPE_NONE: 'undefined',
+             LINETYPE_CHANNEL: 'channel',
+             LINETYPE_WIDE: 'wide',
+             LINETYPE_VELOCITY: 'velocity',
+             LINETYPE_FELOCITY: 'felocity',
+}
+
+def linetypeName (linetype):
+    """Given a linetype number, return its textual description
+
+:arg int linetype: the linetype code
+:returns: the description
+:rtype: str
+
+The linetypes are:
+
+================== ============== ============
+Symbolic Constant  Numeric Value  Description
+================== ============== ============
+LINETYPE_NONE      0              "undefined"
+LINETYPE_CHANNEL   1              "channel"
+LINETYPE_WIDE      2              "wide"
+LINETYPE_VELOCITY  3              "velocity"
+LINETYPE_FELOCITY  4              "felocity"
+================== ============== ============
+
+The "felocity" type is used for spectral data resampled at
+even velocity increments, using the "optical definition" of velocity,
+``v / c = (lambda - lambda0) / lambda0``. The "radio definition"
+is slightly different: ``v / c = (nu0 - nu) / nu0``.
+"""
+    return _ltNames[linetype]
+
+
+def linetypeFromName (text):
+    """Given a linetype name, return the corresponding numeric code.
+
+:arg str text: the name of a linetype
+:returns: the code
+:rtype: int
+:throws: :exc:`ValueError` if *text* doesn't correspond to one
+  of the linetype names.
+
+See :func:`linetypeName` for a description of the linetype symbolic
+constants, their numerical values, and standard textual descriptions.
+
+Matching in this function is done case-insensitively and accepts
+partial matches. Because the linetype names all begin with different
+letters, this means that a code can be retrieved using just a single
+letter. Strings of all whitespace, or the empty string, are mapped to
+:const:`LINETYPE_NONE`.
+"""
+    if not len (text.strip ()):
+        return LINETYPE_NONE
+
+    ltext = text.lower ()
+
+    for lt, name in _ltNames.iteritems ():
+        if name.startswith (ltext):
+            return lt
+
+    raise ValueError ('text "%s" does not express a linetype name', text)
+
+
 # Polarizations. From subs/uvdat.h
 
 POL_II = 0

@@ -30,16 +30,6 @@ working with MIRIAD data. It is located in the :mod:`mirtask` package because
 some of these utilities make calls into the MIRIAD subroutine library,
 unlike the general, pure-Python tools in the :mod:`miriad` module.
 
-There are functions in :mod:`mirtask.util` dealing with the following topics:
-
-* Basic infrastructure for user-written tasks
-* Encoding and decoding baseline values
-* Polarization utilities
-* "Antpol" and "basepol" values
-* Julian Date / text conversions
-* Least-squares optimization
-* Coordinate transformations
-
 Antpols and Basepols
 --------------------
 
@@ -98,15 +88,23 @@ Utilities for Writing Tasks
 
 .. autofunction:: die
 
-
-MIRIAD Constants and Conventions
+Linetypes
 ----------------------------------------
 
-Document LINETYPE\_, POL\_.
+.. autofunction:: linetypeName
+
+.. autofunction:: linetypeFromName
+
+Baselines
+----------------------------------------
 
 .. autofunction:: decodeBaseline
 
 .. autofunction:: encodeBaseline
+
+Polarizations
+----------------------------------------
+
 
 .. autofunction:: polarizationName
 

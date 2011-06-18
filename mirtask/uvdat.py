@@ -81,6 +81,14 @@ You should not construct a :class:`UVDatDataSet` yourself.
     def getCurrentVisNum (self):
         return _getOneInt ('visno') - 1
 
+    def getLinetype (self, astext=False):
+        name = _getString ('ltype')
+        if astext:
+            return name
+
+        from mirtask.util import linetypeFromName
+        return linetypeFromName (name)
+
     def getPol (self):
         return _getOneInt ('pol')
 

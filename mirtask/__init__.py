@@ -733,6 +733,8 @@ The six integers are ``[linetype, nchan, chan0, width, step, win0]``.
         self._checkOpen ()
         info = N.zeros (6, dtype=N.double)
         _miriad_c.uvinfo (self.tno, 'line', info)
+        # FIXME: in e.g. velocity linetype, step/width/etc will be
+        # nonintegral
         info = info.astype (N.int)
         # Convert Fortran 1-based index to 0-based
         info[2] -= 1
@@ -753,6 +755,28 @@ Counting begins at zero.
         _miriad_c.uvinfo (self.tno, 'visno', info)
         # Convert Fortran 1-based index to 0-based
         return int (info[0]) - 1
+
+
+    def getLinetype (self, astext=False):
+        """Get the linetype of the current UV record.
+
+:arg bool astext: if :const:`True`, return the linetype as its
+  textual value rather than its integer code; default is :const:`False`.
+:returns: the linetype
+:rtype: int or str
+
+The linetype values are enumerated in :func:`mirtask.util.linetypeName`.
+"""
+        self._checkOpen ()
+        info = N.zeros (6, dtype=N.double)
+        _miriad_c.uvinfo (self.tno, 'line', info)
+        linetype = int (info[0])
+
+        if not astext:
+            return linetype
+
+        from mirtask.util import linetypeName
+        return linetypeName (linetype)
 
 
     def getPol (self):
