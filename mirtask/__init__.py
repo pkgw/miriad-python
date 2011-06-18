@@ -799,39 +799,6 @@ Counting begins at zero.
 
         self._uvset ('preamble', '/'.join (vars), 0, 0., 0., 0.)
 
-    def setSelectAmplitude (self, selamp):
-        """Specify whether selection based on amplitude should be
-        performed."""
-
-        if selamp: val = 1
-        else: val = 0
-
-        self._uvset ("selection", "amplitude", val, 0., 0., 0.,)
-
-    def setSelectWindow (self, selwin):
-        """Specify whether selection based on window should be
-        performed."""
-
-        if selwin: val = 1
-        else: val = 0
-
-        self._uvset ("selection", "window", val, 0., 0., 0.,)
-
-    def setPlanetParams (self, major, minor, angle):
-        """Set the reference parameters for planet scaling and
-        rotation."""
-
-        self._uvset ("planet", "", 0, major, minor, angle)
-
-    def setWavelengthMode (self, wlmode):
-        """Specify that UV coordinates should be returned in units
-        of wavelength. Otherwise, they are returned in nanoseconds."""
-
-        if wlmode:
-            self._uvset ("coord", "wavelength", 0, 0., 0., 0.)
-        else:
-            self._uvset ("coord", "nanosec", 0, 0., 0., 0.)
-
     def setCorrelationType (self, type):
         """Set the correlation type that will be used in this
         vis file."""
