@@ -32,6 +32,7 @@ class DataSet (object):
     method."""
 
     tno = None
+    _path = None
 
     def __del__ (self):
         # tno can be None if we got an exception inside hopen,
@@ -42,23 +43,24 @@ class DataSet (object):
 
         self._close ()
 
+
     def __repr__ (self):
-        if hasattr (self, 'name'):
-            return 'DataSet (%s)' % (repr (self.name))
-        return 'DataSet (<unknown filename>)'
+        return 'DataSet (%r)' % (self._path, )
+
 
     def __str__ (self):
-        if hasattr (self, 'name'):
-            nstr = '\"%s\"' % (self.name, )
-        else:
-            nstr = '[unknown filename]'
-
         if self.tno is not None:
             hstr = 'handle %d' % self.tno
         else:
             hstr = 'not currently open'
 
-        return '<DataSet %s %s>' % (nstr, hstr)
+        return '<DataSet "%s" %s>' % (self._path, hstr)
+
+
+    def path (self, *args):
+        from os.path import join
+        return join (self._path, *args)
+
 
     def isOpen (self):
         return self.tno is not None
@@ -421,6 +423,8 @@ class DataItem (object):
     itno = None
 
     def __init__ (self, dataset, keyword, mode):
+        # Must maintain reference to dataset to prevent it from being
+        # GC'd out from under us:
         self.dataset = dataset
         self.name = keyword
 
@@ -619,12 +623,12 @@ class DataItem (object):
 __all__ += ['DataSet', 'DataItem']
 
 class UserDataSet (DataSet):
-    def __init__ (self, refobj, create=False):
+    def __init__ (self, path, create=False):
         if create: mode = 'new'
         else: mode = 'old'
 
-        self.tno = _miriad_c.hopen (refobj.base, mode)
-        self.name = refobj.base
+        self._path = path
+        self.tno = _miriad_c.hopen (path, mode)
 
     def _close (self):
         _miriad_c.hclose (self.tno)
@@ -632,7 +636,7 @@ class UserDataSet (DataSet):
 __all__ += ['UserDataSet']
 
 class UVDataSet (DataSet):
-    def __init__ (self, refobj, mode):
+    def __init__ (self, path, mode):
         # Technically, 'old' mode is read-only with regard to the
         # UV data, but you can still write non-UV header variables.
         if mode == 'rw': modestr = 'old'
@@ -640,8 +644,8 @@ class UVDataSet (DataSet):
         elif mode == 'a': modestr = 'append'
         else: raise ValueError ('Unsupported mode "%s"; "rw", "c", and "a" are allowed' % mode)
 
-        self.tno = _miriad_c.uvopen (refobj.base, modestr)
-        self.name = refobj.base
+        self._path = path
+        self.tno = _miriad_c.uvopen (path, modestr)
 
     def _close (self):
         _miriad_c.uvclose (self.tno)
@@ -1071,6 +1075,8 @@ Returns zero if the variance could not be determined.
 
 class UVVarTracker (object):
     def __init__ (self, owner):
+        # Must maintain a reference to the dataset to prevent it from
+        # being GC'd under us:
         self.dataset = owner
         self.vhnd = _miriad_c.uvvarini (owner.tno)
 
@@ -1104,6 +1110,8 @@ class MaskItem (object):
     """A 'mask' item contained within a Miriad dataset."""
 
     def __init__ (self, dataset, keyword, mode):
+        # must maintain ref to dataset to prevent it from being GC'd
+        # out from under us:
         self.dataset = dataset
         self.name = keyword
         self.handle = None
@@ -1183,7 +1191,7 @@ use :meth:`miriad.ImData.open`.
     to crash).
     """
 
-    def __init__ (self, refobj, mode, axes=None):
+    def __init__ (self, path, mode, axes=None):
         if mode == 'rw':
             modestr = 'old'
         elif mode == 'c':
@@ -1199,8 +1207,8 @@ use :meth:`miriad.ImData.open`.
             axes = N.zeros (16, dtype=N.int)
 
         self.axes = axes
-        self.name = str (refobj)
-        self.tno = _miriad_c.xyopen (str (refobj), modestr, axes.size, axes)
+        self._path = path
+        self.tno = _miriad_c.xyopen (path, modestr, axes.size, axes)
 
         if mode == 'rw':
             self.axes = axes = axes[:self.getHeaderInt ('naxis', 0)]

@@ -440,7 +440,7 @@ calling :meth:`defaultImClass`.
         else:
             raise Exception ('Unsupported mode "%s"; "rw" and "c" are allowed' % mode)
 
-        return UserDataSet (self, create)
+        return UserDataSet (self.base, create)
     
     def open (self, mode):
         """Opens the dataset for access.
@@ -518,7 +518,7 @@ and inherits many generic features from the :class:`Data` class.
 
     def _openImpl (self, mode):
         from mirtask import UVDataSet
-        return UVDataSet (self, mode)
+        return UVDataSet (self.base, mode)
 
     def readLowlevel (self, uvdOptions, saveFlags, **kwargs):
         """Directly access the visibility data.
@@ -786,7 +786,7 @@ often correspond to different frequencies, velocities, or Stokes
 parameters.
 """
         from mirtask import XYDataSet
-        return XYDataSet (self, mode, axes)
+        return XYDataSet (self.base, mode, axes)
 
 
     def apply (self, task, **params):

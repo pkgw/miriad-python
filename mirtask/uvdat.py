@@ -52,7 +52,7 @@ You should not construct a :class:`UVDatDataSet` yourself.
 """
     def __init__ (self, tno):
         self.tno = tno
-        self.name = getCurrentName ()
+        self._path = _getString ('name')
 
     def _close (self):
         _miriad_f.uvdatcls ()
