@@ -81,7 +81,7 @@ You should not construct a :class:`UVDatDataSet` yourself.
     def getCurrentVisNum (self):
         return _getOneInt ('visno') - 1
 
-    def getJyPerK ():
+    def getJyPerK (self):
         return _miriad_f.uvdatgtr ('jyperk')
 
     def getVariance (self):
