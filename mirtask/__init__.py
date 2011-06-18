@@ -771,6 +771,29 @@ The default polarization is Stokes I. See the constants in
         return self.getVarFirstInt ('pol', 1)
 
 
+    def getNPol (self):
+        """Get the number of simultaneous polarizations.
+
+:returns: the number
+:rtype: int
+
+For a regular UV dataset, this is just equivalent to reading
+the "npol" UV variable. :class:`mirtask.uvdat.UVDatDataSet` instances
+require more complicated processing.
+
+The "npol" quantity is used for on-the-fly Stokes processing of UV
+data.  If a full-Stokes correlator is taking data, the ideal output
+format is one in which there are four consecutive UV records for each
+baseline / time combination: one for each simultaneous Stokes
+parameter. The four records can then easily be combined to perform
+Stokes conversions (e.g. XX and YY to I) with minimal overhead. In
+order to be able to do this, the Stokes processing code needs to know
+whether consecutive records have the desired properties, or not. The
+UV variable npol records this information.
+"""
+        return self.getVarFirstInt ('npol', 1)
+
+
     def getJyPerK (self):
         """Get the Jy/K calibration of the current record
 

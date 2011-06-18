@@ -84,6 +84,9 @@ You should not construct a :class:`UVDatDataSet` yourself.
     def getPol (self):
         return _getOneInt ('pol')
 
+    def getNPol (self):
+        return _getOneInt ('npol')
+
     def getJyPerK (self):
         return _miriad_f.uvdatgtr ('jyperk')
 
