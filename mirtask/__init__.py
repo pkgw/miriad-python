@@ -705,6 +705,46 @@ class UVDataSet (DataSet):
         self._checkOpen ()
         _miriad_c.uvflgwr (self.tno, flags)
 
+
+    # UV variables
+
+    def getScalar (self, variable, default=None, missingok=True):
+        """Get the value of a scalar UV variable.
+
+:arg str variable: the name of the variable to fetch
+:arg any default: the value to return if the variable is not
+  defined in this dataset; defaults to :const:`None`.
+:arg bool missingok: if *default* should be returned if the
+  variable is not defined in this dataset; defaults to :const:`True`.
+  If :const:`False` and the variable is not defined, raises
+  :exc:`ValueError`.
+:returns: the value
+:rtype: numpy scalar type
+
+This gets the value of a scalar UV variable, possibly returning
+a default value if the variable is not found. The return value
+is a numpy scalar type appropriate for the UV variable. Note that
+these types propagate, so there is a danger of overflow or underflow
+if you do some kinds of math with the return value. Furthermore,
+if you provide *default*, it will usually be one of the builting
+Python numeric types, not a NumPy type, so if code depends on the
+type of the return value, there may be variations in behavior
+depending on whether the variable was found or not.
+
+This function actually succeeds for array-valued UV variables as well.
+In that case, the first array element is returned. The most common
+use of this function, however, is for variables like *nants* that
+have only one value (unless the dataset is semantically invalid).
+"""
+        self._checkOpen ()
+        res = _miriad_c.uvrdvr_generic (self.tno, variable)
+        if res is None:
+            if not missingok:
+                raise ValueError ('no such UV variable "%s"' % variable)
+            return default
+        return res
+
+
     # uvinfo exploders
 
     def getLineInfo (self):
@@ -792,7 +832,7 @@ require more complicated processing.
 The default polarization is Stokes I. See the constants in
 :mod:`mirtask.util`.
 """
-        return self.getVarFirstInt ('pol', 1)
+        return self.getScalar ('pol', 1)
 
 
     def getNPol (self):
@@ -815,7 +855,7 @@ order to be able to do this, the Stokes processing code needs to know
 whether consecutive records have the desired properties, or not. The
 UV variable npol records this information.
 """
-        return self.getVarFirstInt ('npol', 1)
+        return self.getScalar ('npol', 1)
 
 
     def getJyPerK (self):
@@ -830,7 +870,7 @@ require more complicated processing.
 
 Returns zero if the value could not be determined.
 """
-        return self.getVarFirstFloat ('jyperk', 0.)
+        return self.getScalar ('jyperk', 0.)
 
 
     def getVariance (self):
@@ -1029,44 +1069,6 @@ Returns zero if the variance could not be determined.
         if n == 1:
             return ret[0]
         return ret
-
-    def getVarFirstString (self, varname, dflt):
-        """Retrieve the first value of a string-valued UV
-        variable with a default if the variable is not present.
-        Maximum length of 512 characters."""
-
-        self._checkOpen ()
-        return _miriad_c.uvrdvra (self.tno, varname, dflt)
-
-    def getVarFirstInt (self, varname, dflt):
-        """Retrieve the first value of an int-valued UV
-        variable with a default if the variable is not present."""
-
-        self._checkOpen ()
-        return _miriad_c.uvrdvri (self.tno, varname, dflt)
-
-    def getVarFirstFloat (self, varname, dflt):
-        """Retrieve the first value of a float-valued UV
-        variable with a default if the variable is not present."""
-
-        self._checkOpen ()
-        return _miriad_c.uvrdvrr (self.tno, varname, dflt)
-
-    def getVarFirstDouble (self, varname, dflt):
-        """Retrieve the first value of a double-valued UV
-        variable with a default if the variable is not present."""
-
-        self._checkOpen ()
-        return _miriad_c.uvrdvrd (self.tno, varname, dflt)
-
-    def getVarFirstComplex (self, varname, dflt):
-        """Retrieve the first value of a complex-valued UV
-        variable with a default if the variable is not present."""
-
-        dflt = complex (dflt)
-        self._checkOpen ()
-        retval = _miriad_c.uvrdvrd (self.tno, varname, (dflt.real, dflt.imag))
-        return complex (retval[0], retval[1])
 
     def trackVar (self, varname, watch, copy):
         """Set how the given variable is tracked. If 'watch' is true, updated()

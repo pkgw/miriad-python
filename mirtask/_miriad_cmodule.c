@@ -1019,84 +1019,67 @@ py_uvgetvrc (PyObject *self, PyObject *args)
     return retval;
 }
 
-static PyObject *
-py_uvrdvra (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *var, *dflt, value[BUFSZ];
 
-    if (!PyArg_ParseTuple (args, "iss", &tno, &var, &dflt))
+static PyObject *
+py_uvrdvr_generic (PyObject *self, PyObject *args)
+{
+    int tno, length, updated;
+    char *var, type;
+    PyObject *result;
+
+    if (!PyArg_ParseTuple (args, "is", &tno, &var))
 	return NULL;
 
     MTS_CHECK_BUG;
-    uvrdvra_c (tno, var, value, dflt, BUFSZ);
+    uvprobvr_c (tno, var, &type, &length, &updated);
 
-    return Py_BuildValue ("s", value);
-}
+    if (type == ' ' || length == 0)
+	Py_RETURN_NONE;
 
-static PyObject *
-py_uvrdvri (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *var;
-    int val, dflt;
+    if (type == 'j') {
+	/* uvrdvr_c doesn't support H_INT2. Do it ourselves, less
+	 efficiently.  As in py_uvgetvrj, the int2 is expanded to
+	 sizeof(int) by MIRIAD. We un-convert to maintain the type
+	 information. */
+	npy_intp dims[1] = { length };
+	PyObject *tmp = PyArray_SimpleNew (1, dims, NPY_INT);
+	uvgetvr_c (tno, H_INT2, var, PyArray_DATA (tmp), length);
+	result = PyArrayScalar_New (Int16);
+	PyArrayScalar_ASSIGN (result, Int16, *((int *) PyArray_DATA (tmp)));
+	Py_XDECREF (tmp);
+	return result;
+    }
 
-    if (!PyArg_ParseTuple (args, "isi", &tno, &var, &dflt))
+    switch (type) {
+    case 'a':
+	/* A little bit of special-casing; we don't fetch just one byte ... */
+	result = PyString_FromStringAndSize (NULL, length + 1);
+	uvgetvr_c (tno, H_BYTE, var, PyString_AsString (result), length + 1);
+	break;
+    case 'i':
+	result = PyArrayScalar_New (Int32);
+	uvrdvr_c (tno, H_INT, var, (char *) &(PyArrayScalar_VAL (result, Int32)), 0, 1);
+	break;
+    case 'r':
+	result = PyArrayScalar_New (Float32);
+	uvrdvr_c (tno, H_REAL, var, (char *) &(PyArrayScalar_VAL (result, Float32)), 0, 1);
+	break;
+    case 'd':
+	result = PyArrayScalar_New (Float64);
+	uvrdvr_c (tno, H_DBLE, var, (char *) &(PyArrayScalar_VAL (result, Float64)), 0, 1);
+	break;
+    case 'c':
+	result = PyArrayScalar_New (Complex64);
+	uvrdvr_c (tno, H_CMPLX, var, (char *) &(PyArrayScalar_VAL (result, Complex64)), 0, 1);
+	break;
+    default:
+	PyErr_Format (PyExc_RuntimeError, "unknown MIRIAD typecode %c", type);
 	return NULL;
+    }
 
-    MTS_CHECK_BUG;
-    uvrdvri_c (tno, var, &val, &dflt);
-
-    return Py_BuildValue ("i", val);
+    return result;
 }
 
-static PyObject *
-py_uvrdvrr (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *var;
-    float val, dflt;
-
-    if (!PyArg_ParseTuple (args, "isf", &tno, &var, &dflt))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    uvrdvrr_c (tno, var, &val, &dflt);
-
-    return Py_BuildValue ("f", val);
-}
-
-static PyObject *
-py_uvrdvrd (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *var;
-    double val, dflt;
-
-    if (!PyArg_ParseTuple (args, "isd", &tno, &var, &dflt))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    uvrdvrd_c (tno, var, &val, &dflt);
-
-    return Py_BuildValue ("d", val);
-}
-
-static PyObject *
-py_uvrdvrc (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *var;
-    float val[2], dflt[2];
-
-    if (!PyArg_ParseTuple (args, "is(ff)", &tno, &var, &dflt[0], &dflt[1]))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    uvrdvrd_c (tno, var, val, dflt);
-
-    return Py_BuildValue ("ff", val[0], val[1]);
-}
 
 /* skip uvputvr_c generic versions */
 
@@ -2285,11 +2268,7 @@ static PyMethodDef methods[] = {
     DEF(uvgetvrr, "(int tno, str var, int n) => (tuple of n float values)"),
     DEF(uvgetvrd, "(int tno, str var, int n) => (tuple of n double values)"),
     DEF(uvgetvrc, "(int tno, str var, int n) => (tuple of n complex values)"),
-    DEF(uvrdvra, "(int tno, str var, str dflt) => str retval"),
-    DEF(uvrdvri, "(int tno, str var, int dflt) => int retval"),
-    DEF(uvrdvrr, "(int tno, str var, float dflt) => float retval"),
-    DEF(uvrdvrd, "(int tno, str var, double dflt) => double retval"),
-    DEF(uvrdvrc, "(int tno, str var, (float,float) dflt) => (float,float) retval"),
+    DEF(uvrdvr_generic, "(int tno, str var) => obj value"),
     DEF(uvprobvr, "(int vhan, str var) => (char type, int length, int updated)"),
     DEF(uvtrack, "(int tno, str name, str switches) => void"),
     DEF(uvscan, "(int tno, str var) => int retval"),
