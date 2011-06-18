@@ -422,7 +422,6 @@ class DataItem (object):
 
     def __init__ (self, dataset, keyword, mode):
         self.dataset = dataset
-        self.refobj = dataset.refobj
         self.name = keyword
 
         if mode == 'r': modestr = 'read'
@@ -625,7 +624,6 @@ class UserDataSet (DataSet):
         else: mode = 'old'
 
         self.tno = _miriad_c.hopen (refobj.base, mode)
-        self.refobj = refobj
         self.name = refobj.base
 
     def _close (self):
@@ -643,7 +641,6 @@ class UVDataSet (DataSet):
         else: raise ValueError ('Unsupported mode "%s"; "rw", "c", and "a" are allowed' % mode)
 
         self.tno = _miriad_c.uvopen (refobj.base, modestr)
-        self.refobj = refobj
         self.name = refobj.base
 
     def _close (self):
@@ -1075,7 +1072,6 @@ Returns zero if the variance could not be determined.
 class UVVarTracker (object):
     def __init__ (self, owner):
         self.dataset = owner
-        self.refobj = owner.refobj
         self.vhnd = _miriad_c.uvvarini (owner.tno)
 
     def track (self, *vars):
@@ -1109,7 +1105,6 @@ class MaskItem (object):
 
     def __init__ (self, dataset, keyword, mode):
         self.dataset = dataset
-        self.refobj = dataset.refobj
         self.name = keyword
         self.handle = None
 
