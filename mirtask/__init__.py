@@ -1150,10 +1150,10 @@ use :meth:`miriad.ImData.open`.
     """An integer ndarray of axis sizes. Stored in "inside-out"
     format: ``axes[0]`` is the most quickly-varying axis, almost
     always the image column number. ``axes[1]`` is the second-most
-    quickly-varying axis, almost always the image row number.
-
-    TODO: think through whether we want *axes* to be full of
-    unnecessary ones, or what.
+    quickly-varying axis, almost always the image row number. *axes*
+    is set upon creation of the instance and modifications to it after
+    that point have no effect (besides probably causing the methods
+    to crash).
     """
 
     def __init__ (self, refobj, mode, axes=None):
@@ -1174,6 +1174,10 @@ use :meth:`miriad.ImData.open`.
         self.axes = axes
         self.name = str (refobj)
         self.tno = _miriad_c.xyopen (str (refobj), modestr, axes.size, axes)
+
+        if mode == 'rw':
+            self.axes = axes = axes[:self.getHeaderInt ('naxis', 0)]
+
         self._databuf = N.empty (axes[0], dtype=N.float32)
         self._flagbuf = N.empty (axes[0], dtype=N.int)
         self._npmaskbuf = N.empty (axes[0], dtype=N.bool)
