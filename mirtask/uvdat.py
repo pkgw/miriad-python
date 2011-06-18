@@ -58,6 +58,30 @@ You should not construct a :class:`UVDatDataSet` yourself.
     def _close (self):
         _miriad_f.uvdatcls ()
 
+    # Prohibit UVDataSet functions that affect our progress through the
+    # stream, which would mess up the UVDAT routines.
+
+    def next (self):
+        raise RuntimeError ('next() not allowed when reading with UVDAT system')
+
+    def scanUntilChange (self, varname):
+        raise RuntimeError ('scanUntilChange() not allowed when reading with UVDAT system')
+
+    # Override UVDataSet functions that have uvdat-based implementations
+
+    def rewind (self):
+        _miriad_f.uvdatrew ()
+
+    def lowlevelRead (self, preamble, data, flags, length=None):
+        if length is None:
+            length = flags.size
+
+        self._checkOpen ()
+        return _miriad_f.uvdatrd (preamble, data, flags, length)
+
+    def getCurrentVisNum (self):
+        return _getOneInt ('visno') - 1
+
 
 def inputSets ():
     """Retrieve handles to the datasets to be read by the UVDAT

@@ -296,6 +296,71 @@ subroutine uvdatcls ! in subs/uvdat.f
     common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
 end subroutine uvdatcls
 
+subroutine uvdatrew ! in subs/uvdat.f
+    character*32 :: line
+    character*32 :: ref
+    character*maxnam :: inbuf
+    double precision dimension(8) :: spreambl
+    complex dimension(2,64) :: leaks
+    complex dimension(4,4) :: coeffs
+    real dimension(4) :: sumwts
+    real :: gwt
+    logical :: willpol
+    logical :: polcpy
+    logical :: selpol
+    logical :: selpol1
+    integer :: npol
+    integer :: npolf
+    integer dimension(4) :: pols
+    integer :: ipol
+    integer :: snread
+    complex dimension(4096,4) :: sdata
+    integer dimension(4) :: ncoeff
+    logical dimension(4) :: doaver
+    logical dimension(4096,4) :: sflags
+    integer dimension(4,4) :: indices
+    integer :: nleaks
+    real dimension(1024) :: sels
+    real :: lstart
+    real :: lwidth
+    real :: lstep
+    real :: lflag
+    real :: rstart
+    real :: rwidth
+    real :: rstep
+    real :: plmaj
+    real :: plmin
+    real :: plangle
+    logical :: doplanet
+    logical :: dowave
+    logical :: doref
+    logical :: dodata
+    logical :: dosels
+    logical :: dow
+    logical :: dogsv
+    logical :: plinit
+    integer dimension(400) :: k1
+    integer dimension(400) :: k2
+    integer :: nchan
+    integer :: nin
+    integer :: pnt
+    integer :: tno
+    integer :: npream
+    integer :: idxt
+    integer :: idxbl
+    real :: auto
+    logical :: cross
+    logical :: docal
+    logical :: willcal
+    logical :: doleak
+    logical :: willleak
+    logical :: dopass
+    logical dimension(400) :: calmsg
+    common /uvdatcob/ line,ref,inbuf
+    common /uvdatcoc/ spreambl,leaks,coeffs,sumwts,gwt,willpol,polcpy,selpol,selpol1,npol,npolf,pols,ipol,snread,sdata,ncoeff,doaver,sflags,indices,nleaks
+    common /uvdatcoa/ sels,lstart,lwidth,lstep,lflag,rstart,rwidth,rstep,plmaj,plmin,plangle,doplanet,dowave,doref,dodata,dosels,dow,dogsv,plinit,k1,k2,nchan,nin,pnt,tno,npream,idxt,idxbl,auto,cross,docal,willcal,doleak,willleak,dopass,calmsg
+end subroutine uvdatrew
+
 subroutine varinit(tin,linetype) ! in subs/var.f
     integer :: tin
     character*(*) :: linetype
