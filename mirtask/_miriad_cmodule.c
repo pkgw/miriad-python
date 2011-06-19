@@ -583,114 +583,6 @@ py_wrhda (PyObject *self, PyObject *args)
 }
 
 static PyObject *
-py_rdhdr (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    float value;
-    double defval;
-
-    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    rdhdr_c (tno, keyword, &value, defval);
-
-    return Py_BuildValue ("f", value);
-}
-
-static PyObject *
-py_rdhdi (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    int value, defval;
-
-    if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &defval))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    rdhdi_c (tno, keyword, &value, defval);
-
-    return Py_BuildValue ("i", value);
-}
-
-static PyObject *
-py_rdhdl (PyObject *self, PyObject *args)
-{
-    /* Python's API doesn't have specific-sized types, so we work through
-       Numpy. */
-
-    int tno;
-    char *keyword;
-    int8 value;
-    PyObject *defval, *ret;
-
-    if (!PyArg_ParseTuple (args, "isO!", &tno, &keyword, &PyInt64ArrType_Type, &defval))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    rdhdl_c (tno, keyword, &value, PyArrayScalar_VAL (defval, Int64));
-    ret = PyArrayScalar_New (Int64);
-    PyArrayScalar_ASSIGN (ret, Int64, value);
-    return ret;
-}
-
-static PyObject *
-py_rdhdd (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    double value, defval;
-
-    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &defval))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    rdhdd_c (tno, keyword, &value, defval);
-
-    return Py_BuildValue ("d", value);
-}
-
-static PyObject *
-py_rdhdc (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    Py_complex cmplx;
-    float value[2], defval[2];
-
-    if (!PyArg_ParseTuple (args, "isD", &tno, &keyword, &cmplx))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    defval[0] = (float) cmplx.real;
-    defval[1] = (float) cmplx.imag;
-    rdhdc_c (tno, keyword, value, defval);
-
-    cmplx.real = (double) value[0];
-    cmplx.imag = (double) value[1];
-    return Py_BuildValue ("D", &cmplx);
-}
-
-static PyObject *
-py_rdhda (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword, *defval;
-    char value[BUFSZ];
-
-    if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &defval))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    rdhda_c (tno, keyword, value, defval, BUFSZ-1);
-
-    return Py_BuildValue ("s", value);
-}
-
-
-static PyObject *
 py_rdhd_generic (PyObject *self, PyObject *args)
 {
     int tno, n, iostat, hdhandle;
@@ -2328,12 +2220,6 @@ static PyMethodDef methods[] = {
     DEF(wrhdd, "(int tno, str keyword, double value) => void"),
     DEF(wrhdc, "(int tno, str keyword, complex value) => void"),
     DEF(wrhda, "(int tno, str keyword, str value) => void"),
-    DEF(rdhdr, "(int tno, str keyword, double defval) => float value"),
-    DEF(rdhdi, "(int tno, str keyword, int defval) => int value"),
-    DEF(rdhdl, "(int tno, str keyword, bool-as-int defval) => bool-as-int value"),
-    DEF(rdhdd, "(int tno, str keyword, double defval) => double value"),
-    DEF(rdhdc, "(int tno, str keyword, complx defval) => complex value"),
-    DEF(rdhda, "(int tno, str keyword, str defval) => str value"),
     DEF(rdhd_generic, "(int tno, str keyword) => obj value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
     DEF(hdprsnt, "(int tno, str keyword) => int retval"),

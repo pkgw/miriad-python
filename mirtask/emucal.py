@@ -89,7 +89,7 @@ class GainsCalculator (object):
     
     def read (self, vis):
         vhnd = vis.open ('rw')
-        self.interval = vhnd.getHeaderDouble ('interval', 0.)
+        self.interval = vhnd.getScalarHeader ('interval', 0.)
         assert self.interval > 0. 
         gr = readgains.GainsReader (vhnd)
         gr.prep ()

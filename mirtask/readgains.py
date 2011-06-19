@@ -42,9 +42,9 @@ class GainsReader (object):
         if not self.dset.hasItem ('gains'):
             raise ValueError ('Input "%s" doesn\'t have a gains table!' % self.dset.name)
 
-        self.ngains = ngains = self.dset.getHeaderInt ('ngains', 0)
-        self.nfeeds = nfeeds = self.dset.getHeaderInt ('nfeeds', 1)
-        self.ntau = ntau = self.dset.getHeaderInt ('ntau', 0)
+        self.ngains = ngains = self.dset.getScalarHeader ('ngains', 0)
+        self.nfeeds = nfeeds = self.dset.getScalarHeader ('nfeeds', 1)
+        self.ntau = ntau = self.dset.getScalarHeader ('ntau', 0)
 
         if nfeeds < 1 or nfeeds > 2 or \
            ngains % (nfeeds + ntau) != 0 or \
@@ -128,11 +128,11 @@ def readBandpass (dset):
 
     # Prep counts and check sanity
     
-    ngains = dset.getHeaderInt ('ngains', 0)
-    nfeeds = dset.getHeaderInt ('nfeeds', 1)
-    ntau = dset.getHeaderInt ('ntau', 0)
-    nchan0 = dset.getHeaderInt ('nchan0', 0)
-    nspect0 = dset.getHeaderInt ('nspect0', 0)
+    ngains = dset.getScalarHeader ('ngains', 0)
+    nfeeds = dset.getScalarHeader ('nfeeds', 1)
+    ntau = dset.getScalarHeader ('ntau', 0)
+    nchan0 = dset.getScalarHeader ('nchan0', 0)
+    nspect0 = dset.getScalarHeader ('nspect0', 0)
 
     nants = ngains // (nfeeds + ntau)
 

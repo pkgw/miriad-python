@@ -261,43 +261,6 @@ behavior depending on whether the variable was found or not.
             return default
         return res
 
-    def getHeaderFloat (self, keyword, default):
-        """Retrieve the value of a float-valued header variable."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhdr (self.tno, keyword, float (default))
-
-    def getHeaderInt (self, keyword, default):
-        """Retrieve the value of an int32-valued header variable."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhdi (self.tno, keyword, int (default))
-
-    def getHeaderLong (self, keyword, default):
-        """Retrieve the value of an int64-valued header variable."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhdl (self.tno, keyword, N.int64 (default))
-
-    def getHeaderDouble (self, keyword, default):
-        """Retrieve the value of a double-valued header variable."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhdd (self.tno, keyword, float (default))
-
-    def getHeaderComplex (self, keyword, default):
-        """Retrieve the value of a complex-valued header variable."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhdc (self.tno, keyword, complex (default))
-
-    def getHeaderString (self, keyword, default):
-        """Retrieve the value of a string-valued header variable.
-        Maximum value length is 512."""
-
-        self._checkOpen ()
-        return _miriad_c.rdhda (self.tno, keyword, str (default))
-
     def writeHeaderFloat (self, keyword, value):
         """Write a float-valued header variable."""
         self._checkOpen ()
@@ -327,6 +290,12 @@ behavior depending on whether the variable was found or not.
         """Write a string-valued header variable."""
         self._checkOpen ()
         _miriad_c.wrhda (self.tno, keyword, str (value))
+
+    def writeScalarItem (self, itemname, itemtype, value):
+        self._checkOpen ()
+        if not isinstance (value, itemtype):
+            value = itemtype (value)
+        _miriad_c.wrhd_generic (self.tno, itemname, value)
 
     def copyHeader (self, dest, keyword):
         """Copy a header variable from this data-set to another."""
@@ -1307,7 +1276,7 @@ use :meth:`miriad.ImData.open`.
         self.tno = _miriad_c.xyopen (path, modestr, axes.size, axes)
 
         if mode == 'rw':
-            self.axes = axes = axes[:self.getHeaderInt ('naxis', 0)]
+            self.axes = axes = axes[:self.getScalarHeader ('naxis', 0)]
 
         self._databuf = N.empty (axes[0], dtype=N.float32)
         self._flagbuf = N.empty (axes[0], dtype=N.int)
