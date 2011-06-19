@@ -583,6 +583,56 @@ py_wrhda (PyObject *self, PyObject *args)
 }
 
 static PyObject *
+py_wrhd_generic (PyObject *self, PyObject *args)
+{
+    int tno, v;
+    char *itemname;
+    PyObject *value;
+
+    if (!PyArg_ParseTuple (args, "isO", &tno, &itemname, &value))
+	return NULL;
+
+    MTS_CHECK_BUG;
+
+    v = PyObject_IsInstance (value, (PyObject *) &PyString_Type);
+    if (v < 0)
+	return NULL;
+    if (v) {
+	wrhda_c (tno, itemname, PyString_AsString (value));
+	Py_RETURN_NONE;
+    }
+
+    if (!PyArray_CheckScalar (value)) {
+	PyErr_SetString (PyExc_ValueError, "value must be a numpy scalar");
+	return NULL;
+    }
+
+    /* Assume that if the first IsInstance check doesn't give an error,
+     * neither will the rest. */
+
+    v = PyObject_IsInstance (value, (PyObject *) &PyInt32ArrType_Type);
+    if (v < 0)
+	return NULL;
+    if (v)
+	wrhdi_c (tno, itemname, PyArrayScalar_VAL (value, Int32));
+    else if (PyObject_IsInstance (value, (PyObject *) &PyInt64ArrType_Type) > 0)
+	wrhdl_c (tno, itemname, PyArrayScalar_VAL (value, Int64));
+    else if (PyObject_IsInstance (value, (PyObject *) &PyFloat32ArrType_Type) > 0)
+	wrhdr_c (tno, itemname, PyArrayScalar_VAL (value, Float32));
+    else if (PyObject_IsInstance (value, (PyObject *) &PyFloat64ArrType_Type) > 0)
+	wrhdd_c (tno, itemname, PyArrayScalar_VAL (value, Float64));
+    else if (PyObject_IsInstance (value, (PyObject *) &PyComplex64ArrType_Type) > 0)
+	wrhdc_c (tno, itemname, (float *) &(PyArrayScalar_VAL (value, Complex64)));
+    else {
+	PyErr_SetString (PyExc_ValueError, "value is of unexpected type");
+	return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
 py_rdhd_generic (PyObject *self, PyObject *args)
 {
     int tno, n, iostat, hdhandle;
@@ -2220,6 +2270,7 @@ static PyMethodDef methods[] = {
     DEF(wrhdd, "(int tno, str keyword, double value) => void"),
     DEF(wrhdc, "(int tno, str keyword, complex value) => void"),
     DEF(wrhda, "(int tno, str keyword, str value) => void"),
+    DEF(wrhd_generic, "(int tno, str keyword, object value) => void"),
     DEF(rdhd_generic, "(int tno, str keyword) => obj value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
     DEF(hdprsnt, "(int tno, str keyword) => int retval"),

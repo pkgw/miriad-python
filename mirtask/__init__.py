@@ -291,11 +291,31 @@ behavior depending on whether the variable was found or not.
         self._checkOpen ()
         _miriad_c.wrhda (self.tno, keyword, str (value))
 
-    def writeScalarItem (self, itemname, itemtype, value):
+    def setScalarItem (self, itemname, itemtype, value):
+        """Set the value of a scalar dataset item.
+
+:arg str itemname: the name of the item to set
+:arg type itemtype: the type of the item value
+:arg any value: the item value
+:returns: *self*
+
+Sets the value of a scalar dataset item. Because many aspects
+of MIRIAD rely on the particular storage types of dataset
+items, the type must be specified explicitly. The value will
+be cast to the specified type before writing if it is not
+already an instance of it.
+
+Acceptable types are :class:`str`, :class:`numpy.int32`,
+:class:`numpy.int64`, :class:`numpy.float32`, :class:`numpy.float64`,
+and :class:`numpy.complex64`. Due to limitations in the
+MIRIAD I/O routines, :class:`numpy.int8` and :class:`numpy.int16`,
+which are acceptable in other contexts, are not allowed here.
+"""
         self._checkOpen ()
         if not isinstance (value, itemtype):
             value = itemtype (value)
         _miriad_c.wrhd_generic (self.tno, itemname, value)
+        return self
 
     def copyHeader (self, dest, keyword):
         """Copy a header variable from this data-set to another."""
