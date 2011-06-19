@@ -689,6 +689,97 @@ py_rdhda (PyObject *self, PyObject *args)
     return Py_BuildValue ("s", value);
 }
 
+
+static PyObject *
+py_rdhd_generic (PyObject *self, PyObject *args)
+{
+    int tno, n, iostat, hdhandle;
+    char *headername;
+    char buffer[BUFSZ], type[32];
+    PyObject *result;
+
+    if (!PyArg_ParseTuple (args, "is", &tno, &headername))
+	return NULL;
+
+    MTS_CHECK_BUG;
+    hdprobe_c (tno, headername, buffer, BUFSZ, type, &n);
+
+    if (strcmp (type, "nonexistent") == 0)
+	Py_RETURN_NONE;
+
+    if (strcmp (type, "unknown") == 0) {
+	PyErr_Format (PyExc_ValueError, "header \"%s\" is not of a well-defined type",
+		      headername);
+	return NULL;
+    }
+
+    if (n == 0) {
+	PyErr_Format (PyExc_ValueError, "the size of header \"%s\" couldn't be determined",
+		      headername);
+	return NULL;
+    }
+
+    if (strcmp (type, "binary") == 0) {
+	PyErr_Format (PyExc_ValueError, "header \"%s\" is of a mixed binary type",
+		      headername);
+	return NULL;
+    }
+
+    if (strcmp (type, "text") == 0) {
+	PyErr_Format (PyExc_ValueError, "header \"%s\" is of an extended textual type",
+		      headername);
+	return NULL;
+    }
+
+    if (strcmp (type, "character") == 0)
+	return PyString_FromString (buffer);
+
+    if (n != 1) {
+	PyErr_Format (PyExc_ValueError, "the size of header \"%s\" is %d, not one",
+		      headername, n);
+	return NULL;
+    }
+
+    haccess_c (tno, &hdhandle, headername, "read", &iostat);
+    CHECK_IOSTAT (iostat);
+
+    if (strcmp (type, "real") == 0) {
+	result = PyArrayScalar_New (Float32);
+	hio_c (hdhandle, FALSE, H_REAL, (char *) &(PyArrayScalar_VAL (result, Float32)),
+	       4, 4, &iostat);
+    } else if (strcmp (type, "double") == 0) {
+	result = PyArrayScalar_New (Float64);
+	hio_c (hdhandle, FALSE, H_DBLE, (char *) &(PyArrayScalar_VAL (result, Float64)),
+	       8, 8, &iostat);
+    } else if (strcmp (type, "integer*2") == 0) {
+	result = PyArrayScalar_New (Int16);
+	hio_c (hdhandle, FALSE, H_INT2, (char *) &(PyArrayScalar_VAL (result, Int16)),
+	       4, 2, &iostat);
+    } else if (strcmp (type, "integer") == 0) {
+	result = PyArrayScalar_New (Int32);
+	hio_c (hdhandle, FALSE, H_INT, (char *) &(PyArrayScalar_VAL (result, Int32)),
+	       4, 4, &iostat);
+    } else if (strcmp (type, "integer*8") == 0) {
+	result = PyArrayScalar_New (Int64);
+	hio_c (hdhandle, FALSE, H_INT8, (char *) &(PyArrayScalar_VAL (result, Int64)),
+	       8, 8, &iostat);
+    } else if (strcmp (type, "complex") == 0) {
+	result = PyArrayScalar_New (Complex64);
+	hio_c (hdhandle, FALSE, H_CMPLX, (char *) &(PyArrayScalar_VAL (result, Complex64)),
+	       8, 8, &iostat);
+    } else {
+	PyErr_Format (PyExc_ValueError, "unexpected type \"%s\" for header \"%s\"",
+		      type, headername);
+	result = NULL;
+    }
+
+    CHECK_IOSTAT (iostat);
+    hdaccess_c (hdhandle, &iostat);
+    CHECK_IOSTAT (iostat);
+    return result;
+}
+
+
 static PyObject *
 py_hdcopy (PyObject *self, PyObject *args)
 {
@@ -2243,6 +2334,7 @@ static PyMethodDef methods[] = {
     DEF(rdhdd, "(int tno, str keyword, double defval) => double value"),
     DEF(rdhdc, "(int tno, str keyword, complx defval) => complex value"),
     DEF(rdhda, "(int tno, str keyword, str defval) => str value"),
+    DEF(rdhd_generic, "(int tno, str keyword) => obj value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
     DEF(hdprsnt, "(int tno, str keyword) => int retval"),
     DEF(hdprobe, "(int tno, str keyword) => (str descr, str type, int n)"),

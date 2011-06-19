@@ -230,6 +230,37 @@ Note that *args* should not start with an ``argv[0]`` entry.
 
     # Header variables
 
+    def getScalarHeader (self, headername, default=None, missingok=True):
+        """Get the value of a scalar dataset header
+
+:arg str headername: the name of the header to fetch
+:arg any default: the value to return if the header is not
+  present in this dataset; defaults to :const:`None`.
+:arg bool missingok: if *default* should be returned if the
+  variable is not defined in this dataset; defaults to :const:`True`.
+  If :const:`False` and the variable is not defined, raises
+  :exc:`ValueError`.
+:returns: the value
+:rtype: numpy scalar type
+
+This gets the value of a scalar dataset header, possibly returning a
+default value if the variable is not found. The return value is a
+numpy scalar type appropriate for the header, or a string for textual
+headers. Note that these types propagate, so there is a danger of
+overflow or underflow if you do some kinds of math with the return
+value. Furthermore, if you provide *default*, it will usually be one
+of the builting Python numeric types, not a NumPy type, so if code
+depends on the type of the return value, there may be variations in
+behavior depending on whether the variable was found or not.
+"""
+        self._checkOpen ()
+        res = _miriad_c.rdhd_generic (self.tno, headername)
+        if res is None:
+            if not missingok:
+                raise ValueError ('no such dataset header "%s"' % headername)
+            return default
+        return res
+
     def getHeaderFloat (self, keyword, default):
         """Retrieve the value of a float-valued header variable."""
 
