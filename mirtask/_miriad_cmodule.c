@@ -485,102 +485,6 @@ py_hisclose (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-static PyObject *
-py_wrhdr (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    double value;
-
-    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    wrhdr_c (tno, keyword, (float) value);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_wrhdd (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    double value;
-
-    if (!PyArg_ParseTuple (args, "isd", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    wrhdd_c (tno, keyword, value);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_wrhdi (PyObject *self, PyObject *args)
-{
-    int tno, value;
-    char *keyword;
-
-    if (!PyArg_ParseTuple (args, "isi", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    wrhdi_c (tno, keyword, value);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_wrhdl (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    long int value;
-
-    if (!PyArg_ParseTuple (args, "isl", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    wrhdl_c (tno, keyword, value);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_wrhdc (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword;
-    Py_complex value;
-    float asFloat[2];
-
-    if (!PyArg_ParseTuple (args, "isD", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    asFloat[0] = (float) value.real;
-    asFloat[1] = (float) value.imag;
-    wrhdc_c (tno, keyword, asFloat);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-py_wrhda (PyObject *self, PyObject *args)
-{
-    int tno;
-    char *keyword, *value;
-
-    if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &value))
-	return NULL;
-
-    MTS_CHECK_BUG;
-    wrhda_c (tno, keyword, value);
-
-    Py_RETURN_NONE;
-}
 
 static PyObject *
 py_wrhd_generic (PyObject *self, PyObject *args)
@@ -2264,12 +2168,6 @@ static PyMethodDef methods[] = {
     DEF(hisopen, "(int tno, str status) => void"),
     DEF(hiswrite, "(int tno, str text) => void"),
     DEF(hisclose, "(int tno) => void"),
-    DEF(wrhdr, "(int tno, str keyword, double value) => void"),
-    DEF(wrhdi, "(int tno, str keyword, int value) => void"),
-    DEF(wrhdl, "(int tno, str keyword, int value) => void"),
-    DEF(wrhdd, "(int tno, str keyword, double value) => void"),
-    DEF(wrhdc, "(int tno, str keyword, complex value) => void"),
-    DEF(wrhda, "(int tno, str keyword, str value) => void"),
     DEF(wrhd_generic, "(int tno, str keyword, object value) => void"),
     DEF(rdhd_generic, "(int tno, str keyword) => obj value"),
     DEF(hdcopy, "(int tin, int tout, str keyword) => void"),

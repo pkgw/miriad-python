@@ -261,36 +261,6 @@ behavior depending on whether the variable was found or not.
             return default
         return res
 
-    def writeHeaderFloat (self, keyword, value):
-        """Write a float-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhdr (self.tno, keyword, float (value))
-
-    def writeHeaderInt (self, keyword, value):
-        """Write an int-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhdi (self.tno, keyword, int (value))
-
-    def writeHeaderLong (self, keyword, value):
-        """Write a long-int-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhdl (self.tno, keyword, int (value))
-
-    def writeHeaderDouble (self, keyword, value):
-        """Write a double-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhdd (self.tno, keyword, float (value))
-
-    def writeHeaderComplex (self, keyword, value):
-        """Write a complex-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhdc (self.tno, keyword, complex (value))
-
-    def writeHeaderString (self, keyword, value):
-        """Write a string-valued header variable."""
-        self._checkOpen ()
-        _miriad_c.wrhda (self.tno, keyword, str (value))
-
     def setScalarItem (self, itemname, itemtype, value):
         """Set the value of a scalar dataset item.
 
@@ -402,39 +372,34 @@ which are acceptable in other contexts, are not allowed here.
         return data
 
 
-    def _writeArrayHeader (self, keyword, value, wsingle, wmultiname, dtype):
+    def _writeArrayHeader (self, keyword, value, wmultiname, dtype):
         value = N.asarray (value, dtype=dtype)
         offset = max (4, dtype ().itemsize)
 
-        wsingle (keyword, 0)
+        self.setScalarItem (keyword, dtype, 0)
         item = self.getItem (keyword, 'a')
         getattr (item, wmultiname) (value, offset)
         item.close ()
 
 
     def writeArrayHeaderInt (self, keyword, value):
-        self._writeArrayHeader (keyword, value, self.writeHeaderInt,
-                                 'writeInts', N.int32)
+        self._writeArrayHeader (keyword, value, 'writeInts', N.int32)
 
 
     def writeArrayHeaderLong (self, keyword, value):
-        self._writeArrayHeader (keyword, value, self.writeHeaderLong,
-                                 'writeLongs', N.int64)
+        self._writeArrayHeader (keyword, value, 'writeLongs', N.int64)
 
 
     def writeArrayHeaderFloat (self, keyword, value):
-        self._writeArrayHeader (keyword, value, self.writeHeaderFloat,
-                                 'writeFloats', N.float32)
+        self._writeArrayHeader (keyword, value, 'writeFloats', N.float32)
 
 
     def writeArrayHeaderDouble (self, keyword, value):
-        self._writeArrayHeader (keyword, value, self.writeHeaderDouble,
-                                 'writeDoubles', N.float64)
+        self._writeArrayHeader (keyword, value, 'writeDoubles', N.float64)
 
 
     def writeArrayHeaderComplex (self, keyword, value):
-        self._writeArrayHeader (keyword, value, self.writeHeaderComplex,
-                                 'writeComplex', N.complex64)
+        self._writeArrayHeader (keyword, value, 'writeComplex', N.complex64)
 
 
 class DataItem (object):
