@@ -219,8 +219,8 @@ Note that *args* should not start with an ``argv[0]`` entry.
 
         prefix = ident + ': '
         date = util.jdToFull (_miriad_f.todayjul (), 'T')
-        _miriad_c.hiswrite (tno, prefix + 'Executed on: ' + date)
-        _miriad_c.hiswrite (tno, prefix + 'Command line inputs follow:')
+        _miriad_c.hiswrite (self.tno, prefix + 'Executed on: ' + date)
+        _miriad_c.hiswrite (self.tno, prefix + 'Command line inputs follow:')
 
         prefix += '  '
         dofile = False
@@ -229,14 +229,14 @@ Note that *args* should not start with an ``argv[0]`` entry.
             if dofile:
                 f = open (arg, 'r')
                 for line in f:
-                    _miriad_c.hiswrite (tno, prefix + line)
+                    _miriad_c.hiswrite (self.tno, prefix + line)
                 f.close ()
                 dofile = False
             else:
                 if arg == '-f':
                     dofile = True
                 else:
-                    _miriad_c.hiswrite (tno, prefix + arg)
+                    _miriad_c.hiswrite (self.tno, prefix + arg)
 
         return self
 
