@@ -57,9 +57,11 @@ all-local: $(HTML_STAMP)
 # some easy munging of $PYTHONPATH.
 
 $(HTML_STAMP): $(dist_noinst_DATA) $(SCANNEDPY)
+	eval `$(top_builddir)/libtool --config |$(GREP) ^shlibpath_var` && \
 	rm -rf module_staging && \
 	$(MKDIR_P) html doctrees module_staging && \
 	dest=`cd module_staging && pwd` && \
+	eval "$$shlibpath_var=$$dest$(libdir):\$$$$shlibpath_var ; export $$shlibpath_var" && \
 	echo ================ Begin scratch doc installation && \
 	(cd $(top_builddir) && $(MAKE) install SUBDIRS=". mirtask" DESTDIR=$$dest) && \
 	echo ================ End scratch doc installation && \
