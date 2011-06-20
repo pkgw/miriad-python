@@ -211,13 +211,13 @@ static PyObject *
 py_hdelete (PyObject *self, PyObject *args)
 {
     int tno, iostat;
-    char *keyword;
+    char *itemname;
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
+    if (!PyArg_ParseTuple (args, "is", &tno, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    hdelete_c (tno, keyword, &iostat);
+    hdelete_c (tno, itemname, &iostat);
     CHECK_IOSTAT(iostat);
 
     Py_RETURN_NONE;
@@ -227,13 +227,13 @@ static PyObject *
 py_haccess (PyObject *self, PyObject *args)
 {
     int tno, itno, iostat;
-    char *keyword, *status;
+    char *itemname, *status;
 
-    if (!PyArg_ParseTuple (args, "iss", &tno, &keyword, &status))
+    if (!PyArg_ParseTuple (args, "iss", &tno, &itemname, &status))
 	return NULL;
 
     MTS_CHECK_BUG;
-    haccess_c (tno, &itno, keyword, status, &iostat);
+    haccess_c (tno, &itno, itemname, status, &iostat);
     CHECK_IOSTAT(iostat);
 
     return Py_BuildValue ("i", itno);
@@ -258,13 +258,13 @@ static PyObject *
 py_hexists (PyObject *self, PyObject *args)
 {
     int tno, ret;
-    char *keyword;
+    char *itemname;
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
+    if (!PyArg_ParseTuple (args, "is", &tno, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    ret = hexists_c (tno, keyword);
+    ret = hexists_c (tno, itemname);
 
     return Py_BuildValue ("i", ret);
 }
@@ -456,40 +456,40 @@ static PyObject *
 py_rdhd_generic (PyObject *self, PyObject *args)
 {
     int tno, n, iostat, hdhandle;
-    char *headername;
+    char *itemname;
     char buffer[BUFSZ], type[32];
     PyObject *result;
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &headername))
+    if (!PyArg_ParseTuple (args, "is", &tno, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    hdprobe_c (tno, headername, buffer, BUFSZ, type, &n);
+    hdprobe_c (tno, itemname, buffer, BUFSZ, type, &n);
 
     if (strcmp (type, "nonexistent") == 0)
 	Py_RETURN_NONE;
 
     if (strcmp (type, "unknown") == 0) {
-	PyErr_Format (PyExc_ValueError, "header \"%s\" is not of a well-defined type",
-		      headername);
+	PyErr_Format (PyExc_ValueError, "item \"%s\" is not of a well-defined type",
+		      itemname);
 	return NULL;
     }
 
     if (n == 0) {
-	PyErr_Format (PyExc_ValueError, "the size of header \"%s\" couldn't be determined",
-		      headername);
+	PyErr_Format (PyExc_ValueError, "the size of item \"%s\" couldn't be determined",
+		      itemname);
 	return NULL;
     }
 
     if (strcmp (type, "binary") == 0) {
-	PyErr_Format (PyExc_ValueError, "header \"%s\" is of a mixed binary type",
-		      headername);
+	PyErr_Format (PyExc_ValueError, "item \"%s\" is of a mixed binary type",
+		      itemname);
 	return NULL;
     }
 
     if (strcmp (type, "text") == 0) {
-	PyErr_Format (PyExc_ValueError, "header \"%s\" is of an extended textual type",
-		      headername);
+	PyErr_Format (PyExc_ValueError, "item \"%s\" is of an extended textual type",
+		      itemname);
 	return NULL;
     }
 
@@ -497,12 +497,12 @@ py_rdhd_generic (PyObject *self, PyObject *args)
 	return PyString_FromString (buffer);
 
     if (n != 1) {
-	PyErr_Format (PyExc_ValueError, "the size of header \"%s\" is %d, not one",
-		      headername, n);
+	PyErr_Format (PyExc_ValueError, "the size of item \"%s\" is %d, not one",
+		      itemname, n);
 	return NULL;
     }
 
-    haccess_c (tno, &hdhandle, headername, "read", &iostat);
+    haccess_c (tno, &hdhandle, itemname, "read", &iostat);
     CHECK_IOSTAT (iostat);
 
     if (strcmp (type, "real") == 0) {
@@ -530,8 +530,8 @@ py_rdhd_generic (PyObject *self, PyObject *args)
 	hio_c (hdhandle, FALSE, H_CMPLX, (char *) &(PyArrayScalar_VAL (result, Complex64)),
 	       8, 8, &iostat);
     } else {
-	PyErr_Format (PyExc_ValueError, "unexpected type \"%s\" for header \"%s\"",
-		      type, headername);
+	PyErr_Format (PyExc_ValueError, "unexpected type \"%s\" for item \"%s\"",
+		      type, itemname);
 	result = NULL;
     }
 
@@ -546,13 +546,13 @@ static PyObject *
 py_hdcopy (PyObject *self, PyObject *args)
 {
     int tin, tout;
-    char *keyword;
+    char *itemname;
 
-    if (!PyArg_ParseTuple (args, "iis", &tin, &tout, &keyword))
+    if (!PyArg_ParseTuple (args, "iis", &tin, &tout, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    hdcopy_c (tin, tout, keyword);
+    hdcopy_c (tin, tout, itemname);
 
     Py_RETURN_NONE;
 }
@@ -561,13 +561,13 @@ static PyObject *
 py_hdprsnt (PyObject *self, PyObject *args)
 {
     int tno, retval;
-    char *keyword;
+    char *itemname;
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
+    if (!PyArg_ParseTuple (args, "is", &tno, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    retval = hdprsnt_c (tno, keyword);
+    retval = hdprsnt_c (tno, itemname);
 
     return Py_BuildValue ("i", retval);
 }
@@ -576,15 +576,15 @@ static PyObject *
 py_hdprobe (PyObject *self, PyObject *args)
 {
     int tno;
-    char *keyword;
+    char *itemname;
     char descr[BUFSZ], type[32];
     int n;
 
-    if (!PyArg_ParseTuple (args, "is", &tno, &keyword))
+    if (!PyArg_ParseTuple (args, "is", &tno, &itemname))
 	return NULL;
 
     MTS_CHECK_BUG;
-    hdprobe_c (tno, keyword, descr, BUFSZ, type, &n);
+    hdprobe_c (tno, itemname, descr, BUFSZ, type, &n);
 
     return Py_BuildValue ("(ssi)", descr, type, n);
 }
@@ -2052,10 +2052,10 @@ static PyMethodDef methods[] = {
     DEF(habort, "(void) => void"),
     DEF(hrm, "(int tno) => void"),
     DEF(hclose, "(int tno) => void"),
-    DEF(hdelete, "(int tno, str keyword) => void"),
-    DEF(haccess, "(int tno, str keyword, str status) => int itno"),
+    DEF(hdelete, "(int tno, str itemname) => void"),
+    DEF(haccess, "(int tno, str itemname, str status) => int itno"),
     DEF(hmode, "(int tno) => str mode"),
-    DEF(hexists, "(int tno, str keyword) => int retval"),
+    DEF(hexists, "(int tno, str itemname) => int retval"),
     DEF(hdaccess, "(int ihandle) => void"),
     DEF(hsize, "(int ihandle) => long retval"),
     DEF(hio_generic, "(int iswrite, int ihandle, ndarray buf, long offset, "
@@ -2066,11 +2066,11 @@ static PyMethodDef methods[] = {
     DEF(hisopen, "(int tno, str status) => void"),
     DEF(hiswrite, "(int tno, str text) => void"),
     DEF(hisclose, "(int tno) => void"),
-    DEF(wrhd_generic, "(int tno, str keyword, object value) => void"),
-    DEF(rdhd_generic, "(int tno, str keyword) => obj value"),
-    DEF(hdcopy, "(int tin, int tout, str keyword) => void"),
-    DEF(hdprsnt, "(int tno, str keyword) => int retval"),
-    DEF(hdprobe, "(int tno, str keyword) => (str descr, str type, int n)"),
+    DEF(wrhd_generic, "(int tno, str itemname, object value) => void"),
+    DEF(rdhd_generic, "(int tno, str itemname) => obj value"),
+    DEF(hdcopy, "(int tin, int tout, str itemname) => void"),
+    DEF(hdprsnt, "(int tno, str itemname) => int retval"),
+    DEF(hdprobe, "(int tno, str itemname) => (str descr, str type, int n)"),
 
     /* dio */
 

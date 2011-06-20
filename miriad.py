@@ -684,7 +684,7 @@ interval={interval} {params...}`.
 :rtype: :const:`None`
 
 Creates a "lightweight" copy of the source dataset. This
-is a clone of the original dataset in which all of the header items
+is a clone of the original dataset in which all of the items
 are copied except for the "visdata" item, which is instead
 symbolically linked back to the original dataset. This item is
 usually by far the largest component of a UV dataset and is also

@@ -146,16 +146,16 @@ data contained in the dataset.
         self._checkOpen ()
         return _miriad_c.hexists (self.tno, name)
 
-    def getItem (self, keyword, mode):
+    def getItem (self, itemname, mode):
         """Return a DataItem object representing the desired item
         within this dataset. See the documentation of the DataItem
-        constructor for the meaning of the 'keyword' and 'mode'
+        constructor for the meaning of the 'itemname' and 'mode'
         parameters.
         """
 
-        if keyword == '.': raise ValueError ("Use itemNames() instead.")
+        if itemname == '.': raise ValueError ("Use itemNames() instead.")
 
-        return DataItem (self, keyword, mode)
+        return DataItem (self, itemname, mode)
 
     def itemNames (self):
         """Generate a list of the names of the data items contained in
@@ -248,13 +248,14 @@ Note that *args* should not start with an ``argv[0]`` entry.
         _miriad_c.hisclose (self.tno)
         self._histOpen = False
 
-    # Header variables
 
-    def getScalarHeader (self, headername, default=None, missingok=True):
-        """Get the value of a scalar dataset header
+    # Dataset items
 
-:arg str headername: the name of the header to fetch
-:arg any default: the value to return if the header is not
+    def getScalarItem (self, itemname, default=None, missingok=True):
+        """Get the value of a scalar dataset item
+
+:arg str itemname: the name of the item to fetch
+:arg any default: the value to return if the item is not
   present in this dataset; defaults to :const:`None`.
 :arg bool missingok: if *default* should be returned if the
   variable is not defined in this dataset; defaults to :const:`True`.
@@ -263,10 +264,10 @@ Note that *args* should not start with an ``argv[0]`` entry.
 :returns: the value
 :rtype: numpy scalar type
 
-This gets the value of a scalar dataset header, possibly returning a
+This gets the value of a scalar dataset item, possibly returning a
 default value if the variable is not found. The return value is a
-numpy scalar type appropriate for the header, or a string for textual
-headers. Note that these types propagate, so there is a danger of
+numpy scalar type appropriate for the item, or a string for textual
+items. Note that these types propagate, so there is a danger of
 overflow or underflow if you do some kinds of math with the return
 value. Furthermore, if you provide *default*, it will usually be one
 of the builting Python numeric types, not a NumPy type, so if code
@@ -274,10 +275,10 @@ depends on the type of the return value, there may be variations in
 behavior depending on whether the variable was found or not.
 """
         self._checkOpen ()
-        res = _miriad_c.rdhd_generic (self.tno, headername)
+        res = _miriad_c.rdhd_generic (self.tno, itemname)
         if res is None:
             if not missingok:
-                raise ValueError ('no such dataset header "%s"' % headername)
+                raise ValueError ('no such dataset item "%s"' % itemname)
             return default
         return res
 
@@ -307,16 +308,24 @@ which are acceptable in other contexts, are not allowed here.
         _miriad_c.wrhd_generic (self.tno, itemname, value)
         return self
 
-    def copyHeader (self, dest, keyword):
-        """Copy a header variable from this data-set to another."""
+
+    def copyItem (self, dest, itemname):
+        """Copy an item from this dataset to another.
+
+:arg dest: the opened destination dataset
+:type dest: :class:`DataSet` or subclass
+:arg str itemname: the name of the item
+:returns: *self*
+"""
 
         self._checkOpen ()
-        _miriad_c.hdcopy (self.tno, dest.tno, keyword)
+        dest._checkOpen ()
+        _miriad_c.hdcopy (self.tno, dest.tno, itemname)
+        return self
 
-    # skip hdprsnt: same thing as hexists
 
-    def getHeaderInfo (self, keyword):
-        """Return the characteristics of the header variable. Returns:
+    def getItemInfo (self, itemname):
+        """Return the characteristics of the item. Returns:
         (desc, type, n), where 'desc' describes the item or gives its value
         if it can be expressed compactly; 'type' is one of 'nonexistant',
         'integer*2', 'integer*8', 'integer', 'real', 'double', 'complex',
@@ -326,22 +335,40 @@ which are acceptable in other contexts, are not allowed here.
         """
 
         self._checkOpen ()
-        (desc, type, n) = _miriad_c.hdprobe (self.tno, keyword)
+        (desc, type, n) = _miriad_c.hdprobe (self.tno, itemname)
 
-        if n == 0: raise MiriadError ('Error probing header ' + keyword)
+        if n == 0:
+            raise MiriadError ('error probing item ' + itemname)
 
         return (desc, type, n)
 
-    # Elaborations on the basic MIRIAD functions to make it easier
-    # to read write simple header arrays
 
-    def getArrayHeader (self, keyword):
-        desc, type, n = self.getHeaderInfo (keyword)
+    # Elaborations on the basic MIRIAD functions to make it easier
+    # to read write simple array items
+
+    def getArrayItem (self, itemname):
+        """Read a dataset item as a homogeneous data array.
+
+:arg str itemname: the name of the item to read
+:returns: the item data
+:rtype: ndarray or :class:`str`
+
+This function reads an entire dataset item into a numpy array.  The
+type of the array is determined from header information present in the
+item data, and the size of the array is determined from the item
+size. No size checking is performed, so attempting to load a very
+large item can eat all of your memory.
+
+Items marked as being of "text" or "mixed binary" type are read in
+as Python strings.
+"""
+
+        desc, type, n = self.getItemInfo (itemname)
 
         if type == 'nonexistant':
-            raise MiriadError ('Trying to read nonexistant header ' + keyword)
+            raise MiriadError ('trying to read nonexistant item ' + itemname)
         elif type == 'unknown':
-            raise MiriadError ('Cannot determine type of header ' + keyword)
+            raise MiriadError ('cannot determine type of item ' + itemname)
         elif type == 'character':
             # Already gets read into desc for us.
             return desc
@@ -360,7 +387,7 @@ which are acceptable in other contexts, are not allowed here.
         elif type == 'text' or type == 'binary':
             dtype = N.int8
         else:
-            raise MiriadError ('Unhandled type %s for header %s' % (type, keyword))
+            raise MiriadError ('unhandled type %s for item %s' % (type, itemname))
 
         # Mistakes in hdprobe() / no offset
         if type == 'text':
@@ -372,18 +399,38 @@ which are acceptable in other contexts, are not allowed here.
         else:
             offset = max (4, dtype ().itemsize)
 
-        item = self.getItem (keyword, 'r')
+        item = self.getItem (itemname, 'r')
         data = item.read (offset, dtype, n)
         item.close ()
         return data
 
 
-    def setArrayItem (self, keyword, dtype, value):
+    def setArrayItem (self, itemname, dtype, value):
+        """Set the value of a dataset item to a numpy array
+
+:arg str itemname: the name of the item
+:arg dtype: the format to use for storing the data
+:type dtype: Numpy dtype or :class:`str`
+:arg value: the data
+:type value: Numpy ndarray
+:returns: *self*
+
+Sets the value of the specified item to an array of data. Due to
+limitations in the MIRIAD I/O routines, data of type int16 are
+not allowed. Data divided into 8-bit chunks should be given a
+dtype of :class:`str`. The number of items to write is given
+by the size of *value*.
+"""
+        if issubclass (dtype, str):
+            self.setScalarItem (itemname, dtype, value)
+            return self
+
         offset = max (4, dtype ().itemsize)
-        self.setScalarItem (keyword, dtype, 0)
-        item = self.getItem (keyword, 'a')
+        self.setScalarItem (itemname, dtype, 0)
+        item = self.getItem (itemname, 'a')
         item.write (offset, dtype, value)
         item.close ()
+        return self
 
 
 class DataItem (object):
@@ -391,11 +438,11 @@ class DataItem (object):
 
     itno = None
 
-    def __init__ (self, dataset, keyword, mode):
+    def __init__ (self, dataset, itemname, mode):
         # Must maintain reference to dataset to prevent it from being
         # GC'd out from under us:
         self.dataset = dataset
-        self.name = keyword
+        self.name = itemname
 
         if mode == 'r': modestr = 'read'
         elif mode == 'w': modestr = 'write'
@@ -403,7 +450,7 @@ class DataItem (object):
         elif mode == 's': modestr = 'scratch'
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
-        self.itno = _miriad_c.haccess (dataset.tno, keyword, modestr)
+        self.itno = _miriad_c.haccess (dataset.tno, itemname, modestr)
 
     def __del__ (self):
         # itno can be None if we got an exception inside haccess.
@@ -479,7 +526,7 @@ See also :meth:`readInto`.
 Reads data into a preexisting buffer. The data are interpreted
 as being of whatever format is specified by the data type of *buf*.
 
-Header data that will be interpreted as strings cannot be read
+Item data that should be interpreted as strings cannot be read
 with this function.
 
 See also :meth:`read`.
@@ -549,7 +596,7 @@ __all__ += ['DataSet', 'DataItem']
 class UVDataSet (DataSet):
     def __init__ (self, path, mode):
         # Technically, 'old' mode is read-only with regard to the
-        # UV data, but you can still write non-UV header variables.
+        # UV data, but you can still write non-UV items.
         if mode == 'rw': modestr = 'old'
         elif mode == 'c': modestr = 'new'
         elif mode == 'a': modestr = 'append'
@@ -1085,18 +1132,18 @@ _maskModes = set ((MASK_MODE_FLAGS, MASK_MODE_RUNS))
 class MaskItem (object):
     """A 'mask' item contained within a Miriad dataset."""
 
-    def __init__ (self, dataset, keyword, mode):
+    def __init__ (self, dataset, itemname, mode):
         # must maintain ref to dataset to prevent it from being GC'd
         # out from under us:
         self.dataset = dataset
-        self.name = keyword
+        self.name = itemname
         self.handle = None
 
         if mode == 'rw': modestr = 'old'
         elif mode == 'c': modestr = 'new'
         else: raise ValueError ('Unexpected value for "mode" argument: ' + mode)
 
-        self.handle = _miriad_c.mkopen (dataset.tno, keyword, modestr)
+        self.handle = _miriad_c.mkopen (dataset.tno, itemname, modestr)
 
 
     def read (self, mode, flags, offset, n):
@@ -1187,7 +1234,7 @@ use :meth:`miriad.ImData.open`.
         self.tno = _miriad_c.xyopen (path, modestr, axes.size, axes)
 
         if mode == 'rw':
-            self.axes = axes = axes[:self.getScalarHeader ('naxis', 0)]
+            self.axes = axes = axes[:self.getScalarItem ('naxis', 0)]
 
         self._databuf = N.empty (axes[0], dtype=N.float32)
         self._flagbuf = N.empty (axes[0], dtype=N.int)
