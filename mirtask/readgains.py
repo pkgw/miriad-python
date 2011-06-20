@@ -71,9 +71,9 @@ class GainsReader (object):
         gains = N.ndarray ((nsols, ngains), dtype=N.complex64)
         
         for i in xrange (0, nsols):
-            self.gitem.readDoubles (time[i:], offset, 1)
+            time[i] = self.gitem.read (offset, N.float64, 1)
             offset += 8
-            self.gitem.readComplex (gains[pnt,:], offset, ngains)
+            self.gitem.readInto (offset, gains[pnt,:], ngains)
             offset += 8 * ngains
             pnt += 1
 
@@ -93,9 +93,9 @@ class GainsReader (object):
         gains = N.ndarray (ngains, dtype=N.complex64)
         
         for i in xrange (0, nsols):
-            self.gitem.readDoubles (time, offset, 1)
+            self.gitem.readInto (offset, time)
             offset += 8
-            self.gitem.readComplex (gains, offset, ngains)
+            self.gitem.readInto (offset, gains)
             offset += 8 * ngains
 
             yield (time[0], gains)
@@ -157,9 +157,9 @@ def readBandpass (dset):
     freqbuf = N.ndarray (2, dtype=N.double)
 
     for i in xrange (0, nspect0):
-        hdfreq.readInts (nschans[i:], ofs, 1)
+        nschans[i] = hdfreq.read (ofs, N.int32, 1)
         ofs += 8
-        hdfreq.readDoubles (freqbuf, ofs)
+        hdfreq.readInto (ofs, freqbuf)
         ofs += 8 * 2
 
         # This could be more efficient, but it's not a huge deal.
@@ -178,7 +178,7 @@ def readBandpass (dset):
 
     hdbpass = dset.getItem ('bandpass', 'r')
     gains = N.ndarray ((nants, nfeeds, nchan0), dtype=N.complex64)
-    hdbpass.readComplex (gains, 8)
+    hdbpass.readInto (8, gains)
     hdbpass.close ()
     
     return nschans, freqs, gains

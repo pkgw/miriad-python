@@ -141,11 +141,9 @@ class DataSet (object):
 
         ilist = DataItem (self, '.', 'r')
         s = ilist.getSize ()
-
-        while ilist.getPosition () < s:
-            yield ilist.seqReadString ()
-
+        text = ilist.read (0, str, s)
         ilist.close ()
+        return text.splitlines ()
 
     # History
 
@@ -326,26 +324,19 @@ which are acceptable in other contexts, are not allowed here.
             # Already gets read into desc for us.
             return desc
         elif type == 'integer*2':
-            func = 'readShorts'
             dtype = N.int16
         elif type == 'integer*8':
-            func = 'readLongs'
-            dtype = N.int8
+            dtype = N.int64
         elif type == 'integer':
-            func = 'readInts'
             dtype = N.int32
         elif type == 'real':
-            func = 'readFloats'
             dtype = N.float32
         elif type == 'double':
-            func = 'readDoubles'
             dtype = N.float64
         elif type == 'complex':
-            func = 'readComplex'
             dtype = N.complex64
         elif type == 'text' or type == 'binary':
-            func = 'readBytes'
-            dtype = N.uint8
+            dtype = N.int8
         else:
             raise MiriadError ('Unhandled type %s for header %s' % (type, keyword))
 
@@ -359,47 +350,18 @@ which are acceptable in other contexts, are not allowed here.
         else:
             offset = max (4, dtype ().itemsize)
 
-        data = N.empty (n, dtype=dtype)
         item = self.getItem (keyword, 'r')
-
-        getattr (item, func) (data, offset)
+        data = item.read (offset, dtype, n)
         item.close ()
-
-        if type == 'text':
-            # There has to be a better way to do this ...
-            data = ''.join (chr (x) for x in data)
-
         return data
 
 
-    def _writeArrayHeader (self, keyword, value, wmultiname, dtype):
-        value = N.asarray (value, dtype=dtype)
+    def setArrayItem (self, keyword, dtype, value):
         offset = max (4, dtype ().itemsize)
-
         self.setScalarItem (keyword, dtype, 0)
         item = self.getItem (keyword, 'a')
-        getattr (item, wmultiname) (value, offset)
+        item.write (offset, dtype, value)
         item.close ()
-
-
-    def writeArrayHeaderInt (self, keyword, value):
-        self._writeArrayHeader (keyword, value, 'writeInts', N.int32)
-
-
-    def writeArrayHeaderLong (self, keyword, value):
-        self._writeArrayHeader (keyword, value, 'writeLongs', N.int64)
-
-
-    def writeArrayHeaderFloat (self, keyword, value):
-        self._writeArrayHeader (keyword, value, 'writeFloats', N.float32)
-
-
-    def writeArrayHeaderDouble (self, keyword, value):
-        self._writeArrayHeader (keyword, value, 'writeDoubles', N.float64)
-
-
-    def writeArrayHeaderComplex (self, keyword, value):
-        self._writeArrayHeader (keyword, value, 'writeComplex', N.complex64)
 
 
 class DataItem (object):
@@ -440,105 +402,12 @@ class DataItem (object):
     def isOpen (self):
         return self.itno is not None
 
+
     def getSize (self):
         """Return the size of this data item."""
 
         self._checkOpen ()
         return _miriad_c.hsize (self.itno)
-
-    def seek (self, offset):
-        """Seek to the specified position within this data item."""
-
-        self._checkOpen ()
-        _miriad_c.hseek (self.itno, int (offset))
-
-    def getPosition (self):
-        """Retrieve the current position within this data item."""
-
-        self._checkOpen ()
-        return _miriad_c.htell (self.itno)
-
-    def seqReadString (self):
-        """Read until newline from the current position within this
-        data item. Maximum string length of 512."""
-
-        self._checkOpen ()
-        return _miriad_c.hreada (self.itno)
-
-    def seqWriteString (self, line, length=None):
-        """Write a textual string into the data item, terminating
-        the string with a newline. If desired, only a subset of the
-        string can be written out; the default is to write the
-        entire string."""
-
-        if length is None: length = len (line)
-        self._checkOpen ()
-        _miriad_c.hwritea (self.itno, str (line), length)
-
-    # Reading buffers
-
-    def readBytes (self, buf, offset, length=None):
-        """Read an array of bytes from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.byte)
-        if length is None: length = buf.size
-        _miriad_c.hreadb (self.itno, buf, offset, length)
-
-    def readInts (self, buf, offset, length=None):
-        """Read an array of 32-bit integers from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int32)
-        if length is None: length = buf.size
-        _miriad_c.hreadi (self.itno, buf, offset, length)
-
-    def readShorts (self, buf, offset, length=None):
-        """Read an array of 16-bit integers from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int16)
-        if length is None: length = buf.size
-        _miriad_c.hreadj (self.itno, buf, offset, length)
-
-    def readLongs (self, buf, offset, length=None):
-        """Read an array of 64-bit integers from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int64)
-        if length is None: length = buf.size
-        _miriad_c.hreadl (self.itno, buf, offset, length)
-
-    def readFloats (self, buf, offset, length=None):
-        """Read an array of floats from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.float32)
-        if length is None: length = buf.size
-        _miriad_c.hreadr (self.itno, buf, offset, length)
-
-    def readDoubles (self, buf, offset, length=None):
-        """Read an array of doubles from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.double)
-        if length is None: length = buf.size
-        _miriad_c.hreadd (self.itno, buf, offset, length)
-
-    def readComplex (self, buf, offset, length=None):
-        """Read an array of complexes from the given location in the data
-        item. The default read length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.complex64)
-        if length is None: length = buf.size
-        _miriad_c.hreadc (self.itno, buf, offset, length)
 
 
     def read (self, offset, dtype, count):
@@ -652,73 +521,8 @@ written to the item.
 
         return self
 
-
-    # Writing
-
-    def writeBytes (self, buf, offset, length=None):
-        """Write an array of bytes to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.byte)
-        if length is None: length = buf.size
-        _miriad_c.hwriteb (self.itno, buf, offset, length)
-
-    def writeInts (self, buf, offset, length=None):
-        """Write an array of integers to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int32)
-        if length is None: length = buf.size
-        _miriad_c.hwritei (self.itno, buf, offset, length)
-
-    def writeShorts (self, buf, offset, length=None):
-        """Write an array of 16-bit integers to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int16)
-        if length is None: length = buf.size
-        _miriad_c.hwritej (self.itno, buf, offset, length)
-
-    def writeLongs (self, buf, offset, length=None):
-        """Write an array of 64-bit integers to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.int64)
-        if length is None: length = buf.size
-        _miriad_c.hwritel (self.itno, buf, offset, length)
-
-    def writeFloats (self, buf, offset, length=None):
-        """Write an array of floats to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.float32)
-        if length is None: length = buf.size
-        _miriad_c.hwriter (self.itno, buf, offset, length)
-
-    def writeDoubles (self, buf, offset, length=None):
-        """Write an array of doubles to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.double)
-        if length is None: length = buf.size
-        _miriad_c.hwrited (self.itno, buf, offset, length)
-
-    def writeComplex (self, buf, offset, length=None):
-        """Write an array of complexes to the given location in the data
-        item. The default write length is the size of the array."""
-
-        self._checkOpen ()
-        buf = N.asarray (buf, dtype=N.complex64)
-        if length is None: length = buf.size
-        _miriad_c.hwritec (self.itno, buf, offset, length)
-
 __all__ += ['DataSet', 'DataItem']
+
 
 class UserDataSet (DataSet):
     def __init__ (self, path, create=False):
