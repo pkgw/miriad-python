@@ -299,7 +299,60 @@ py_hsize (PyObject *self, PyObject *args)
     return Py_BuildValue ("l", (long) retval);
 }
 
-/* skip: hio, since wrapped by hread/hwrite[bijlrdc] */
+
+static PyObject *
+py_hio_generic (PyObject *self, PyObject *args)
+{
+    int iswrite, ihandle, mirtype, iostat;
+    long offset, nbytes;
+    PyObject *buf;
+
+    if (!PyArg_ParseTuple (args, "iiO!ll", &iswrite, &ihandle, &PyArray_Type,
+			   &buf, &offset, &nbytes))
+	return NULL;
+
+    if (!PyArray_ISCONTIGUOUS (buf)) {
+	PyErr_SetString (PyExc_ValueError, "buf must be a contiguous ndarray");
+	return NULL;
+    }
+
+    MTS_CHECK_BUG;
+
+    switch (PyArray_TYPE (buf)) {
+    case NPY_INT8:
+	mirtype = H_BYTE;
+	break;
+    case NPY_INT16:
+	/* NOTE: int16s have to be special-cased by the caller because
+	 * MIRIAD unpacks the int16s into platform ints inside hio. */
+	mirtype = H_INT2;
+	break;
+    case NPY_INT32:
+	mirtype = H_INT;
+	break;
+    case NPY_INT64:
+	mirtype = H_INT8;
+	break;
+    case NPY_FLOAT32:
+	mirtype = H_REAL;
+	break;
+    case NPY_FLOAT64:
+	mirtype = H_DBLE;
+	break;
+    case NPY_COMPLEX64:
+	mirtype = H_CMPLX;
+	break;
+    default:
+	PyErr_Format (PyExc_ValueError, "unhandled buffer type %c",
+		      ((PyArrayObject *) buf)->descr->type);
+	return NULL;
+    }
+
+    hio_c (ihandle, iswrite, mirtype, PyArray_DATA (buf), offset, nbytes, &iostat);
+    CHECK_IOSTAT(iostat);
+    Py_RETURN_NONE;
+}
+
 
 static PyObject *
 py_hseek (PyObject *self, PyObject *args)
@@ -369,7 +422,7 @@ py_hwritea (PyObject *self, PyObject *args)
 enum hio_dtype { HD_INTEGER, HD_FLOAT, HD_COMPLEX };
 
 static PyObject *
-hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
+old_hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
 	     enum hio_dtype dtype, size_t objsize)
 {
     int item, iostat, typeok = 0;
@@ -422,11 +475,11 @@ hio_generic (PyObject *self, PyObject *args, int dowrite, int type,
 #define MAKE_HIO(ident, mtype, dtype, size) \
 static PyObject *py_hread##ident (PyObject *self, PyObject *args) \
 { \
-    return hio_generic (self, args, FALSE, mtype, dtype, size); \
+    return old_hio_generic (self, args, FALSE, mtype, dtype, size); \
 } \
 static PyObject *py_hwrite##ident (PyObject *self, PyObject *args) \
 { \
-    return hio_generic (self, args, TRUE, mtype, dtype, size); \
+    return old_hio_generic (self, args, TRUE, mtype, dtype, size); \
 }
 
 MAKE_HIO(b, H_BYTE, HD_INTEGER, 1)
@@ -469,7 +522,6 @@ py_hiswrite (PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-/* skip hisread */
 
 static PyObject *
 py_hisclose (PyObject *self, PyObject *args)
@@ -2148,6 +2200,9 @@ static PyMethodDef methods[] = {
     DEF(hwritea, "(int ihandle, str line, long length) => void"),
 
     /* hio macros */
+
+    DEF(hio_generic, "(int iswrite, int ihandle, ndarray buf, long offset, "
+	"long nbytes) => void"),
 
 #define HIO_ENTRY(ident, buftype) \
 	DEF(hread##ident, "(int ihandle, " #buftype "-ndarray buf, long offset, " \

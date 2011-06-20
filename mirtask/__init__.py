@@ -540,6 +540,119 @@ class DataItem (object):
         if length is None: length = buf.size
         _miriad_c.hreadc (self.itno, buf, offset, length)
 
+
+    def read (self, offset, dtype, count):
+        """Read data from this item into a newly-allocated buffer.
+
+:arg int offset: the byte offset into the item at which to read
+:arg dtype: the type of data to read
+:type dtype: Numpy dtype or :class:`str`
+:arg count: the number of items to read
+:returns: the data
+:rtype: ndarray of data type *dtype*, or :class:`str`
+
+Allocates a new buffer and reads data into it.
+
+See also :meth:`readInto`.
+"""
+        self._checkOpen ()
+
+        if dtype == N.int16:
+            # MIRIAD, in its infinite stupid wisdom, unpacks int16s into ints
+            # in its low-level I/O routins
+            buf = N.empty (count, dtype=N.int)
+            buf2 = buf.view (dtype=N.int16)
+            _miriad_c.hio_generic (False, self.itno, buf2, offset, count * 2)
+            buf = buf.astype (N.int16)
+        elif issubclass (dtype, str):
+            buf = N.empty (count, dtype=N.int8)
+            _miriad_c.hio_generic (False, self.itno, buf, offset, count)
+            buf = buf.tostring ()
+        else:
+            buf = N.empty (count, dtype=dtype)
+            _miriad_c.hio_generic (False, self.itno, buf, offset, count * dtype ().itemsize)
+
+        return buf
+
+
+    def readInto (self, offset, buf, count=None):
+        """Read data from this item into a preexisting buffer.
+
+:arg int offset: the byte offset into the item at which to read
+:arg buf: the buffer into which the data should be read
+:type buf: ndarray
+:arg count: the number of items to read. :const:`None`, the
+  default, signifies *buf.size*.
+:returns: *buf*
+
+Reads data into a preexisting buffer. The data are interpreted
+as being of whatever format is specified by the data type of *buf*.
+
+Header data that will be interpreted as strings cannot be read
+with this function.
+
+See also :meth:`read`.
+"""
+        self._checkOpen ()
+
+        if count is None:
+            count = buf.size
+
+        if buf.dtype == N.int16:
+            # See comment in read()
+            buf2 = N.empty (count, dtype=N.int)
+            buf3 = buf2.view (dtype=N.int16)
+            _miriad_c.hio_generic (False, self.itno, buf3, offset, count * 2)
+            buf[:] = buf2
+        else:
+            _miriad_c.hio_generic (False, self.itno, buf, offset, count * buf.itemsize)
+
+        return buf
+
+
+    def write (self, offset, dtype, buf, count=None):
+        """Write data to this item.
+
+:arg int offset: the byte offset into the item at which to write
+:arg dtype: the kind of data to write
+:type dtype: Numpy dtype or :class:`str`
+:arg buf: the data to write
+:type buf: ndarray or other iterable
+:arg count: the number of items to write. :const:`None`, the default,
+  signifies *buf.size*.
+:returns: *self*
+
+Writes data to the item. Before writing, *buf* is converted to a numpy
+ndarray if it is not already, then its contents are converted to the
+format *dtype* if they are not already in that format. If *dtype*
+is :class:`str`, *buf* is stringified, then that binary sequence is
+written to the item.
+"""
+        self._checkOpen ()
+
+        if issubclass (dtype, str):
+            asbytes = N.fromstring (str (buf), dtype=N.int8)
+            _miriad_c.hio_generic (True, self.itno, asbytes, offset, asbytes.size)
+            return self
+
+        buf = N.asarray (buf)
+        if buf.dtype != dtype:
+            buf = buf.astype (dtype)
+
+        if count is None:
+            count = buf.size
+
+        if buf.dtype == N.int16:
+            # See comment in read()
+            buf2 = buf.astype (N.int)
+            buf3 = buf2.view (dtype=N.int16)
+            _miriad_c.hio_generic (True, self.itno, buf3, offset, count * 2)
+        else:
+            _miriad_c.hio_generic (True, self.itno, buf, offset, count * buf.itemsize)
+
+        return self
+
+
     # Writing
 
     def writeBytes (self, buf, offset, length=None):
