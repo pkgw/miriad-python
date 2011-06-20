@@ -24,15 +24,37 @@ from mirtask._miriad_c import MiriadError
 __all__ = 'util MiriadError'.split ()
 
 
-# Very simple wrapper classes. Shouldn't necessarily be used,
-# given that there are standard APIs like uvdat*
-
 class DataSet (object):
-    """A generic Miriad data-set. Subclasses must implement a _close()
-    method."""
+    """:synopsis: an opened MIRIAD dataset
+
+:arg str path: the path of the dataset on disk
+:arg str mode: the mode on which to open the dataset;
+  one of "rw", "c", or "a"
+
+Instances of this class allow lowlevel manipulation of MIRIAD
+datasets. More specific subclasses, such as :class:`UVDataSet`
+or :class:`XYDataSet`, allow more structured access to the
+data contained in the dataset.
+"""
 
     tno = None
     _path = None
+
+    def __init__ (self, path, mode):
+        if mode == 'rw':
+            modestr = 'old'
+        elif mode == 'c':
+            modestr = 'new'
+        else:
+            raise ValueError ('unknown mode string "%s"', mode)
+
+        self._path = path
+        self.tno = _miriad_c.hopen (path, modestr)
+
+
+    def _close (self):
+        _miriad_c.hclose (self.tno)
+
 
     def __del__ (self):
         # tno can be None if we got an exception inside hopen,
@@ -523,19 +545,6 @@ written to the item.
 
 __all__ += ['DataSet', 'DataItem']
 
-
-class UserDataSet (DataSet):
-    def __init__ (self, path, create=False):
-        if create: mode = 'new'
-        else: mode = 'old'
-
-        self._path = path
-        self.tno = _miriad_c.hopen (path, mode)
-
-    def _close (self):
-        _miriad_c.hclose (self.tno)
-
-__all__ += ['UserDataSet']
 
 class UVDataSet (DataSet):
     def __init__ (self, path, mode):

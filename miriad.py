@@ -431,16 +431,9 @@ calling :meth:`defaultImClass`.
     # Detailed access to dataset.
 
     def _openImpl (self, mode):
-        from mirtask import UserDataSet
+        from mirtask import DataSet
+        return DataSet (self.base, mode)
 
-        if mode == 'rw':
-            create = False
-        elif mode == 'c':
-            create = True
-        else:
-            raise Exception ('Unsupported mode "%s"; "rw" and "c" are allowed' % mode)
-
-        return UserDataSet (self.base, create)
     
     def open (self, mode):
         """Opens the dataset for access.
@@ -451,7 +444,7 @@ calling :meth:`defaultImClass`.
   support 'rw' and 'c'. Instances of :class:`VisData` support 'rw',
   'c', and 'a'.
 :type mode: :class:`str`
-:rtype: :class:`mirtask.UserDataSet`
+:rtype: :class:`mirtask.DataSet` or subclass
 :returns: An opened dataset
 
 This implementation opens the dataset in a generic way. To be able to
