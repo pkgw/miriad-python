@@ -1214,6 +1214,8 @@ use :meth:`miriad.ImData.open`.
     to crash).
     """
 
+    _wcs = None
+
     def __init__ (self, path, mode, axes=None):
         if mode == 'rw':
             modestr = 'old'
@@ -1245,6 +1247,40 @@ use :meth:`miriad.ImData.open`.
 
     def _close (self):
         _miriad_c.xyclose (self.tno)
+
+
+    def _ensureWCS (self):
+        if self._wcs is not None:
+            return
+
+        import pywcs
+
+        # FIXME: copy hacks from co.for:coReinit
+
+        self._wcs = w = pywcs.WCS (naxis=self.axes.size)
+        # Need to set properties array-at-a-time
+        work = N.empty ((3, self.axes.size))
+        ctypes = [None] * self.axes.size
+
+        for i in xrange (self.axes.size):
+            ctype = ctypes[i] = self.getScalarItem ('ctype%d' % (i + 1), '')
+
+            if (ctype.startswith ('RA--') or ctype.startswith ('DEC-') or
+                ctype.startswith ('GLON') or ctype.startswith ('GLAT') or
+                ctype.startswith ('ELON') or ctype.startswith ('ELAT')):
+                # WCSlib uses degrees internally. Tools.
+                scale = 180 / N.pi
+            else:
+                scale = 1
+
+            work[0,i] = scale * self.getScalarItem ('cdelt%d' % (i + 1), 1)
+            work[1,i] = scale * self.getScalarItem ('crval%d' % (i + 1), 1)
+            work[2,i] = self.getScalarItem ('crpix%d' % (i + 1), 1)
+
+        w.wcs.ctype = ctypes
+        w.wcs.cdelt = work[0]
+        w.wcs.crval = work[1]
+        w.wcs.crpix = work[2]
 
 
     def flush (self):
