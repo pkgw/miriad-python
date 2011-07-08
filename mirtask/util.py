@@ -779,7 +779,7 @@ linear equations simultaneously, where the i'th equation is::
         raise ValueError ('"vals" must be of size neqn')
 
     b = N.ndarray ((nunk, nunk), dtype=N.float32, order='F')
-    pivot = N.ndarray ((nunk, ), dtype=N.int32, order='F')
+    pivot = N.ndarray ((nunk, ), dtype=N.intc, order='F')
 
     # Do it!
     

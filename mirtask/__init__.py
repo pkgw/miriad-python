@@ -497,8 +497,8 @@ See also :meth:`readInto`.
 
         if dtype == N.int16:
             # MIRIAD, in its infinite stupid wisdom, unpacks int16s into ints
-            # in its low-level I/O routins
-            buf = N.empty (count, dtype=N.int)
+            # in its low-level I/O routines
+            buf = N.empty (count, dtype=N.intc)
             buf2 = buf.view (dtype=N.int16)
             _miriad_c.hio_generic (False, self.itno, buf2, offset, count * 2)
             buf = buf.astype (N.int16)
@@ -538,7 +538,7 @@ See also :meth:`read`.
 
         if buf.dtype == N.int16:
             # See comment in read()
-            buf2 = N.empty (count, dtype=N.int)
+            buf2 = N.empty (count, dtype=N.intc)
             buf3 = buf2.view (dtype=N.int16)
             _miriad_c.hio_generic (False, self.itno, buf3, offset, count * 2)
             buf[:] = buf2
@@ -582,7 +582,7 @@ written to the item.
 
         if buf.dtype == N.int16:
             # See comment in read()
-            buf2 = buf.astype (N.int)
+            buf2 = buf.astype (N.intc)
             buf3 = buf2.view (dtype=N.int16)
             _miriad_c.hio_generic (True, self.itno, buf3, offset, count * 2)
         else:
@@ -1229,7 +1229,7 @@ use :meth:`miriad.ImData.open`.
         else:
             if mode == 'c':
                 raise ValueError ('axes must be specified when creating a new XY dataset')
-            axes = N.zeros (16, dtype=N.int)
+            axes = N.zeros (16, dtype=N.intc)
 
         self.axes = axes
         self._path = path
@@ -1239,7 +1239,7 @@ use :meth:`miriad.ImData.open`.
             self.axes = axes = axes[:self.getScalarItem ('naxis', 0)]
 
         self._databuf = N.empty (axes[0], dtype=N.float32)
-        self._flagbuf = N.empty (axes[0], dtype=N.int)
+        self._flagbuf = N.empty (axes[0], dtype=N.intc)
         self._npmaskbuf = N.empty (axes[0], dtype=N.bool)
         self._masked = N.ma.masked_array (self._databuf, self._npmaskbuf,
                                           copy=False)
@@ -1319,7 +1319,7 @@ in this function, as in Python in general, array indices begin at zero.
 
         self._checkOpen ()
         # C/Python to Fortran index convention:
-        axes = N.asarray (axes).astype (N.int) + 1
+        axes = N.asarray (axes).astype (N.intc) + 1
         _miriad_c.xysetpl (self.tno, axes.size, axes)
         return self
 
