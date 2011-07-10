@@ -195,6 +195,11 @@ Task Classes
 .. autoclass:: TaskMaths
 .. autoclass:: TaskImGen
 .. autoclass:: TaskLinMos
+.. autoclass:: TaskImSub
+.. autoclass:: TaskImMedian
+.. autoclass:: TaskRegrid
+.. autoclass:: TaskSFind
+.. autoclass:: TaskFFT
 
 Setting up Subprocess Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

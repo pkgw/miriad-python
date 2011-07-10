@@ -667,3 +667,7 @@ class TaskSFind (TaskBase):
                 'normimg', 'kvannot', 'fdrpeak', 'allpix', 'psfsize']
 
     device = _defaultDevice
+
+
+class TaskFFT (TaskBase):
+    _keywords = ['rin', 'iin', 'sign', 'center', 'rout', 'iout', 'mag', 'phase']
