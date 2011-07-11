@@ -25,28 +25,38 @@ Executing Existing MIRIAD Tasks: :mod:`mirexec`
    :synopsis: Execute existing MIRIAD tasks in Python.
 .. moduleauthor:: Peter Williams <peter@newton.cx>
 
-It's not uncommon to want to run existing MIRIAD tasks from within
-Python code. The :mod:`mirexec` module makes this possible in a way
-that integrates well with the rest of the *Miriad-Python* framework.
+The :mod:`mirexec` module makes it convenient to launch tasks
+from within Python. The simplest invocation looks a lot like
+what one would run on the command line::
 
-To run a MIRIAD task, you need to do three things:
+  from mirexec import TaskUVFlag
+  TaskUVFlag (vis='fx64a-3c286-2700', select='ant(26)', flagval='f').run ()
+
+If you need them, however, the :mod:`mirexec` module provides
+more sophisticated facilities allowing you to retrieve the output
+of a task, run many tasks in parallel, and so on.
+
+Running a MIRIAD task in :mod:`mirexec` requires three steps which,
+as shown above, can often be condensed into a single line of Python:
 
 #. Create an instance of a "task" class corresponding to the task 
    you wish to run.
 #. Set the task keywords.
-#. Call one of several methods on the task object that cause the
-   task to be executed.
+#. Call a method that actually launches the task.
 
-Like so::
+The following code is equivalent to the first example, but breaks
+down the steps more explicitly::
 
   from miriad import VisData
-  from mirtask import TaskUVFlag
+  from mirexec import TaskUVFlag
   v = VisData ('fx64a-3c286-2700')
+  # Create instance:
   t = TaskUVFlag ()
+  # Set keywords:
   t.vis = v
   t.select = 'ant(26)'
   t.flagval = 'f'
-  # Executes: uvflag vis=fx64a-3c286-2700 select=ant(26) flagval=f
+  # Launch task. Executes: uvflag vis=fx64a-3c286-2700 select=ant(26) flagval=f
   t.run ()
 
 
@@ -62,10 +72,9 @@ anything you need that's not provided with *Miriad-Python*,
 however. See :ref:`below <customtasks>` for more information.
 
 The :class:`TaskBase` class provides functions for setting keyword
-arguments, running tasks, and checking the result of the last task
-execution. For the full details, see the detailed API
-documentation. Subclasses specify the name of the particular task that
-is run and the keywords and options it accepts.
+arguments and actually invoking the task. For the full details, see
+the detailed API documentation. Subclasses specify the name of the
+particular task that is run and the keywords and options it accepts.
 
 Task instances can be reused: you can create an object, set arguments,
 and run it, then change some or all of the arguments and run it
@@ -77,9 +86,9 @@ datasets::
   t.line = 'chan,800,101'
   t.nocal = True
   for v in listManyDatasets ():
-     # The setArgs() method returns 'self' for easy chaining of
+     # The set() method returns 'self' for easy chaining of
      # method invocations.
-     t.setArgs (vis=v, out=v.vvis ('av')).run ()
+     t.set (vis=v, out=v.vvis ('av')).run ()
 
 
 Setting Task Parameters
@@ -88,18 +97,18 @@ Setting Task Parameters
 You can set the task parameters in several ways: as a property on the
 object, as in the example above, as a keyword argument to the object's
 constructor, or as a keyword argument to the object's
-:meth:`~TaskBase.setArgs` method. The latter two forms are shown in
+:meth:`~TaskBase.set` method. The latter two forms are shown in
 the example below::
 
   from miriad import VisData
-  from mirtask import TaskUVFlag
+  from mirexec import TaskUVFlag
   v = VisData ('fx64a-3c286-2700')
   # This is equivalent to the previous example.
   t = TaskUVFlag (vis=v, flagval='f')
   t.select = 'ant(26)'
   t.run ()
   # As is this.
-  t.setArgs (vis=v, select='ant(26)', flagval='f')
+  t.set (vis=v, select='ant(26)', flagval='f')
   t.run ()
 
 Thus, the most succinct way to execute a task is to write something
@@ -114,36 +123,51 @@ arguments with the following rules:
   command-line if possible. If the MIRIAD keyword is a Python
   keyword (*e.g.*, "in"), the keyword is accessible in Python by
   suffixing it with an underscore ("in\_").
-* The textual value of each MIRIAD keyword is the stringification of
-  the Python variable assigned to it. If the Python value is
-  :const:`None`, the keyword is not supplied on the command-line.
+* In most cases, the textual value of each MIRIAD keyword is the
+  stringification of the Python variable assigned to it. If the Python
+  value is :const:`None`, the keyword is not supplied on the
+  command-line.
+* However, if the Python variable assigned to the keyword is a
+  non-string iterable, the textual value of the keyword is the
+  stringification of each item in the iterable, joined together with
+  commas. For instance, if you run::
+
+    from mirexec import TaskMFCal
+    TaskMFCal (vis=foo, line=['chan', 60, 15]).run ()
+
+  the *line* keyword of ``mfcal`` will be ``chan,60,15``.
 * The keyword "options" isn't used directly. Instead, each possible
-  option to a task is a separate field on the task object
+  option to a task is a separate field on the task object that should
+  be set to a :class:`bool`. The option is supplied if the field is
+  :const:`True`. There are rare tasks that have an option with the same
+  name as a keyword; in those cases, the keyword is the one controlled
+  by the property on the task object.
 
 There are several functions that will actually execute the task. Each
 has different uses:
 
 * :meth:`~TaskBase.run` executes the task and waits for it to
   finish. The task output is sent to the stdout of the Python program
-  and the task input is set to */dev/null*. If the task returns an 
-  error code, an :class:`exceptions.OSError` is raised.
+  and the task input is set to ``/dev/null``.
 * :meth:`~TaskBase.snarf` executes a task and waits for it to
   finish. The task's output to its standard output and standard error
-  streams are returned to the caller. If the task returns an error
-  code, an :class:`exceptions.OSError` is raised.
-* :meth:`~TaskBase.xrun` runs a task in "interactive" mode, in which
-  the standard input of the task is hooked up to the standard input of
-  the Python program and the task can be killed without an exception
-  being raised.
+  streams are returned to the caller.
+* :meth:`~TaskBase.runsilent` executes the task and waits for it to
+  finish. The task output is sent to ``/dev/null``.
 * :meth:`~TaskBase.launch` starts the task but doesn't wait for it to
-  finish. The caller must do this.
+  finish; instead, it returns a :class:`MiriadSubprocess` instance
+  that allows interaction with the launched subprocess.
+* :meth:`~TaskBase.launchpipe` starts the task but doesn't wait for it to
+  finish. The output of the task is redirected to pipes that can be
+  read using the :class:`MiriadSubprocess` instace.
+* :meth:`~TaskBase.launchsilent` starts the task but doesn't wait for it to
+  finish. The output of the task is redirected to ``/dev/null``.
 
 
 Defining Your Own Task Classes
 -------------------------------
 .. _customtasks:
   
-
 
 :mod:`mirexec` API Reference
 -----------------------------

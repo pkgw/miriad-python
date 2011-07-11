@@ -254,6 +254,15 @@ MIRIAD tasks.
 
 
     def set (self, **kwargs):
+        """Set keywords and options on the task
+
+:arg kwargs: the values to set
+:returns: *self*
+
+This function is merely a shorthand that sets attributes on the
+instance via :func:`setattr`.
+"""
+
         for (key, val) in kwargs.iteritems ():
             setattr (self, key, val)
         return self
@@ -310,6 +319,21 @@ MIRIAD tasks.
 
 
     def launch (self, **kwargs):
+        """Launch an invocation of the task with the current keywords
+
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:returns: a :class:`MiriadSubprocess` instance
+:raises: :exc:`TaskLaunchError` if there was an error launching the task
+
+This task launches an instance of the task. It does not wait for that
+instance to complete; you must use the returned :class:`MiriadSubprocess`
+instance to wait for completion and check results.
+
+This function can be useful if you want to launch several tasks in parallel.
+To wait for the task to complete, use :meth:`run`. To wait for the task and
+obtain its output, use :meth:`snarf`. To wait for the task and discard its
+output, use :meth:`runsilent`.
+"""
         cmd = self.commandLine ()
         miriad.trace (cmd)
         try:
@@ -333,6 +357,26 @@ MIRIAD tasks.
 
 
     def run (self, failok=False, log=None, **kwargs):
+        """Run the task with the current keywords.
+
+:arg bool failok: if :const:`True`, no exception will be raised if the 
+  task returns a nonzero exit code
+:arg log: where to log the tasks output if the task fails, or :const:`None`
+  (the default) not to log the output
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:raises: :exc:`TaskFailError` if the task returns a nonzero exit code
+:returns: *self*
+
+Runs the task and waits for it to complete. By default, if the task returns
+an error code, a :exc:`TaskFailError` is raised, but this can be disabled
+by setting *failok* to :const:`True`. The standard output and error of the
+task will not be redirected.
+
+To retrieve the output of the task, use :meth:`snarf`. To not wait for
+the task to complete, use :meth:`launch`. To discard the output of the
+task, use :meth:`runsilent`.
+"""
+
         self.launch (**kwargs).checkwait (failok, log)
         return self
 
@@ -343,6 +387,32 @@ MIRIAD tasks.
 
 
     def snarf (self, send=None, failok=False, log=sys.stderr, **kwargs):
+        """Run the task and retrieve its output.
+
+:arg str send: input to send the task on its standard input, or :const:`None`
+  not to do so
+:arg bool failkok: if :const:`True`, no exception will be raised if the 
+  task returns a nonzero exit code
+:arg log: where to log the task's output if it fails, or :const:`None`
+  not to log the output. Default is ``sys.stderr``.
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:raises: :exc:`TaskFailError` if the task returns a nonzero exit code
+:returns: ``(stdout, stderr)``, both of which are arrays of strings of the
+  task's output split on line boundaries (via :meth:`str.splitlines`). They
+  correspond to the standard output and standard error of the task subprocess,
+  respectively. Note that the proper interleaving of the outputs (i.e., where
+  the standard error messages appear, relative to the standard output lines)
+  is unknowable.
+
+Runs the task, wais for it to complete, and returns its textual
+output. By default, if the task returns an error code, a
+:exc:`TaskFailError` is raised, but this can be disabled by setting
+*failok* to :const:`True`.
+
+To leave the output of the task un-redirected, use :meth:`run`. To not
+wait for the task to complete, use :meth:`launch`. To discard the
+output of the task, use :meth:`runsilent`.
+"""
         # Use the checkFail "log" feature by default, since otherwise
         # it'll probably be impossible to diagnose why the program failed.
         stdout, stderr = self.launchpipe (**kwargs).checkcommunicate (send, failok, log)
