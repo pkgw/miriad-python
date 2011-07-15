@@ -1,5 +1,10 @@
 body {
-	margin: 0 15% 0 15%;
+	margin: 0 5% 0 5%;
+}
+
+#container {
+	margin: 0 auto 0 auto;
+	max-width: 80ex;
 }
 
 p {
@@ -7,9 +12,9 @@ p {
 	text-indent: 0;
 }
 
-#latest {
+p.latest {
 	text-align: left;
-	margin: 0 10% 0 10%;
+	margin: 2ex 10% 0 10%;
 }
 
 #footer p {
