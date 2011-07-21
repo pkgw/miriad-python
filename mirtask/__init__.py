@@ -1249,9 +1249,23 @@ use :meth:`miriad.ImData.open`.
         _miriad_c.xyclose (self.tno)
 
 
-    def _ensureWCS (self):
+    def wcs (self):
+        """Retrieve a :class:`pywcs.WCS` object representing the coordinate system
+of this image.
+
+:rtype: :class:`pywcs.WCS`
+:returns: the coordinate system
+:raises: :exc:`ImportError` if :mod:`pywcs` is not available
+:raises: :exc:`MemoryError` if memory for the instance couldn't be allocated
+
+Note that ``wcslib``, and hence :mod:`pywcs`, use degrees internally, unlike
+MIRIAD.
+
+At the moment, we do not encourage newly-written Python code to attempt to
+use the classical MIRIAD APIs for coordinate manipulation.
+"""
         if self._wcs is not None:
-            return
+            return self._wcs
 
         import pywcs
 
@@ -1281,6 +1295,45 @@ use :meth:`miriad.ImData.open`.
         w.wcs.cdelt = work[0]
         w.wcs.crval = work[1]
         w.wcs.crpix = work[2]
+        return w
+
+
+    def wcsSky (self):
+        """Retrieve a two-axis :class:`pywcs.WCS` object describing
+the sky component of this image's coordinate system.
+
+:rtype: :class:`pywcs.WCS`
+:returns: the sky coordinate system
+:raises: :exc:`ImportError` if :mod:`pywcs` is not available
+:raises: :exc:`MemoryError` if memory for the instance couldn't be
+  allocated
+:raises: :exc:`pywcs.NonseparableSubimageCoordinateSystem` if the sky
+  coordinates depend on other axes of the coordinate system, so that
+  it's not possible to describe the sky coordinate system independent
+  of the other axes.
+:raises: :exc:`pywcs.InvalidSubimageSpecificationError` in situations
+  I don't quite understand. (The :mod:`pywcs` documentation says this
+  means "Invalid subimage specification (no spectral axis)", but it's
+  definitely possible to extract sky coordinates without spectral
+  information in at least some cases.)
+
+The returned coordinate system has exactly two axes: longitude and
+latitude, in that order. This may not be the same order as in the base
+image! In general, the mapping between the axes of the returned
+coordinate system and the image's full coordinate system is not
+well-defined, so that you can't safely use pixel coordinates derived
+from this coordinate system to index into the image data cube.
+"""
+        # If I call sub() with [WCSSUB_LONGITUDE | WCSSUB_LATITUDE] or'ed
+        # together, as the docs say I should be able to, I run into crashes
+        # related to some memory management problem. It'd be nice to be
+        # able to do this because we could maintain the original axis
+        # ordering of the image. If we switch the ordering the data access
+        # performance will be terrible. I think. On the other hand, there
+        # are advantages to knowing a priori what the axis ordering is.
+
+        import pywcs
+        return self.wcs ().sub ([pywcs.WCSSUB_LONGITUDE, pywcs.WCSSUB_LATITUDE])
 
 
     def flush (self):
