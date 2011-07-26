@@ -6447,20 +6447,6 @@ subroutine getxy(tno,fac,xyphase,count,mxant,nants) ! in subs/getxy.f
     integer optional,check(len(xyphase)>=mxant),depend(xyphase) :: mxant=len(xyphase)
     integer :: nants
 end subroutine getxy
-subroutine corrfun(func,phi,n,width,alpha) ! in subs/grid.f
-    character*(*) :: func
-    real dimension(n) :: phi
-    integer optional,check(len(phi)>=n),depend(phi) :: n=len(phi)
-    integer :: width
-    real :: alpha
-end subroutine corrfun
-subroutine gcffun(func,phi,n,width,alpha) ! in subs/grid.f
-    character*(*) :: func
-    real dimension(n) :: phi
-    integer optional,check(len(phi)>=n),depend(phi) :: n=len(phi)
-    integer :: width
-    real :: alpha
-end subroutine gcffun
 function spheroid(eta,m,alpha) ! in subs/grid.f
     real :: eta
     integer :: m

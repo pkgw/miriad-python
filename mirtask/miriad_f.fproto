@@ -758,3 +758,19 @@ function shadowed(tno,ants,limit) ! in subs/shadowed.f
     real :: limit
     integer :: shadowed
 end function shadowed
+
+subroutine corrfun(func,phi,n,width,alpha) ! in subs/grid.f
+    character*(*) :: func
+    real dimension(n),intent(out) :: phi
+    integer :: n
+    integer :: width
+    real :: alpha
+end subroutine corrfun
+
+subroutine gcffun(func,phi,n,width,alpha) ! in subs/grid.f
+    character*(*) :: func
+    real dimension(n),intent(out) :: phi
+    integer :: n
+    integer :: width
+    real :: alpha
+end subroutine gcffun
