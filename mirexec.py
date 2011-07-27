@@ -239,8 +239,11 @@ class TaskBase (object):
     """:synopsis: Generic MIRIAD task launcher
 :arg kwargs: attributes to set on the object
 
-The constructor returns an object that can be used to execute
-MIRIAD tasks.
+A generic launcher class for MIRIAD tasks. Don't create instances
+of this class --- instead, create instances of its subclasses,
+such as :class:`TaskInvert` or :class:`TaskUVCat`. If you
+want to invoke a task that hasn't been wrapped in the :mod:`mirexec`
+module, it's easy to wrap it yourself: see :ref:`customtasks`.
 """
 
     __metaclass__ = DefaultedTaskType

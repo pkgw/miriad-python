@@ -159,19 +159,22 @@ has different uses:
   that allows interaction with the launched subprocess.
 * :meth:`~TaskBase.launchpipe` starts the task but doesn't wait for it to
   finish. The output of the task is redirected to pipes that can be
-  read using the :class:`MiriadSubprocess` instace.
+  read using the :class:`MiriadSubprocess` instance.
 * :meth:`~TaskBase.launchsilent` starts the task but doesn't wait for it to
   finish. The output of the task is redirected to ``/dev/null``.
 
 
+.. _customtasks:
+
 Defining Your Own Task Classes
 -------------------------------
-.. _customtasks:
   
+TODO. Sorry.
+
+.. _mirexecapiref:
 
 :mod:`mirexec` API Reference
 -----------------------------
-.. _mirexecapiref:
 
 This section presents a detailed API reference for the :mod:`mirexec`
 module.
