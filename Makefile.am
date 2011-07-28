@@ -35,7 +35,13 @@ dist_bin_SCRIPTS = mirpyhelp.py mirpymodtask
 pcdir = $(libdir)/pkgconfig
 pc_DATA = miriad-python.pc
 
-# Distributing
+# Distributing. The 'snapshot' target makes a distribution with the
+# day's date and the HEAD Git commit munged into the version number,
+# then copies it to my website directory. (If the working tree is
+# dirty, "_d" is appended to the version. The logic for this is copied
+# from git.git/GIT-VERSION-GEN with little understanding.) We have to
+# hack a little bit to get the custom version number reflected in the
+# configure script, not just the tar directory name.
 
 DISTCHECK_CONFIGURE_FLAGS = @MIR_DISTCHECK_CONFARG@
 EXTRA_DIST = \
@@ -44,3 +50,21 @@ EXTRA_DIST = \
  LICENSE.LGPLv21 \
  NEWS \
  f2py-copynotice.txt
+
+snapshot:
+	export GIT_WORK_TREE=$(top_srcdir) && \
+	git update-index -q --refresh && \
+	gitref=$$(git show-ref -h --hash=6 |head -n1) && \
+	[ -z "$$(git diff-index --name-only HEAD --)" ] || gitref="$${gitref}_d" ; \
+	effver="$(VERSION).$$(date +%Y%m%d).$$gitref" && \
+	base="$(PACKAGE)-$$effver" && \
+	$(MAKE) distdir distdir=$$base && \
+	sed -e "s/^AC_INIT(\[$(PACKAGE)\], \[$(VERSION)\])/AC_INIT(\[$(PACKAGE)\], \[$$effver\])/" \
+	  $(top_srcdir)/configure.ac >$$base/configure.ac && \
+	(cd $$base && $(AUTOCONF)) && \
+	tardir=$$base && $(am__tar) |GZIP=$(GZIP_ENV) gzip -c >$$base.tar.gz && \
+	cp -p $$base.tar.gz $(HOME)/public_html/miriad-python/ && \
+	$(MAKE) snapshot-remove-helper distdir=$$base
+
+snapshot-remove-helper:
+	$(am__remove_distdir)
