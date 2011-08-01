@@ -137,3 +137,11 @@ Coordinate Manipulations
 .. autofunction:: precess
 
 .. autofunction:: equToHorizon
+
+
+Fast-Fourier-Transform Imaging
+----------------------------------------
+
+.. autofunction:: sphGridFunc
+
+.. autofunction:: sphCorrFunc

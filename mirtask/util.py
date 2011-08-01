@@ -831,3 +831,67 @@ If available, this should be superseded by the RALP/NOVAS conversion
 function, which I suspect will be superior to the MIRIAD function.
 """
     return _miriad_f.azel (ra, dec, lst, lat)
+
+
+# Spheroidal convolution functions
+
+def sphGridFunc (nsamp, width, alpha):
+    """Compute a spheroidal convolutional gridding function.
+
+:arg int nsamp: the number of points at which to sample the function.
+  In MIRIAD, *nsamp* is always 2047.
+:arg int width: the width of the correction function, in pixels;
+  must be 4, 5, or 6. In MIRIAD, *width* is always 6.
+:arg float alpha: spheroidal parameter; must be between 0 and 2.25,
+  and will be rounded to the nearest half-integral value (i.e., 0,
+  0.5, 1, 1.5, or 2). In MIRIAD, *alpha* is always 1.0.
+:rtype: *nsamp*-element real ndarray
+:returns: the tabulated function
+
+The spheroidal convolutional gridding function is used to put
+visibility measurements on a regular grid so that a dirty map can be
+made using a fast Fourier transform (FFT) algorithm. A thorough
+discussion of the topic is beyond the scope of this docstring. See
+Chapter 10 of Thompson, Moran & Swenson or `Lecture 7 of Synthesis
+Imaging in Radio Astronomy II
+<http://adsabs.harvard.edu/abs/1999ASPC..180..127B>`_.
+
+In MIRIAD's standard usage of this function, all of the arguments are
+fixed. You should probably use the MIRIAD values (*nsamp* = 2047,
+*width* = 6, *alpha* = 1.0) unless you really know what you're
+doing. I don't know how *alpha* affects the spheroidal function used
+but it's probably not hard to look up.
+
+Indices into the tabulated array are related to pixel offsets by the
+expression ``index = (nsamp // width) * pixeloffset + nsamp //
+2``. Using the standard MIRIAD parameters, this is ``index = 341 *
+pixeloffset + 1023``.
+"""
+    return _miriad_f.gcffun ('spheroidal', nsamp, width, alpha)
+
+
+def sphCorrFunc (axislen, width, alpha):
+    """Compute a spheroidal gridding correction function.
+
+:arg int axislen: length of image axis to be corrected, in pixels
+:arg int width: width of gridding function; must be 4, 5, or 6
+:arg float alpha: spheroidal parameter; must be 0, 0.5, 1, 1.5, or 2.
+:rtype: *axislen*-element real ndarray
+:returns: the tabulated function
+
+I don't quite understand the details of this function, but it's used
+to correct the dirty map for the effects of the spheroidal function
+used to put visibilities onto a grid before FFTing int the mapping
+process. See the usage of *xcorr* and *ycorr* in
+``mapper.for:MapFFT2``.  The correction function is separable in
+*u*/*v* or *l*/*m* so that there's one for each image axis, which is
+why *axislen* is a single integer in this function. The output image
+is divided by the correction functions, scaled by their central
+pixels. The overall profile of the correction function is similar to
+that of the spheroidal convolution function itself.
+
+In MIRIAD, *width* is always 6 and *alpha* is always 1.0. I don't know
+how *alpha* affects the spheroidal function used but it's probably not
+hard to look up.
+"""
+    return _miriad_f.corrfun ('spheroidal', axislen, width, alpha)
