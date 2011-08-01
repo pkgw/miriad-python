@@ -17,6 +17,14 @@
  * along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * This file must be included before any system headers, because it
+ * #includes Python.h, which imposes that restriction. See
+ *
+ * http://docs.python.org/c-api/intro.html#includes
+ *
+ */
+
 #ifndef _MIR_TASK_SUPPORT_H
 #define _MIR_TASK_SUPPORT_H
 

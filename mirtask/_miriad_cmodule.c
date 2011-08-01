@@ -17,9 +17,10 @@
  * along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mirtasksupport.h"
+
 #include <string.h> /* strerror */
 
-#include "mirtasksupport.h"
 #include <numpy/ndarrayobject.h>
 #include <numpy/arrayscalars.h>
 
