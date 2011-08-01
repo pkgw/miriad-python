@@ -35,7 +35,6 @@ lib_LTLIBRARIES = libmirtasksupport.la
 mtpy_LTLIBRARIES = _miriad_c.la _miriad_f.la
 
 AM_CPPFLAGS = -I$(NUMPY_INCLUDEDIR) $(MIR_CPPFLAGS) $(PYTHON_INCLUDES)
-AM_CFLAGS = -Wall -g -O2
 mod_ldflags = -module -avoid-version
 
 libmirtasksupport_la_LDFLAGS =

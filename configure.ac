@@ -27,6 +27,28 @@ dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[0.7])
 AC_SUBST([MIRPY_COPYRIGHT],["2009, 2010, 2011, Peter Williams"])
 
+
+
+dnl Compiler flags. Python 2.x code needs -fno-strict-aliasing if
+dnl available.
+
+AC_LANG([C])
+
+AX_CHECK_COMPILE_FLAG([-fno-strict-aliasing],[
+  AM_CFLAGS="$AM_CFLAGS -fno-strict-aliasing"
+])
+
+AX_CHECK_COMPILE_FLAG([-Wall],[
+  AM_CFLAGS="$AM_CFLAGS -Wall"
+])
+
+AX_CHECK_COMPILE_FLAG([-Wstrict-prototypes],[
+  AM_CFLAGS="$AM_CFLAGS -Wstrict-prototypes"
+])
+
+AC_SUBST([AM_CFLAGS])
+
+
 dnl Miriad.
 
 AC_ARG_WITH([miriad],
@@ -111,10 +133,6 @@ if test x"$F2PY" = xfalse ; then
    AC_MSG_ERROR([F2PY not found; see README on f2py])
 fi
 AC_SUBST(F2PY)
-
-if test x"$GCC" = xyes ; then
-   CFLAGS="$CFLAGS -Wall -Wstrict-prototypes"
-fi
 
 dnl MIRIAD is built with large file support, so we need to have it
 dnl too otherwise we'll disagree about the size of off_t
