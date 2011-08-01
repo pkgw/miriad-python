@@ -362,7 +362,7 @@ output, use :meth:`runsilent`.
     def run (self, failok=False, log=None, **kwargs):
         """Run the task with the current keywords.
 
-:arg bool failok: if :const:`True`, no exception will be raised if the 
+:arg bool failok: if :const:`True`, no exception will be raised if the
   task returns a nonzero exit code
 :arg log: where to log the tasks output if the task fails, or :const:`None`
   (the default) not to log the output
@@ -394,7 +394,7 @@ task, use :meth:`runsilent`.
 
 :arg str send: input to send the task on its standard input, or :const:`None`
   not to do so
-:arg bool failkok: if :const:`True`, no exception will be raised if the 
+:arg bool failok: if :const:`True`, no exception will be raised if the
   task returns a nonzero exit code
 :arg log: where to log the task's output if it fails, or :const:`None`
   not to log the output. Default is ``sys.stderr``.

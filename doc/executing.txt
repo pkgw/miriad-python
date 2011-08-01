@@ -30,7 +30,8 @@ from within Python. The simplest invocation looks a lot like
 what one would run on the command line::
 
   from mirexec import TaskUVFlag
-  TaskUVFlag (vis='fx64a-3c286-2700', select='ant(26)', flagval='f').run ()
+  TaskUVFlag (vis='fx64a-3c286-2700', select='ant(26)', flagval='f',
+              noquery=True).run ()
 
 If you need them, however, the :mod:`mirexec` module provides
 more sophisticated facilities allowing you to retrieve the output
@@ -41,7 +42,7 @@ as shown above, can often be condensed into a single line of Python:
 
 #. Create an instance of a "task" class corresponding to the task 
    you wish to run.
-#. Set the task keywords.
+#. Set the task keywords and options.
 #. Call a method that actually launches the task.
 
 The following code is equivalent to the first example, but breaks
@@ -52,11 +53,15 @@ down the steps more explicitly::
   v = VisData ('fx64a-3c286-2700')
   # Create instance:
   t = TaskUVFlag ()
-  # Set keywords:
+  # Set some keywords:
   t.vis = v
   t.select = 'ant(26)'
   t.flagval = 'f'
-  # Launch task. Executes: uvflag vis=fx64a-3c286-2700 select=ant(26) flagval=f
+  # Set some options:
+  t.noquery = True
+  t.hms = False # i.e., do *not* specify the "hms" option
+  # Launch task.
+  # Executes: uvflag vis=fx64a-3c286-2700 select=ant(26) flagval=f options=noquery
   t.run ()
 
 
@@ -104,11 +109,11 @@ the example below::
   from mirexec import TaskUVFlag
   v = VisData ('fx64a-3c286-2700')
   # This is equivalent to the previous example.
-  t = TaskUVFlag (vis=v, flagval='f')
+  t = TaskUVFlag (vis=v, flagval='f', noquery=True)
   t.select = 'ant(26)'
   t.run ()
   # As is this.
-  t.set (vis=v, select='ant(26)', flagval='f')
+  t.set (vis=v, select='ant(26)', flagval='f', noquery=True)
   t.run ()
 
 Thus, the most succinct way to execute a task is to write something
@@ -169,7 +174,43 @@ has different uses:
 Defining Your Own Task Classes
 -------------------------------
   
-TODO. Sorry.
+In most cases, it's straightforward to define your own task class. To
+wrap the task "newtask", you should write something like::
+
+  from mirexec import TaskBase
+
+  class TaskNewTask (TaskBase):
+      _keywords = ['vis', 'line', 'flux', 'refant']
+      _options =  ['nocal', 'nopass', 'mfs']
+
+  def demo (vis):
+      t = TaskNewTask (vis=vis)
+      t.flux = 1.0
+      t.nocal = True
+      t.run ()
+
+The name of the task executable is inferred from the class name by
+stripping off the prefix "Task" and lower-casing the rest of the
+letters. If this heuristic won't work, you can specify the task name
+explicitly by setting *_name* on the class::
+
+  from mirexec import TaskBase
+
+  class DifferentNames (TaskBase):
+      _name = 'newtask'
+      _keywords = ['vis', 'line', 'flux', 'refant']
+      _options =  ['nocal', 'nopass', 'mfs']
+
+
+If you're feeling fancy, here's a less typing-intensive way of
+generating arrays of short strings::
+
+  from mirexec import TaskBase
+
+  class TaskNewTask (TaskBase):
+      _keywords = 'vis line flux refant'.split ()
+      _options =  'nocal nopass mfs'.split ()
+
 
 .. _mirexecapiref:
 
@@ -179,13 +220,19 @@ TODO. Sorry.
 This section presents a detailed API reference for the :mod:`mirexec`
 module.
 
-Task Classes
-^^^^^^^^^^^^
+Generic Task Class
+^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: TaskBase
    :members:
 
-.. here we go....
+Specific Task Classes
+^^^^^^^^^^^^^^^^^^^^^
+
+We try to keep this list up-to-date, but it may not be complete. If
+you discover a wrapped task that isn't document here, please notify
+the author. As mentioned above, it's straightforward to wrap a new
+task yourself: see :ref:`customtasks`.
 
 .. autoclass:: TaskCgDisp
 .. autoclass:: TaskUVList
@@ -219,6 +266,7 @@ Task Classes
 .. autoclass:: TaskUVFlux
 .. autoclass:: TaskUVFit
 .. autoclass:: SmaMfCal
+.. autoclass:: TaskGPCal
 .. autoclass:: TaskMaths
 .. autoclass:: TaskImGen
 .. autoclass:: TaskLinMos
