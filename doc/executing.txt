@@ -137,8 +137,8 @@ arguments with the following rules:
   stringification of each item in the iterable, joined together with
   commas. For instance, if you run::
 
-    from mirexec import TaskMFCal
-    TaskMFCal (vis=foo, line=['chan', 60, 15]).run ()
+    from mirexec import TaskMfCal
+    TaskMfCal (vis=foo, line=['chan', 60, 15]).run ()
 
   the *line* keyword of ``mfcal`` will be ``chan,60,15``.
 * The keyword "options" isn't used directly. Instead, each possible
