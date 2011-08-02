@@ -48,8 +48,6 @@ class TaskLaunchError (Exception):
         return 'Could not launch \"%s\": %s' % (' '.join (self.command), self.detail)
 
 
-_defaultDevice = '/xs'
-
 # Management of the environment of the tasks that we spawn.  By
 # default we clear most environment variables; Miriad programs are
 # essentially standalone, so we're only going to need a fairly
@@ -434,8 +432,6 @@ class TaskCgDisp (TaskBase):
                 'rot90', 'signs', 'single', 'solneg1', 'solneg2',
                 'solneg3', 'trlab', 'unequal', 'wedge', '3pixel',
                 '3value']
-    
-    device = _defaultDevice
 
 
 class TaskUVList (TaskBase):
@@ -459,8 +455,6 @@ class TaskUVPlot (TaskBase):
                 'days', 'hours', 'seconds', 'xind', 'yind',
                 'equal', 'zero', 'symbols', 'nocolour', 'dots',
                 'source', 'inter']
-                
-    device = _defaultDevice
 
 
 class TaskInvert (TaskBase):
@@ -550,8 +544,6 @@ class TaskGPPlot (TaskBase):
                 'polarization', 'delays', 'speccor',
                 'bandpass', 'dots', 'dtime', 'wrap']
 
-    device = _defaultDevice
-
 
 class TaskPrintHead (TaskBase):
     _name = 'prthd'
@@ -565,8 +557,6 @@ class TaskClosure (TaskBase):
     _options = ['amplitude', 'quad', 'avall', 'notriple', 'rms',
                 'nocal', 'nopol', 'nopass']
 
-    device = _defaultDevice
-
 
 class TaskUVFlag (TaskBase):
     _keywords = ['vis', 'select', 'line', 'edge', 'flagval', 'log' ]
@@ -579,8 +569,6 @@ class TaskUVSpec (TaskBase):
                  'offset', 'axis', 'yrange', 'device', 'nxy', 'log']
     _options = ['nocal', 'nopass', 'nopol', 'ampscalar', 'rms',
                 'nobase', 'avall', 'dots', 'flagged', 'all']
-
-    device= _defaultDevice
 
 
 class TaskUVSort (TaskBase):
@@ -618,8 +606,6 @@ class SmaUVPlot (TaskBase):
                 'days', 'hours', 'seconds', 'xind', 'yind',
                 'equal', 'zero', 'symbols', 'nocolor', 'dots',
                 'source', 'inter', 'notitle']
-                
-    device = _defaultDevice
 
 
 class SmaUVSpec (TaskBase):
@@ -633,8 +619,6 @@ class SmaUVSpec (TaskBase):
     _options = ['nocal', 'nopass', 'nopol', 'ampscalar', 'rms',
                 'nobase', 'avall', 'dots', 'flagged', 'all',
                 'jplcat', 'restfreq']
-
-    device = _defaultDevice
 
 
 class TaskUVGen (TaskBase):
@@ -738,8 +722,6 @@ class TaskSFind (TaskBase):
                 'unequal', 'mark', 'nofit', 'asciiart', 'auto', 'negative',
                 'pbcorr', 'oldsfind', 'fdrimg', 'sigmaimg', 'rmsimg',
                 'normimg', 'kvannot', 'fdrpeak', 'allpix', 'psfsize']
-
-    device = _defaultDevice
 
 
 class TaskFFT (TaskBase):
