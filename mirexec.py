@@ -114,12 +114,12 @@ def addEnvironmentClassic (home, hosttype):
     _childenv['MIRSUBS'] = join (home, 'src', 'subs')
     _childenv['MIRPDOC'] = join (home, 'doc', 'prog')
     _childenv['MIRSDOC'] = join (home, 'doc', 'subs')
-    _childenv['PGPLOT_DIR'] = childenv['MIRLIB']
+    _childenv['PGPLOT_DIR'] = _childenv['MIRLIB']
 
     # Need this to find pgxwin_server if using PGPlot.
-    _childenv['PATH'] += ':' + childenv['MIRBIN']
+    _childenv['PATH'] += ':' + _childenv['MIRBIN']
 
-    _childenv['LD_LIBRARY_PATH'] = childenv['MIRLIB']
+    _childenv['LD_LIBRARY_PATH'] = _childenv['MIRLIB']
 
 
 def addEnvironmentAutotools (home):
@@ -198,13 +198,18 @@ class MiriadSubprocess (Popen):
   :exc:`OSError` in most cases.
 
 This class allows you to interact with a running MIRIAD task and
-interrogate it after the task finishes. It is a subclass of
-:class:`subprocess.Popen` and offers all of the same features. This
-class additionally provides :meth:`checkwait` which waits for the task
-to finish, then raises :exc:`TaskFailError` if the task failed. The
-:meth:`checkcommunicate` method does the same thing but also allows
-the task output to be captured. (It also allows input to be sent to
-the task, though this is less often useful.)
+interrogate it after the task finishes. Generally, you won't create
+:class:`MiriadSubprocess` instances yourself, but instead will have
+them returned to you from calls to :meth:`TaskBase.launch`,
+:meth:`~TaskBase.launchpipe`, or :meth:`~TaskBase.launchsilent`.
+
+:class:`MiriadSubprocess` is a subclass of :class:`subprocess.Popen`
+and offers all of the same features. This class additionally provides
+:meth:`checkwait` which waits for the task to finish, then raises
+:exc:`TaskFailError` if the task failed. The :meth:`checkcommunicate`
+method does the same thing but also allows the task output to be
+captured. (It also allows input to be sent to the task, though this is
+less often useful.)
 
 The creation of a :class:`MiriadSubprocess` instance is synonymous
 with launching a subprocess -- if the creation succeeds, the
@@ -472,11 +477,50 @@ output, use :meth:`runsilent`.
 
 
     def launchpipe (self, **kwargs):
+        """Launch an invocation of the task with the current keywords,
+redirecting its output so that it may be examined by the caller.
+
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:returns: a :class:`MiriadSubprocess` instance
+:raises: :exc:`TaskLaunchError` if there was an error launching the task
+
+This task launches an instance of the task. It does not wait for that
+instance to complete; you must use the returned
+:class:`MiriadSubprocess` instance to wait for completion and check
+results. To access the task output, use the methods and attributes
+provided by :class:`MiriadSubprocess`.
+
+This function can be useful if you want to launch several tasks in
+parallel. To just wait for the task, use :meth:`snarf`. To wait for
+the task and ignore its output, use :meth:`run`. To wait for the task
+and discard its output, use :meth:`runsilent`.
+"""
         return self.launch (stdin=file (os.devnull, 'r'), stdout=PIPE, stderr=PIPE,
                             **kwargs)
 
 
     def launchsilent (self, **kwargs):
+        """Launch an invocation of the task with the current keywords,
+discarding its output.
+
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:returns: a :class:`MiriadSubprocess` instance
+:raises: :exc:`TaskLaunchError` if there was an error launching the task
+
+This task launches an instance of the task. It does not wait for that
+instance to complete; you must use the returned
+:class:`MiriadSubprocess` instance to wait for completion and check
+results.
+
+The task output is discarded. This is not recommended in most
+situations, since usually the task output is the only means by which
+errors can be diagnosed.
+
+This function can be useful if you want to launch several tasks in
+parallel. To just wait for the task, use :meth:`runsilent`. To launch
+the task and ignore its output, use :meth:`launch`. To wait for the
+task and ignore its output, use :meth:`run`.
+"""
         nullout = file (os.devnull, 'w')
         return self.launch (stdin=file (os.devnull, 'r'), stdout=nullout, stderr=nullout,
                             **kwargs)
@@ -486,11 +530,13 @@ output, use :meth:`runsilent`.
         """Run the task with the current keywords.
 
 :arg bool failok: if :const:`True`, no exception will be raised if the
-  task returns a nonzero exit code
-:arg log: where to log the tasks output if the task fails, or :const:`None`
-  (the default) not to log the output
-:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
-:raises: :exc:`TaskFailError` if the task returns a nonzero exit code
+  task returns a nonzero exit code.
+:arg filelike log: where to log debugging information if the task
+  fails, or :const:`None` (the default) not to log this information.
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess`
+  constructor.
+:raises: :exc:`TaskLaunchError` if there was an error launching the task.
+:raises: :exc:`TaskFailError` if the task returns a nonzero exit code.
 :returns: *self*
 
 Runs the task and waits for it to complete. By default, if the task returns
@@ -508,6 +554,28 @@ task, use :meth:`runsilent`.
 
 
     def runsilent (self, failok=False, log=None, **kwargs):
+        """Run the task with the current keywords, discarding its output.
+
+:arg bool failok: if :const:`True`, no exception will be raised if the
+  task returns a nonzero exit code.
+:arg filelike log: where to log debugging information if the task
+  fails, or :const:`None` (the default) not to log this information.
+:arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor.
+:raises: :exc:`TaskLaunchError` if there was an error launching the task.
+:raises: :exc:`TaskFailError` if the task returns a nonzero exit code.
+:returns: *self*
+
+Runs the task and waits for it to complete. By default, if the task returns
+an error code, a :exc:`TaskFailError` is raised, but this can be disabled
+by setting *failok* to :const:`True`.
+
+The task output is discarded. This is not recommended in most
+situations, since usually the task output is the only means by which
+errors can be diagnosed.
+
+To ignore the output of the task, use :meth:`run`. To not wait for
+the task to complete, use :meth:`launchsilent`.
+"""
         self.launchsilent (**kwargs).checkwait (failok, log)
         return self
 
@@ -522,6 +590,7 @@ task, use :meth:`runsilent`.
 :arg log: where to log the task's output if it fails, or :const:`None`
   not to log the output. Default is ``sys.stderr``.
 :arg kwargs: extra arguments to pass to the :class:`MiriadSubprocess` constructor
+:raises: :exc:`TaskLaunchError` if there was an error launching the task.
 :raises: :exc:`TaskFailError` if the task returns a nonzero exit code
 :returns: ``(stdout, stderr)``, both of which are arrays of strings of the
   task's output split on line boundaries (via :meth:`str.splitlines`). They

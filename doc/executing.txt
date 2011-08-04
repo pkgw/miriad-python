@@ -18,11 +18,11 @@
 .. _executing:
 .. sectionauthor:: Peter Williams <peter@newton.cx>
 
-Executing Existing MIRIAD Tasks: :mod:`mirexec`
+Executing MIRIAD Tasks: :mod:`mirexec`
 ===============================================
 
 .. module:: mirexec
-   :synopsis: Execute existing MIRIAD tasks in Python.
+   :synopsis: Execute MIRIAD tasks from Python.
 .. moduleauthor:: Peter Williams <peter@newton.cx>
 
 The :mod:`mirexec` module makes it convenient to launch tasks
