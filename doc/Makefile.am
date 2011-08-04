@@ -81,3 +81,6 @@ websitedir = $(HOME)/public_html/miriad-python/docs
 push: $(HTML_STAMP)
 	rm -rf $(websitedir)/*
 	cp -a html/* $(websitedir)
+
+view: $(HTML_STAMP)
+	firefox ./html/index.html &

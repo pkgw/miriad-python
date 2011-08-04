@@ -226,11 +226,38 @@ Generic Task Class
 .. autoclass:: TaskBase
    :members:
 
+.. autoclass:: MiriadSubprocess
+   :members:
+
+.. autoexception:: TaskLaunchError
+
+.. exception:: TaskFailError(returncode, cmd)
+
+   Signals that a task exited indicating failure, though it was
+   able to be launched.
+
+   :exc:`TaskFailError` may be a subclass of
+   :exc:`subprocess.CalledProcessError`, if such a class exists. (It
+   was introduced in Python 2.5.) Otherwise, it is a functional
+   equivalent to that class.
+
+   Instances have an attribute **returncode** indicating the exit code
+   of the task. This will be nonzero, since zero indicates success. As
+   far as I know, all MIRIAD tasks exit with a code of 1 unless they
+   die due to a POSIX signal (in which case, the exit code is
+   conventionally the negative of the signal number).
+
+   Instances also have an attribute **cmd** which is a string version
+   of the command line that was executed. The arguments are joined
+   together with spaces, so there's potential for ambiguity if some
+   of the argument values contain spaces.
+
+
 Specific Task Classes
 ^^^^^^^^^^^^^^^^^^^^^
 
 We try to keep this list up-to-date, but it may not be complete. If
-you discover a wrapped task that isn't document here, please notify
+you discover a wrapped task that isn't documented here, please notify
 the author. As mentioned above, it's straightforward to wrap a new
 task yourself: see :ref:`customtasks`.
 

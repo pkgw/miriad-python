@@ -41,6 +41,20 @@ except ImportError:
                                                                       self.returncode)
 
 class TaskLaunchError (Exception):
+    """Indicates that it was not possible to launch the desired
+task. A common cause of this is that the task was not found in the
+executable search path.
+
+Instances have an attribute **command**, an array of strings giving
+the command and arguments whose invocation was attempted. The zeroth
+string is the task name.
+
+Instances also have an attribute **detail**, which is a string giving
+a more detailed explanation of what failed. This is currently the
+stringification of any :exc:`OSError` that was raised in the attempt
+to launch the task.
+"""
+
     def __init__ (self, command, fmt, *args):
         self.command = command
         self.detail = fmt % args
@@ -173,6 +187,34 @@ class DefaultedTaskType (type):
 class MiriadSubprocess (Popen):
     # In this class, we work around the crappy API of the Python standard libraries.
 
+    """:synopsis: a handle to a MIRIAD task that was launched.
+
+:arg command: an iterable of strings giving the command and
+  arguments to launch. Saved as the :attr:`command` attribute
+  after initialization.
+:arg kwargs: extra arguments to be passed to
+  :class:`subprocess.Popen`.
+:raises: the same things that :class:`subprocess.Popen` may raise;
+  :exc:`OSError` in most cases.
+
+This class allows you to interact with a running MIRIAD task and
+interrogate it after the task finishes. It is a subclass of
+:class:`subprocess.Popen` and offers all of the same features. This
+class additionally provides :meth:`checkwait` which waits for the task
+to finish, then raises :exc:`TaskFailError` if the task failed. The
+:meth:`checkcommunicate` method does the same thing but also allows
+the task output to be captured. (It also allows input to be sent to
+the task, though this is less often useful.)
+
+The creation of a :class:`MiriadSubprocess` instance is synonymous
+with launching a subprocess -- if the creation succeeds, the
+subprocess is launched.
+"""
+
+    command = None
+    """An iterable of strings giving the command and arguments that
+    were executed."""
+
     def __init__ (self, command, **kwargs):
         # Raise a TypeError if command is not iterable.
         iter (command)
@@ -182,6 +224,21 @@ class MiriadSubprocess (Popen):
 
 
     def checkFailNoPipe (self, log=None):
+        """Raise an exception if the task failed; to be used if the
+task output was not captured. Assumes the subprocess has finished
+executing.
+
+:arg filelike log: if the task did indeed fail, print extra debugging
+  information to this stream, unless it is :const:`None` (the
+  default).
+:returns: self
+:raises: :exc:`StandardError` if the task has not yet finished running
+:raises: :exc:`TaskFailError` if the task failed.
+
+Note that this function only returns if the task finished
+successfully. Otherwise, an exception is raised.
+"""
+
         if self.returncode is None:
             raise StandardError ('Have not yet waited on child process')
         if self.returncode == 0:
@@ -197,6 +254,32 @@ class MiriadSubprocess (Popen):
 
 
     def checkFailPipe (self, stdout, stderr, log=None):
+        """Raise an exception if the task failed; to be used if the
+task output was captured. Assumes the subprocess has finished
+executing.
+
+:arg str stdout: a single string giving the captured standard output
+  of the task.
+:arg str stderr: a single string giving the captured standard error
+  of the task.
+:arg filelike log: if the task did indeed fail, print extra debugging
+  information to this stream, unless it is :const:`None` (the
+  default). Unlike :meth:`checkFailNoPipe`, this debugging information
+  contains the contents of *stdout* and *stderr*.
+:returns: self
+:raises: :exc:`StandardError` if the task has not yet finished running
+:raises: :exc:`TaskFailError` if the task failed.
+
+Note that this function only returns if the task finished
+successfully. Otherwise, an exception is raised.
+
+Also note that *stdout* and *stderr* are only used to log extra
+debugging information. It is important to do this, because if the task
+output is captured and the task fails, the user will have no way of
+knowing *why* the task failed unless the task output is logged
+somewhere.
+"""
+
         if self.returncode is None:
             raise StandardError ('Have not yet waited on child process')
         if self.returncode == 0:
@@ -220,6 +303,24 @@ class MiriadSubprocess (Popen):
 
 
     def checkwait (self, failok=False, log=None):
+        """Wait for the task to complete, then raise an exception if
+it failed.
+
+:arg bool failok: if :const:`True`, don't raise an exception if the
+  task failed -- this is equivalent to just calling
+  :meth:`~subprocess.Popen.wait`. The default is :const:`False`.
+:arg filelike log: if the task did indeed fail, extra debugging
+  information will be printed to this stream, unless it is
+  :const:`None` (the default).
+:returns: self
+:raises: :exc:`TaskFailError` if the task failed and *failok* was
+  :const:`False`.
+
+This method assumes that the task output has not been captured and
+hence uses :meth:`checkFailNoPipe`. If the output should be captured,
+used :meth:`checkcommunicate`.
+"""
+
         self.wait ()
         if not failok:
             self.checkFailNoPipe (log)
@@ -227,6 +328,30 @@ class MiriadSubprocess (Popen):
 
 
     def checkcommunicate (self, send=None, failok=False, log=None):
+        """Exchange input and output with the task, wait for it to
+complete, and then raise an exception if it failed.
+
+:arg str send: input to send to the subprocess in its standard input
+  stream, or :const:`None` to send nothing.
+:arg bool failok: if :const:`True`, don't raise an exception if the
+  task failed -- this is equivalent to just calling
+  :meth:`~subprocess.Popen.communicate`. The default is :const:`False`.
+:arg filelike log: if the task did indeed fail, extra debugging
+  information will be printed to this stream, unless it is
+  :const:`None` (the default).
+:returns: a tuple ``(stdout, stderr)``, two strings of the output
+  captured from the subprocess.
+:raises: :exc:`TaskFailError` if the task failed and *failok* was
+  :const:`False`.
+
+The returned *stdout* and *stderr* contents are all buffered into
+single Python strings, so this method is not appropriate if the task
+will generate very large amounts of output.
+
+This method captures the task output and hence uses
+:meth:`checkFailPipe`. If the output should be not captured, used
+:meth:`checkwait`.
+"""
         stdout, stderr = self.communicate (send)
         if not failok:
             self.checkFailPipe (stdout, stderr, log)
