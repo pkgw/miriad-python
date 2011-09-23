@@ -1456,16 +1456,25 @@ See also :meth:`readPlane` and :meth:`readRow`.
 :arg bool topIsZero: whether to invert the image ordering from
   MIRIAD's bottom-to-top ordering to top-to-bottom
 :returns: the buffer
+:raises: :exc:`MiriadError` about end-of-file if MIRIAD doesn't know
+  which plane to read
 
 Reads the current plane into a buffer. If *buf* is not :const:`None`,
 it must be of shape ``(nrow, ncol)`` (equivalently, ``(self.axes[1],
 self.axes[0])``) and be a masked ndarray. Otherwise, a new buffer is
 allocated.
 
-The method :meth:`setPlane` must be called before the first attempt to
-read or write image data. If *axes* is not :const:`None`,
-:meth:`setPlane` will be called with axes as an argument before
-performing the read.
+You must tell MIRIAD which image plane you wish to read before calling
+this function -- otherwise, a :exc:`MiriadError` about end-of-file is
+raised. You can do this either by giving a non-:const:`None` value to
+the *axes* argument, or by calling :meth:`setPlane` explicitly. (The
+former approach is a shorthand for the latter.) Note that the default
+value of *axes* (:const:`None`) doesn't change which plane should be
+read, but also doesn't choose a plane if none has been chosen
+already. If you want to read the first plane in an image without any
+setup, the correct call is::
+
+   data = ImData ('path').open ('rw').readPlane (axes=[])
 
 MIRIAD's image coordinate system is "bottom-to-top", where pixel ``(0,
 0)`` in a plane is its bottom-left pixel. This can be counterintuitive,
