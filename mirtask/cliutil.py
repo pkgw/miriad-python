@@ -96,7 +96,7 @@ def _cli_except_hook (etype, exc, tb):
 
             for logfn in (logfnbase, os.path.join (tempfile.gettempdir (), logfnbase)):
                 try:
-                    log = open (logfn, 'w')
+                    log = open (logfn, 'a')
                     logmsg = 'in the file "%s".' % logfn
                     break
                 except StandardError:
