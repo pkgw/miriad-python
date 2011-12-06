@@ -920,3 +920,9 @@ class TaskSFind (TaskBase):
 
 class TaskFFT (TaskBase):
     _keywords = ['rin', 'iin', 'sign', 'center', 'rout', 'iout', 'mag', 'phase']
+
+
+class TaskFits (TaskBase):
+    _keywords = 'in_ op out line region select stokes velocity'.split ()
+    _options = ('compress nochi lefty varwt blcal nocal nopol '
+                'nopass rawdss nod2').split ()
