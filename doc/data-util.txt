@@ -88,6 +88,12 @@ Utilities for Writing Tasks
 
 .. autofunction:: die
 
+.. autofunction:: checkusage
+
+.. autofunction:: showusage
+
+.. autofunction:: wrongusage
+
 Linetypes
 ----------------------------------------
 

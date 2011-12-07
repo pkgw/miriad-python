@@ -41,7 +41,186 @@ def printBannerSvn (name, desc, idstr):
 
 
 def die (format, *args):
+    """Raise a :exc:`SystemExit` exception with a formatted error message.
+
+:arg str format: a format string
+:arg args: arguments to the format string
+
+A :exc:`SystemExit` exception is raised with the argument ``'Error: '
++ (format % args)``. If uncaught, the interpreter exits with an error
+code and prints the exception argument.
+
+Example::
+
+   if ndim != 3:
+      die ('require exactly 3 dimensions, not %d', ndim)
+"""
+
     raise SystemExit ('Error: ' + (format % args))
+
+
+def showusage (docstring):
+    """Print program usage information and exit.
+
+:arg str docstring: the program help text
+
+This function just prints *docstring*, with one wrinkle described
+below, and exits. In most cases, the function :func:`checkusage`
+should be used: it automatically checks :data:`sys.argv` for a sole
+"-h" or "--help" argument and invokes this function.
+
+The wrinkle is that if ``docstring[0]`` is '=', which is the signpost
+that the docstring is written in MIRIAD "doc" markup, the
+miriad-python help program :command:`mirpyhelp.py` is executed with a
+guess of the name of the current program as an argument. The program
+name is guessed from the second token of the docstring, which should
+be the program name by MIRIAD conventions. If this launch fails, the
+raw docstring is printed.
+
+This function is provided in case there are instances where the user
+should get a friendly usage message that :func:`checkusage` doesn't
+catch. It can be contrasted with :func:`wrongusage`, which prints a
+terser usage message and exits with an error code.
+"""
+
+    if docstring[0] != '=':
+        # Unformatted help text
+        print docstring.strip ()
+        raise SystemExit (0)
+
+    # The docstring appears to be MIRIAD help text. Invoke
+    # mirpyhelp.py to display documentation. There's no convenient way
+    # to feed the Python-to-doc converter the docstring we've been
+    # given, so we parse out the program name from the '=' line and
+    # hope that works.
+
+    try:
+        progname = docstring.splitlines ()[0].split ()[1]
+        import os
+        os.execvp ('mirpyhelp.py', ['mirpyhelp.py', progname])
+    except:
+        print docstring.strip ()
+        raise SystemExit (0)
+
+
+def checkusage (docstring, argv=None, usageifnoargs=False):
+    """Check if the program has been run with a --help argument; if so,
+print usage information and exit.
+
+:arg str docstring: the program help text
+:arg argv: the program arguments; taken as :data:`sys.argv` if
+  given as :const:`None` (the default)
+:arg bool usageifnoargs: if :const:`True`, usage information will be
+  printed and the program will exit if no command-line arguments are
+  passed. Default is :const:`False`.
+
+This function is intended for small programs launched from the command
+line. The intention is for the program help information to be written
+in its docstring, and then for the preamble to contain something
+like::
+
+  \"\"\"myprogram - this is all the usage help you get\"\"\"
+  from mirtask.util import checkusage
+  ... # other setup
+  checkusage (__doc__)
+  ... # go on with business
+
+If it is determined that usage information should be shown,
+:func:`showusage` is called and the program exits.
+
+As described more fully in the :func:`showusage` documentation,
+*docstring* is treated specially if it begins with an equals sign,
+which indicates that it is written in MIRIAD "doc" markup. In that
+case, the :command:`mirpyhelp.py` MIRIAD documentation program is run.
+
+See also :func:`wrongusage`.
+"""
+
+    if argv is None:
+        from sys import argv
+
+    if len (argv) == 1 and usageifnoargs:
+        showusage (docstring)
+
+    if len (argv) == 2 and argv[1] in ('-h', '--h', '--he', '--hel', '--help'):
+        showusage (docstring)
+
+
+def wrongusage (docstring, *rest):
+    """Print a message indicating invalid command-line arguments and
+exit with an error code.
+
+:arg str docstring: the program help text
+:arg rest: an optional specific error message
+
+This function is intended for small programs launched from the command
+line. The intention is for the program help information to be written
+in its docstring, and then for argument checking to look something
+like this::
+
+  \"\"\"mytask <input> <output>
+
+  Do something to the input to create the output.
+  \"\"\"
+  ...
+  import sys
+  from mirtask.util import checkusage, wrongusage
+  ... # other setup
+  checkusage (__doc__)
+  ... # more setup
+  if len (sys.argv) != 3:
+     wrongusage (__doc__, "expect exactly 3 arguments, not %d",
+                 len (sys.argv))
+
+When called, an error message is printed along with the *first stanza*
+of *docstring*. The program then exits with an error code and a
+suggestion to run the program with a --help argument to see more
+detailed usage information. The "first stanza" of *docstring* is
+defined as everything up until the first blank line, ignoring any
+leading blank lines.
+
+The optional message in *rest* is treated as follows. If *rest* is
+empty, the error message "invalid command-line arguments" is
+printed. If it is a single item, that item is printed. If it is more
+than one item, the first item is treated as a format string, and it is
+percent-formatted with the remaining values. See the above example.
+
+If *docstring* starts with an equals sign, it is taken to be
+MIRIAD-format doc markup, and the first stanza is *not* printed.
+
+See also :func:`checkusage` and :func:`showusage`.
+"""
+
+    import sys
+    intext = False
+
+    if len (rest) == 0:
+        detail = 'invalid command-line arguments'
+    elif len (rest) == 1:
+        detail = rest[0]
+    else:
+        detail = rest[0] % tuple (rest[1:])
+
+    print >>sys.stderr, 'Error:', detail
+    print >>sys.stderr
+
+    # If the docstring doesn't appear to be in MIRIAD doc format,
+    # print the first stanza
+
+    if docstring[0] != '=':
+        for l in docstring.splitlines ():
+            if intext:
+                if not len (l):
+                    break
+                print >>sys.stderr, l
+            elif len (l):
+                intext = True
+                print >>sys.stderr, 'Usage:', l
+        print >>sys.stderr
+
+    print >>sys.stderr, \
+        'Run with a sole argument --help for more detailed usage information.'
+    raise SystemExit (1)
 
 
 # Baseline-related stuff
