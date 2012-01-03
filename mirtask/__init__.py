@@ -1195,33 +1195,17 @@ __all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
 
 _AXTYPE_LAT, _AXTYPE_LONG, _AXTYPE_SPEC, _AXTYPE_LIN = range (4)
 
-_axtype_map = {
-    # Not a complete copy of the table in co.for:coTyCvt; just enough
-    # to do what we need, plus VOPT to hack in support export from
-    # CASA via FITS.
-    'DEC': _AXTYPE_LAT,
-    'ELAT': _AXTYPE_LAT,
-    'ELON': _AXTYPE_LONG,
-    'FELO': _AXTYPE_SPEC,
-    'FREQ': _AXTYPE_SPEC,
-    'GLAT': _AXTYPE_LAT,
-    'GLON': _AXTYPE_LONG,
-    'RA': _AXTYPE_LONG,
-    'VELO': _AXTYPE_SPEC,
-    'VOPT': _AXTYPE_SPEC,
-}
-
-_axunit_map = {
-    'DEC': 'rad',
-    'ELAT': 'rad',
-    'ELON': 'rad',
-    'FELO': 'km/s',
-    'FREQ': 'GHz',
-    'GLAT': 'rad',
-    'GLON': 'rad',
-    'RA': 'rad',
-    'VELO': 'km/s',
-    'VOPT': 'km/s',
+_axinfo_map = {
+    'DEC': (_AXTYPE_LAT, 'rad', None),
+    'ELAT': (_AXTYPE_LAT, 'rad', None),
+    'ELON': (_AXTYPE_LONG, 'rad', None),
+    'FELO': (_AXTYPE_SPEC, 'km/s', 'VOPT'),
+    'FREQ': (_AXTYPE_SPEC, 'GHz', None),
+    'GLAT': (_AXTYPE_LAT, 'rad', None),
+    'GLON': (_AXTYPE_LONG, 'rad', None),
+    'RA': (_AXTYPE_LONG, 'rad', None),
+    'VELO': (_AXTYPE_SPEC, 'km/s', None),
+    'VOPT': (_AXTYPE_SPEC, 'km/s', None),
 }
 
 _longlat_map = {
@@ -1355,15 +1339,14 @@ use the classical MIRIAD APIs for coordinate manipulation.
             cunits[i] = ''
             axtype = _AXTYPE_LIN
 
-            for pfx, thistype in _axtype_map.iteritems ():
+            for pfx, info in _axinfo_map.iteritems ():
                 if ctype.startswith (pfx):
-                    axtype = thistype
-                    break
-
-            for pfx, thisunit in _axunit_map.iteritems ():
-                # lazy copy-paste.
-                if ctype.startswith (pfx):
-                    cunits[i] = thisunit
+                    if info[0] is not None:
+                        axtype = info[0]
+                    if info[1] is not None:
+                        cunits[i] = info[1]
+                    if info[2] is not None:
+                        ctype = ctypes[i] = info[2] + ctype[len (info[2]):]
                     break
 
             if axtype == _AXTYPE_LAT:
@@ -1396,6 +1379,9 @@ use the classical MIRIAD APIs for coordinate manipulation.
         w.wcs.cdelt = work[0]
         w.wcs.crval = work[1]
         w.wcs.crpix = work[2]
+        # I believe this is correct; see uvvars.inc:
+        w.wcs.equinox = self.getScalarItem ('epoch', 2000.0)
+        w.wcs.restfrq = self.getScalarItem ('restfreq', 0.) * 1e9
 
         if (longax is None) ^ (latax is None):
             raise CoordinateError ('unpaired celestial axis')
