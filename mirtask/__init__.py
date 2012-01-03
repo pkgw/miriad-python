@@ -1193,6 +1193,55 @@ class MaskItem (object):
 __all__ += ['MaskItem', 'MASK_MODE_FLAGS', 'MASK_MODE_RUNS']
 
 
+_AXTYPE_LAT, _AXTYPE_LONG, _AXTYPE_SPEC, _AXTYPE_LIN = range (4)
+
+_axtype_map = {
+    # Not a complete copy of the table in co.for:coTyCvt; just enough
+    # to do what we need, plus VOPT to hack in support export from
+    # CASA via FITS.
+    'DEC': _AXTYPE_LAT,
+    'ELAT': _AXTYPE_LAT,
+    'ELON': _AXTYPE_LONG,
+    'FELO': _AXTYPE_SPEC,
+    'FREQ': _AXTYPE_SPEC,
+    'GLAT': _AXTYPE_LAT,
+    'GLON': _AXTYPE_LONG,
+    'RA': _AXTYPE_LONG,
+    'VELO': _AXTYPE_SPEC,
+    'VOPT': _AXTYPE_SPEC,
+}
+
+_axunit_map = {
+    'DEC': 'rad',
+    'ELAT': 'rad',
+    'ELON': 'rad',
+    'FELO': 'km/s',
+    'FREQ': 'GHz',
+    'GLAT': 'rad',
+    'GLON': 'rad',
+    'RA': 'rad',
+    'VELO': 'km/s',
+    'VOPT': 'km/s',
+}
+
+_longlat_map = {
+    'RA': 'DEC',
+    'ELAT': 'ELON',
+    'GLAT': 'GLON',
+}
+
+
+class CoordinateError (StandardError):
+    def __init__ (self, fmt, *args):
+        if not len (args):
+            self.message = str (fmt)
+        else:
+            self.message = fmt % args
+
+    def __str__ (self):
+        return self.message
+
+
 class XYDataSet (DataSet):
     """:synopsis: an opened image dataset
 
@@ -1253,13 +1302,18 @@ use :meth:`miriad.ImData.open`.
         """Retrieve a :class:`pywcs.WCS` object representing the coordinate system
 of this image.
 
-:rtype: :class:`pywcs.WCS`
-:returns: the coordinate system
+:rtype: :class:`pywcs.WCS`, :class:`list` of :class:`str`
+:returns: tuple of (*wcs*, *warnings*)
 :raises: :exc:`ImportError` if :mod:`pywcs` is not available
 :raises: :exc:`MemoryError` if memory for the instance couldn't be allocated
 
 Note that ``wcslib``, and hence :mod:`pywcs`, use degrees internally, unlike
 MIRIAD.
+
+This function returns a tuple of a WCS coordinate system object and a list
+of warnings encountered when setting up the coordinate system. It's up to
+the caller to decide what to do about the warnings, including whether and
+how to present them to the user.
 
 At the moment, we do not encourage newly-written Python code to attempt to
 use the classical MIRIAD APIs for coordinate manipulation.
@@ -1269,71 +1323,140 @@ use the classical MIRIAD APIs for coordinate manipulation.
 
         import pywcs
 
-        # FIXME: copy hacks from co.for:coReinit
-
-        self._wcs = w = pywcs.WCS (naxis=self.axes.size)
+        w = pywcs.WCS (naxis=self.axes.size)
         # Need to set properties array-at-a-time
         work = N.empty ((3, self.axes.size))
         ctypes = [None] * self.axes.size
+        cunits = [None] * self.axes.size
+        warnings = []
+
+        # Combination of setup and fixups. Most of the latter are
+        # copied from co.for:coReinit() in MIRIAD. WCSLIB uses degrees
+        # internally (??) so we need to deal with that by setting the
+        # coordinate units. The WCSLIB documentation suggests that
+        # wcsset() actually performs the projection fixups, so much of
+        # this work may be pointless ...  but it's all in coReinit() and
+        # I believe the code is all written by the same person, Mark
+        # Calabretta.
+        #
+        # TODO: if coReinit runs into a "fatal" error, it assumes linear
+        # axes everywhere. We could do the same.
+        #
+        # Of course, the fixup code is completely untested, because
+        # I don't have a bunch of wacky-projection images lying around.
+        # Yay!
+
+        latax = longax = specax = None
+        lattype = longtype = None
+        latproj = longproj = None
 
         for i in xrange (self.axes.size):
             ctype = ctypes[i] = self.getScalarItem ('ctype%d' % (i + 1), '')
+            cunits[i] = ''
+            axtype = _AXTYPE_LIN
 
-            if (ctype.startswith ('RA--') or ctype.startswith ('DEC-') or
-                ctype.startswith ('GLON') or ctype.startswith ('GLAT') or
-                ctype.startswith ('ELON') or ctype.startswith ('ELAT')):
-                # WCSlib uses degrees internally. Tools.
-                scale = 180 / N.pi
-            else:
-                scale = 1
+            for pfx, thistype in _axtype_map.iteritems ():
+                if ctype.startswith (pfx):
+                    axtype = thistype
+                    break
 
-            work[0,i] = scale * self.getScalarItem ('cdelt%d' % (i + 1), 1)
-            work[1,i] = scale * self.getScalarItem ('crval%d' % (i + 1), 1)
+            for pfx, thisunit in _axunit_map.iteritems ():
+                # lazy copy-paste.
+                if ctype.startswith (pfx):
+                    cunits[i] = thisunit
+                    break
+
+            if axtype == _AXTYPE_LAT:
+                if latax is None:
+                    latax = i
+                    lattype = pfx
+                    latproj = ctypes[i].split ('-')[-1].upper ()
+                else:
+                    # We can still go ahead and try to be helpful here.
+                    warnings.append ('multiple latitude axes')
+            elif axtype == _AXTYPE_LONG:
+                if longax is None:
+                    longax = i
+                    longtype = pfx
+                    longproj = ctypes[i].split ('-')[-1].upper ()
+                else:
+                    warnings.append ('multiple longitude axes')
+            elif axtype == _AXTYPE_SPEC:
+                if specax is None:
+                    specax = i
+                else:
+                    warnings.append ('multiple spectral axes')
+
+            work[0,i] = self.getScalarItem ('cdelt%d' % (i + 1), 1)
+            work[1,i] = self.getScalarItem ('crval%d' % (i + 1), 1)
             work[2,i] = self.getScalarItem ('crpix%d' % (i + 1), 1)
 
         w.wcs.ctype = ctypes
+        w.wcs.cunit = cunits
         w.wcs.cdelt = work[0]
         w.wcs.crval = work[1]
         w.wcs.crpix = work[2]
-        return w
 
+        if (longax is None) ^ (latax is None):
+            raise CoordinateError ('unpaired celestial axis')
 
-    def wcsSky (self):
-        """Retrieve a two-axis :class:`pywcs.WCS` object describing
-the sky component of this image's coordinate system.
+        if longax is not None:
+            if latproj != longproj:
+                raise CoordinateError ('celestial axes have different projections')
 
-:rtype: :class:`pywcs.WCS`
-:returns: the sky coordinate system
-:raises: :exc:`ImportError` if :mod:`pywcs` is not available
-:raises: :exc:`MemoryError` if memory for the instance couldn't be
-  allocated
-:raises: :exc:`pywcs.NonseparableSubimageCoordinateSystem` if the sky
-  coordinates depend on other axes of the coordinate system, so that
-  it's not possible to describe the sky coordinate system independent
-  of the other axes.
-:raises: :exc:`pywcs.InvalidSubimageSpecificationError` in situations
-  I don't quite understand. (The :mod:`pywcs` documentation says this
-  means "Invalid subimage specification (no spectral axis)", but it's
-  definitely possible to extract sky coordinates without spectral
-  information in at least some cases.)
+            if _longlat_map[longtype] != lattype:
+                raise CoordinateError ('incompatible celestial axes')
 
-The returned coordinate system has exactly two axes: longitude and
-latitude, in that order. This may not be the same order as in the base
-image! In general, the mapping between the axes of the returned
-coordinate system and the image's full coordinate system is not
-well-defined, so that you can't safely use pixel coordinates derived
-from this coordinate system to index into the image data cube.
-"""
-        # If I call sub() with [WCSSUB_LONGITUDE | WCSSUB_LATITUDE] or'ed
-        # together, as the docs say I should be able to, I run into crashes
-        # related to some memory management problem. It'd be nice to be
-        # able to do this because we could maintain the original axis
-        # ordering of the image. If we switch the ordering the data access
-        # performance will be terrible. I think. On the other hand, there
-        # are advantages to knowing a priori what the axis ordering is.
+            long0 = work[1,longax]
+            lat0 = work[1,latax]
 
-        import pywcs
-        return self.wcs ().sub ([pywcs.WCSSUB_LONGITUDE, pywcs.WCSSUB_LATITUDE])
+            # "crval was stored as [float32] in older Miriad images,
+            # whence rounding errors may carry the reference latitude
+            # at the pole beyond 90 deg by more than the tolerance
+            # allowed by WCSLIB."
+
+            if abs (lat0) > 90:
+                if abs (lat0) < 90.00005:
+                    # "Assume it's a rounding error"
+                    lat0 = 90. * (lat0 / abs (lat0))
+                else:
+                    # "Do something tricky"
+                    lat0 = (180. - abs (lat0)) * (lat0 / abs (lat0))
+                    long0 += 180
+
+                    if long0 >= 360:
+                        long0 -= 360
+
+            _miriad_c.mirwcs_set_celref (w.wcs, long0, lat0)
+
+            if latproj == 'NCP':
+                # "Convert NCP to SIN"
+                if lat0 == 0:
+                    raise CoordinateError ('NCP proj may not have lat0 = 0')
+
+                _miriad_c.mirwcs_set_prjcode (w.wcs, 'SIN')
+                # possibly redundant with w.wcs.set_pv ?
+                _miriad_c.mirwcs_set_prjpv (w.wcs, 1, 0.)
+                _miriad_c.mirwcs_set_prjpv (w.wcs, 2, 1./N.tan (lat0 * N.pi/180))
+            elif latproj == 'GLS':
+                # "Convert GLS to SFL"
+                _miriad_c.mirwcs_set_celoffset (w.wcs, 1)
+                _miriad_c.mirwcs_set_celphitheta (w.wcs, 0, lat0)
+                _miriad_c.mirwcs_set_prjcode (w.wcs, 'SFL')
+            else:
+                _miriad_c.mirwcs_set_prjcode (w.wcs, latproj)
+
+            result = _miriad_c.mirwcs_celset (w.wcs)
+            if result is not None:
+                raise CoordinateError (result)
+
+        try:
+            w.wcs.set ()
+        except Exception, e:
+            raise CoordinateError (e)
+
+        self._wcs = w
+        return w, warnings
 
 
     def flush (self):
