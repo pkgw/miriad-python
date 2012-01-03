@@ -79,6 +79,10 @@ AC_CHECK_HEADER([miriad.h],[],[
   AC_MSG_ERROR([Couldn't find Miriad headers. See README on --with-miriad.])
 ])
 
+AC_CHECK_HEADER([wcslib/wcs.h],[],[
+  AC_MSG_ERROR([Couldn't find wcslib headers. See README on wcslib headers.])
+])
+
 AC_CHECK_LIB([mir], [wrhda_],[
   dnl Check succeeded
   mirextra=""

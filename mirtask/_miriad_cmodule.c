@@ -24,6 +24,17 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/arrayscalars.h>
 
+/* MIRIAD installs wcslib headers inside $(prefix)/include/miriad-c/wcslib
+ * so this should just work. There's some danger here though since we
+ * might pick up system wcslib headers if we're being compiled with a miriad
+ * that doesn't include these headers. And there is of course the other
+ * issue that pywcs will almost definitely be linked with a system wcslib
+ * rather than MIRIAD's private version, which presumably will lead to
+ * bad things happening. So far stuff seems to work, though ...
+ */
+
+#include <wcslib/wcs.h>
+
 #include "miriad.h"
 
 #define BUFSZ 512
@@ -2040,6 +2051,112 @@ py_mkeyi (PyObject *self, PyObject *args)
 
 /* interface - not needed, just c <-> fortran helpers */
 
+/* wcs -- some helpers to access WCS routines not provided
+ * by pywcs, needed to emulate coReinit to get proper WCS
+ * support in MIRIAD images
+ *
+ * In all of these, would be nice to have some type checking
+ * to know we're not scribbling all over random memory.
+ **/
+
+typedef struct {
+    PyObject_HEAD
+    struct wcsprm params;
+} MirWCSObject;
+
+
+static PyObject *
+py_mirwcs_set_celoffset (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    int value;
+
+    if (!PyArg_ParseTuple (args, "Oi", &wcs, &value))
+	return NULL;
+
+    wcs->params.cel.offset = value;
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mirwcs_set_celphitheta (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    double phi0, theta0;
+
+    if (!PyArg_ParseTuple (args, "Odd", &wcs, &phi0, &theta0))
+	return NULL;
+
+    wcs->params.cel.phi0 = phi0;
+    wcs->params.cel.theta0 = theta0;
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mirwcs_set_celref (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    double lng0, lat0;
+
+    if (!PyArg_ParseTuple (args, "Odd", &wcs, &lng0, &lat0))
+	return NULL;
+
+    wcs->params.cel.ref[0] = lng0;
+    wcs->params.cel.ref[1] = lat0;
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mirwcs_set_prjcode (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    char *code;
+
+    if (!PyArg_ParseTuple (args, "Os", &wcs, &code))
+	return NULL;
+
+    memset (wcs->params.cel.prj.code, 0, 4);
+    strncpy (wcs->params.cel.prj.code, code, 3);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mirwcs_set_prjpv (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    int index;
+    double value;
+
+    if (!PyArg_ParseTuple (args, "Oid", &wcs, &index, &value))
+	return NULL;
+
+    wcs->params.cel.prj.pv[index] = value;
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+py_mirwcs_celset (PyObject *self, PyObject *args)
+{
+    MirWCSObject *wcs;
+    int status;
+
+    if (!PyArg_ParseTuple (args, "O", &wcs))
+	return NULL;
+
+    status = celset (&(wcs->params.cel));
+
+    if (status)
+	return Py_BuildValue ("s", cel_errmsg[status]);
+
+    Py_RETURN_NONE;
+}
+
+
 /* vtable */
 
 static PyMethodDef methods[] = {
@@ -2177,6 +2294,15 @@ static PyMethodDef methods[] = {
     /* mir */
 
     /* interface - not needed, just c <-> fortran helpers */
+
+    /* wcs */
+
+    DEF(mirwcs_set_celoffset, "(_Wcsprm params, int value) => void"),
+    DEF(mirwcs_set_celphitheta, "(_Wcsprm params, double phi0, double theta0) => void"),
+    DEF(mirwcs_set_celref, "(_Wcsprm params, double lng0, double lat0) => void"),
+    DEF(mirwcs_set_prjcode, "(_Wcsprm params, str code) => void"),
+    DEF(mirwcs_set_prjpv, "(_Wcsprm params, ind index, double value) => void"),
+    DEF(mirwcs_celset, "(_Wcsprm params) => error-string or None"),
 
     /* Done. Sentinel. */
 
