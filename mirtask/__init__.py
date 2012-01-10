@@ -1210,8 +1210,8 @@ _axinfo_map = {
 
 _longlat_map = {
     'RA': 'DEC',
-    'ELAT': 'ELON',
-    'GLAT': 'GLON',
+    'ELON': 'ELAT',
+    'GLON': 'GLAT',
 }
 
 
