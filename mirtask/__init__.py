@@ -1251,7 +1251,7 @@ use :meth:`miriad.ImData.open`.
 
     def __init__ (self, path, mode, axes=None):
         if mode == 'rw':
-            modestr = 'old'
+            modestr = 'append'
         elif mode == 'c':
             modestr = 'new'
         else:
