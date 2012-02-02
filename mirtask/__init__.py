@@ -1218,12 +1218,12 @@ _longlat_map = {
 class CoordinateError (StandardError):
     def __init__ (self, fmt, *args):
         if not len (args):
-            self.message = str (fmt)
+            self.themessage = str (fmt)
         else:
-            self.message = fmt % args
+            self.themessage = fmt % args
 
     def __str__ (self):
-        return self.message
+        return self.themessage
 
 
 class XYDataSet (DataSet):
