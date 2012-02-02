@@ -96,8 +96,9 @@ terser usage message and exits with an error code.
 
     try:
         progname = docstring.splitlines ()[0].split ()[1]
-        import os
-        os.execvp ('mirpyhelp.py', ['mirpyhelp.py', progname])
+        import subprocess
+        if subprocess.call (['mirpyhelp.py', progname], shell=False):
+            raise Exception () # help program didn't work
     except:
         print docstring.strip ()
         raise SystemExit (0)
