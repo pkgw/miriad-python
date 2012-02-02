@@ -14,6 +14,10 @@ along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 The GNU General Public License should be found in a file named
 LICENSE.GPLv3.
 
+The dates in the copyright notices in many files include ranges of
+years (e.g., "2009-2012"); these should be taken to mean every year
+within the range, including both endpoints.
+
 
 Included Software
 =================

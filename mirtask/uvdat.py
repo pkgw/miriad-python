@@ -1,6 +1,6 @@
 '''mirtask.uvdat - wrappers for the MIRIAD UV-data streaming API'''
 
-# Copyright 2009, 2010, 2011 Peter Williams
+# Copyright 2009-2012 Peter Williams
 #
 # This file is part of miriad-python.
 #

@@ -3,7 +3,7 @@ with Python 2.4 that raise SyntaxErrors. You can't catch them in
 the module itself, but you can catch them on import, so this allows
 us to use the ideal functions if possible but fall back if necessary."""
 
-# Copyright 2009, 2010, 2011 Peter Williams
+# Copyright 2009-2012 Peter Williams
 #
 # This file is part of miriad-python.
 #
