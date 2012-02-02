@@ -108,6 +108,11 @@
 --
 """
 
+# This file is intended to be installed as a Python module but made
+# invocable in the shell using a copy of the "mirpymodtask" program
+# distributed with miriad-python; see that program for more
+# information.
+
 import numpy as N
 from miriad import VisData, ensureiterable
 from mirtask import keys, util, uvdat

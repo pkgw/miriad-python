@@ -29,23 +29,16 @@ but chanaver has two advantages:
 The file "chanaver.py" is a Python module implementing all of the
 functionality and can be executed as a standalone script. It can also
 be installed in your Python site-modules directory so that it can be
-imported by other programs. In that case, the following wrapper script
-can be used to conveniently export the module functionality to the
-shell:
+imported by other programs. In that case, a copy of the "mirpymodtask"
+script distributed with miriad-python can be used to provide
+command-line access to the module's functionality. This can be set
+up with a bash command such as:
 
-  #! /bin/sh
-  # mirpymodtask
-  #
-  # This file is dedicated to the public domain.
-  exec python -m `basename $0` "$@"
+  $ (cd $(dirname $(which mirpymodtask)) && ln -s mirpymodtask chanaver)
 
-This file must be named "chanaver", made executable, and placed
-somewhere in your $PATH. The "mirpymodtask" line makes it so that the
-mirpyhelp.py program can successfully look up the documentation string
-in the module. Identical wrapper scripts can be used to provide shell
-access to any modules you write so long as the file names are the same
-(modulo the .py extension) and the module has an "if __name__ == '__main__'"
-clause that does the right thing.
+After doing this, a program "chanaver" will launch the module as a
+task, and "mirpyhelp.py chanaver" will even find the documentation in
+the module. See the text of mirpymodtask for more information.
 
 rtft
 ========================================
