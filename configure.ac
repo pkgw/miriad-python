@@ -174,6 +174,7 @@ dnl Output
 
 AC_CONFIG_FILES([
   Makefile
+  examples/Makefile
   miriad-python.pc
   mirtask/Makefile
 ])

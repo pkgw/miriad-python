@@ -18,7 +18,7 @@
 ## (This copyright notice is delimited with double hashes to prevent it
 ## from being confusingly included in Makefile.in by automake.)
 
-SUBDIRS = mirtask
+SUBDIRS = mirtask examples
 
 if BUILD_DOCS
 SUBDIRS += doc

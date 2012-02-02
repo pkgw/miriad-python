@@ -1,0 +1,274 @@
+#! /usr/bin/env python
+# -*- mode: python; coding: utf-8 -*-
+
+# Copyright 2009, 2010, 2011 Peter Williams
+#
+# This file is part of miriad-python.
+#
+# Miriad-python is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Miriad-python is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+rtft [-c<number>] [input mp/gv] [input bm/wt] [output gv/mp] [output wt/bm]
+
+Roundtrippable Fourier transform: go from (dirty map, dirty beam) to
+(gridded visibilities, gridded weights) or vice versa.
+
+The arguments should be either
+    rtft [-c<number>] mp bm gv wt
+or
+    rtft gv wt mp bm
+
+Where "mp" is the dirty map, "beam" is the dirty beam, "gv" are the
+gridded visibilities, and "wt" are the gridded visibility weights.  In
+both cases, the first two arguments are inputs and the second two are
+outputs. The kind of transform is autodetected from whether the first
+argument contains paths named "re" and "im".
+
+All of these are MIRIAD images except "gv", which is a directory
+containing four MIRIAD images named "re", "im", "am", and "ph",
+corresponding to the respective components of the complex gridded
+visibilities. (Only "re" and "im" are strictly necessary, but one is
+often interested in looking at "am" and "ph".)
+
+Due to lack of precise information about which UV cells have nonzero
+weights, and the need to possibly undo the "double" or "sdb" options
+to invert, the roundtrip cannot be perfect.
+
+On the first point: the FT of the dirty beam is the image of gridded
+UV weights, many of which should be exactly zero. However, due to
+roundoff, these pixels are not exactly zero. rtft chooses a cutoff in
+UV weight amplitude and masks all pixels that have amplitudes below
+the cutoff. It does this by looking for the first minimum in the
+histogram of amplitudes; this should correspond to the crossover point
+between numerical noise around zero weights and lightly-weighted valid
+pixels. This process, of course, is only a heuristic and cannot
+reproduce the exact weights used inside INVERT. The "-c" option scales
+the cutoff by the specified number. For instance,
+
+  rtft -c0.5 mp bm gv wt
+
+uses a cutoff half of that determined by the histogram algorithm.
+
+On the second point: if the beam is not the exact same shape as the
+map, only a subset of it will be used in the Fourier transform. This
+limitation could perhaps be worked around.
+"""
+
+import sys, os.path, miriad, numpy as np
+from mirexec import TaskFFT, TaskMaths, TaskIMom, TaskImSub
+from mirtask import util
+
+RE, IM, AM, PH = range (4)
+
+
+def im (base, *extra):
+    return miriad.ImData (os.path.join (base, *extra))
+
+
+def im_to_vis (map, beam, gvbase, wts, cutofffactor):
+    """Given dirty map and beam images, FFT into gridded viz and weight images.
+
+         map: dataset handle; dirty map image
+        beam: dataset handle; beam image
+      gvbase: string; path where gridded viz images will go
+         wts: dataset handle; destination for weights (to be created)
+cutofffactor: float; weight flag cutoff factor; see docstring
+     returns: None
+"""
+
+    wgvs = [im (gvbase, x) for x in 'wt.re wt.im wt.am ph'.split ()]
+    gvs = [im (gvbase, x) for x in 're im am ph'.split ()]
+
+    # dirty map to weighted gridded visibilities
+
+    os.mkdir (gvbase)
+    TaskFFT (rin=map, rout=wgvs[RE], iout=wgvs[IM],
+             mag=wgvs[AM], phase=wgvs[PH], sign=-1).run ()
+
+    # beam -> weights; undo effects of options=double or sdb to invert
+
+    h = map.open ('rw')
+    mapdims = h.axes.copy ()
+    h.close ()
+
+    h = beam.open ('rw')
+    beamdims = h.axes.copy ()
+    h.close ()
+
+    if beamdims.size == 3:
+        # If no SDB, no fourth axis; map always has four axes
+        tmp = np.ones (4)
+        tmp[:3] = beamdims
+        beamdims = tmp
+
+    if not (beamdims - mapdims).any ():
+        effbeam = beam
+        cleanup_effbeam = False
+    else:
+        # Need to generate a quarter-sized subimage, and also ignore any sdb plane
+        effbeam = wts.vim ('tmp.in')
+        cleanup_effbeam = True
+        d1 = mapdims[0] // 2
+        d2 = mapdims[1] // 2
+        TaskImSub (in_=beam, out=effbeam,
+                   region='relp,b(%d,%d,%d,%d)(1)' % (-d1, -d2, d1 - 1, d2 - 1)).run ()
+
+    TaskFFT (rin=effbeam, mag=wts, sign=-1).run ()
+
+    if cleanup_effbeam:
+        effbeam.delete ()
+
+    # mask gridded data based on weight amplitudes. Cutoff is found
+    # by looking for the first minimum in the weight amplitude
+    # histogram.
+
+    h = wts.open ('rw')
+    bmam = h.readPlane (axes=[])
+    h.close ()
+    histo, edges = np.histogram (bmam, bins=64)
+
+    for i in xrange (1, histo.size):
+        if histo[i] > histo[i-1]:
+            break
+    else:
+        util.die ('cannot find weight amplitude cutoff')
+
+    cutoff = edges[i] * cutofffactor
+
+    tmp = wts.vim ('tmp.mask')
+    TaskMaths (exp='<%s>' % wts, mask='<%s>.gt.%.18e' % (wts, cutoff),
+               out=tmp).run ()
+    h = tmp.open ('rw')
+
+    for output in [wts] + wgvs:
+        h2 = output.open ('rw')
+        h.copyItem (h2, 'mask')
+        h2.close ()
+
+    h.close ()
+    tmp.delete ()
+
+    # un-apply the weights (except for phase!)
+
+    for weighted, unweighted in zip (wgvs[:PH], gvs[:PH]):
+        TaskMaths (exp='<%s>/<%s>' % (weighted, wts), out=unweighted).run ()
+        weighted.delete ()
+
+    # preserve source RA/Dec for roundtripping
+
+    h = map.open ('rw')
+    ctr1 = h.getScalarItem ('crval1')
+    ctr2 = h.getScalarItem ('crval2')
+    h.close ()
+
+    for output in [wts] + gvs:
+        h = output.open ('rw')
+        h.setScalarItem ('origcr1', np.double, ctr1)
+        h.setScalarItem ('origcr2', np.double, ctr2)
+        h.close ()
+
+
+def vis_to_im (gvbase, wts, map, beam):
+    """Given gridded viz and weight images, FFT into dirty map and beam images
+
+      gvbase: string; path where gridded viz images will go
+         wts: dataset handle; weights
+         map: dataset handle; dirty map image to be created
+        beam: dataset handle; beam image to be created
+     returns: None
+"""
+
+    # reapply the weights
+
+    gvs = [im (gvbase, s) for s in 're im am ph'.split ()]
+    wre = map.vim ('tmp.wre')
+    wim = map.vim ('tmp.wim')
+
+    TaskMaths (exp='<%s>*<%s>' % (gvs[RE], wts), out=wre).run ()
+    TaskMaths (exp='<%s>*<%s>' % (gvs[IM], wts), out=wim).run ()
+
+    # do the transforms
+
+    TaskFFT (rin=wre, iin=wim, rout=map, sign=1).run ()
+    wre.delete ()
+    wim.delete ()
+
+    TaskFFT (rin=wts, rout=beam, sign=1).run ()
+
+    # fixup header items
+
+    h = gvs[RE].open ('rw')
+    ctr1 = h.getScalarItem ('origcr1')
+    ctr2 = h.getScalarItem ('origcr2')
+    h.close ()
+
+    h = map.open ('rw')
+    h.setScalarItem ('btype', str, 'intensity')
+    h.setScalarItem ('bunit', str, 'JY/BEAM')
+    h.setScalarItem ('crval1', np.double, ctr1)
+    h.setScalarItem ('crval2', np.double, ctr2)
+    h.close ()
+
+    h = beam.open ('rw')
+    h.setScalarItem ('btype', str, 'beam')
+    h.setScalarItem ('bunit', str, 'JY/BEAM')
+    h.setScalarItem ('crval1', np.double, ctr1)
+    h.setScalarItem ('crval2', np.double, ctr2)
+    h.close ()
+
+
+def task (args):
+    """Run as a command-line task
+
+   args: list of strings; command-line arguments, not including the
+         program name (i.e. no traditional argv[0])
+returns: None
+"""
+
+    # Lame checking for a -c argument.
+    cutofffactor = 1
+    for i in range (len (args)):
+        if args[i].startswith ('-c'):
+            cutofffactor = float (args[i][2:])
+            del args[i]
+            break
+
+    if len (args) != 4:
+        util.wrongusage (__doc__, 'expect 4 non-option arguments')
+
+    in1 = miriad.ImData (args[0])
+    in2 = miriad.ImData (args[1])
+    out1 = miriad.ImData (args[2])
+    out2 = miriad.ImData (args[3])
+
+    if not in1.exists:
+        util.die ('input "%s" does not exist', in1)
+    if not in2.exists:
+        util.die ('input "%s" does not exist', in2)
+    if out1.exists:
+        util.die ('output "%s" already exists', out1)
+    if out2.exists:
+        util.die ('output "%s" already exists', out2)
+
+    if os.path.exists (in1.path ('re')) and os.path.exists (in1.path ('im')):
+        vis_to_im (str (in1), in2, out1, out2)
+    else:
+        im_to_vis (in1, in2, str (out1), out2, cutofffactor)
+
+
+if __name__ == '__main__':
+    from mirtask import cliutil # install user-friendly-ish exception handling
+    miriad.basicTrace () # this logging output is helpful
+    util.checkusage (__doc__)
+    task (sys.argv[1:])

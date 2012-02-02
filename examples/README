@@ -1,0 +1,99 @@
+This directory contains a few examples of miriad-python usage.
+
+
+chanaver.py
+========================================
+
+Demonstrates: inline documentation, reading and writing UV datasets,
+  user tasks implemented as Python modules
+
+This file is a Python module with code to channel-average a UV
+dataset. This functionality is also available with UVCAT and UVAVER,
+but chanaver has two advantages:
+
+ - You can safely channel-average a dataset that has a bandpass
+   calibration table, avoiding the extra UVCAT needed to escape the
+   traditional warning "Performing linetype average before applying
+   bandpass!"
+
+ - In some cases, chanaver may provide more precise averaging than
+   UVCAT, the MIRIAD UV I/O subsystem applies bandpasses in the
+   scaled-16-bit-integer space when that is how the visibilities are
+   stored. If a flagged channel with a very high amplitude causes the
+   the dynamic range of the other visibilities to be compressed, this
+   compression applies in the application of the bandpass when
+   averaging. Because chanaver does its averaging after the data have
+   been converted to floats, the second round of precision loss is
+   avoided.
+
+The file "chanaver.py" is a Python module implementing all of the
+functionality and can be executed as a standalone script. It can also
+be installed in your Python site-modules directory so that it can be
+imported by other programs. In that case, the following wrapper script
+can be used to conveniently export the module functionality to the
+shell:
+
+  #! /bin/sh
+  # mirpymodtask
+  #
+  # This file is dedicated to the public domain.
+  exec python -m `basename $0` "$@"
+
+This file must be named "chanaver", made executable, and placed
+somewhere in your $PATH. The "mirpymodtask" line makes it so that the
+mirpyhelp.py program can successfully look up the documentation string
+in the module. Identical wrapper scripts can be used to provide shell
+access to any modules you write so long as the file names are the same
+(modulo the .py extension) and the module has an "if __name__ == '__main__'"
+clause that does the right thing.
+
+rtft
+========================================
+
+Demonstrates: inline documentation, invoking tasks with mirexec,
+  manipulating dataset header items, user tasks implemented as
+  standalone scripts
+
+This standalone script performs a "roundtrippable Fourier
+transform". Given a dirty map and beam image created by INVERT, it
+uses MIRIAD tasks to create images of the gridded complex visibility
+data and the weights applied to them. Given a gridded visibility image
+and weight map, the dirty map and beam can be recovered. Very useful
+for diagnosing the source of imaging artifacts.
+
+Note that unlike the other examples, rtft does not parse its arguments
+in the usual keyword=value manner. It uses more traditional Unix-style
+command-line parsing.
+
+varcat
+========================================
+
+Demonstrates: inline documentation, reading UV datasets,
+  user tasks implemented as standalone scripts
+
+This standalone script prints out the changing values of UV variables
+in a MIRIAD visibility dataset. Its behavior can be somewhat similar to
+VARPLT with the log= keyword but provides more flexibility for when
+variable values are printed and the formatting method used.
+
+
+gpcat
+========================================
+
+Demonstrates: inline documentation, reading gains tables,
+  user tasks implemented as standalone scripts
+
+This standalone script prints out information from MIRIAD gains
+tables. It is similar to GPLIST, but the latter historically crashed
+for non-CARMA data. (Changelogs indicate that GPLIST may have been
+fixed in the intervening time.) The output format is easier to parse
+programmatically.
+
+
+Copyright Notice
+================
+
+Copyright 2009, 2010, 2011 Peter Williams
+
+This file is free documentation; the copyright holder gives unlimited
+permission to copy, distribute, and modify it.

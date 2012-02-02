@@ -1,0 +1,180 @@
+#! /usr/bin/env python
+
+# Copyright 2009, 2010, 2011 Peter Williams
+#
+# This file is part of miriad-python.
+#
+# Miriad-python is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Miriad-python is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
+
+"""= gpcat - Print out antenna gain information
+& pkgw
+: calibration
++
+ This task prints out the antenna gain amplitude information stored in
+ a UV dataset. The task GPLIST performs a similar function, but
+ crashes for data not from CARMA.
+
+ By default, the antenna gains are printed in a table format. The
+ first column is the full date and time associated with the entry in
+ the gain table, and the subsequent columns given the amplitudes of
+ the antenna gains in that entry. Antennas with zero amplitudes in the
+ first record are skipped in that record and all subsequent ones.
+
+ With many antennas (e.g., ATA data), the individual lines can get
+ very long.
+
+ The "rank" mode (see documentation for the keyword "rank") prints out
+ a subset of the antennas sorted by gain, providing a ranking of their
+ sensitivity or lack thereof.
+
+ The gains-table reading code does not handle all possible
+ configurations (e.g., ntau != 1) but should exit with an error if it
+ encounters a table it cannot handle.
+
+@ vis
+ The input dataset or datasets. For more information, see
+ "mirhelp vis". Only a single input dataset is supported by GPCAT.
+
+@ rank
+ An integer, defaulting to zero. Zero implies that no ranking is
+ performed and the default output format is used. A non-zero value
+ activates "rank mode". In this case, for each epoch, the list of
+ antennas is sorted by gain, and this keyword gives the number entries
+ at each end of the list whose information is printed. For instance,
+ "rank=3" causes a list of six antennas to be printed out: the three
+ with the lowest gains and the three with the highest gains.
+
+@ feed
+ An integer. Which feed to print data for, if there are gains for
+ multiple feeds. Legal values are 1 or 2. Defaults to 1.
+
+@ options
+ Multiple options can be specified, separated by commas. Minimum-match
+ is used.
+
+ 'delay' Print antenna delays, not gain amplitudes. Only legal if the
+         gains solution involves delays.
+ 'phase' Print gain phases, not gain amplitudes.
+ 
+--
+"""
+
+import sys, os
+import miriad
+from mirtask import keys, readgains, cliutil
+from mirtask.util import jdToFull, checkusage, wrongusage, die
+import numpy as N
+
+# Note that the design of this script isn't ideal since it uses global
+# variables no encapsulation. It's better to do all the work in
+# functions and launch the task with an "if __name__ == '__main__'"
+# clause.
+
+# The following is not quite appropriate since we use MIRIAD argument
+# parsing, but if doing something helpful when given --help is wrong,
+# I don't want to be right.
+checkusage (__doc__)
+
+ks = keys.KeySpec ()
+ks.keyword ('vis', 'f', ' ')
+ks.keyword ('rank', 'i', 0)
+ks.keyword ('feed', 'i', 1)
+ks.option ('phase', 'delay')
+opts = ks.process ()
+
+if opts.vis == ' ':
+    wrongusage (__doc__, 'an input file must be given')
+
+if opts.delay and opts.phase:
+    wrongusage (__doc__, '"delay" and "phase" options are mutually exclusive')
+
+if opts.rank > 0:
+    rankMode = True
+    print 'Showing %d antennas at each end of gain distribution at each epoch.' % opts.rank
+else:
+    rankMode = False
+
+# Read in basic info.
+
+ds = miriad.Data (opts.vis).open ('rw')
+gr = readgains.GainsReader (ds)
+try:
+    gr.prep ()
+except Exception, e:
+    die (str (e))
+ndata = gr.nfeeds + gr.ntau
+
+fnum = opts.feed - 1
+if fnum < 0 or fnum > 1:
+    die ('illegal feed number %d', opts.feed)
+if fnum >= gr.nfeeds:
+    die ('requested data for feed %d but dataset only has %d feed(s)',
+         opts.feed, gr.nfeeds)
+
+print 'Found gain entries for %d antennas.' % (gr.nants)
+
+if opts.delay:
+    print 'Printing antenna delays.'
+    fnum = gr.nfeeds
+else:
+    if opts.phase:
+        print 'Printing phases for feed #%d.' % (opts.feed)
+    else:
+        print 'Printing amplitudes for feed #%d.' % (opts.feed)
+
+firstiteration = True
+
+for (time, gains) in gr.readSeq ():
+    if firstiteration:
+        firstiteration = False
+
+        # Figure out which ants are present
+        ants = []
+
+        for i in xrange (0, gr.nants):
+            if abs (gains[i * ndata + fnum]) > 0:
+                ants.append (i)
+
+        if not rankMode:
+            # Default mode: print a header row - the blanks offset the time prefix
+            print '                   ',
+            for ant in ants:
+                print ' Ant %04d' % (ant + 1, ),
+            print
+
+    # Now print the data
+
+    print jdToFull (time) + ':',
+
+    if opts.phase or opts.delay:
+        # If delay, we overload fnum to get the right results
+        v = lambda a: N.arctan2 (gains[a * ndata + fnum].imag, gains[a * ndata + fnum].real) * 180 / N.pi
+    else:
+        v = lambda a: abs (gains[a * ndata + fnum])
+
+    if rankMode:
+        # rank mode: print list of ants sorted by gain
+        print
+        info = [(a + 1, v(a)) for a in ants]
+        info.sort (key = lambda tup: tup[1], reverse=False)
+        for tup in info[0:opts.rank]:
+            print '   % 3d: %g' % tup
+        print '        [skipping %d antennas]' % (len (ants) - 2 * opts.rank)
+        for tup in info[-opts.rank:]:
+            print '   % 3d: %g' % tup
+    else:
+        # default mode: print table of gains in numerical order
+        for ant in ants:
+            print ' %-+#8.3g' % (v(ant)),
+    print
