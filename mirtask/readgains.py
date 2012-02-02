@@ -40,7 +40,7 @@ class GainsReader (object):
         ngains, nfeeds, ntau, nants, nsols."""
 
         if not self.dset.hasItem ('gains'):
-            raise ValueError ('Input "%s" doesn\'t have a gains table!' % self.dset.name)
+            raise ValueError ('Input "%s" doesn\'t have a gains table!' % self.dset.path ())
 
         self.ngains = ngains = self.dset.getScalarItem ('ngains', 0)
         self.nfeeds = nfeeds = self.dset.getScalarItem ('nfeeds', 1)
@@ -124,7 +124,7 @@ def readBandpass (dset):
     """
     
     if not dset.hasItem ('bandpass'):
-        raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.name)
+        raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.path ())
 
     # Prep counts and check sanity
     
