@@ -128,11 +128,11 @@ UVDAT_OPTIONS = '3'
 
 
 class InputStructureError (Exception):
-    def __init__ (self, vis, why):
-        self.vis = vis
+    def __init__ (self, path, why):
+        self.path = path
         self.why = why
     def __str__ (self):
-        return 'Cannot handle input dataset %s: %s' % (self.vis, self.why)
+        return 'cannot handle input dataset %s: %s' % (self.path, self.why)
 
 
 class _CreateFailedError (Exception):
@@ -238,7 +238,8 @@ returns: None
 
             corrtype, _, _ = vishnd.probeVar ('corr')
             if corrtype != 'r' and corrtype != 'j' and corrtype != 'c':
-                raise InputStructureError (vis, 'type of "corr" variable (%c) not '
+                raise InputStructureError (vishnd.path (),
+                                           'type of "corr" variable (%c) not '
                                            'expected (one of rjc)' % corrtype)
             outhnd.setCorrelationType (corrtype)
 
@@ -273,9 +274,11 @@ returns: None
             nchan = vishnd.getScalar ('nchan', 0)
 
             if nspect != 1:
-                raise InputStructureError (vis, 'require exactly one spectral window')
+                raise InputStructureError (vishnd.path (),
+                                           'require exactly one spectral window')
             if nwide != 0:
-                raise InputStructureError (vis, 'require no wideband windows')
+                raise InputStructureError (vishnd.path (),
+                                           'require no wideband windows')
 
             sdf = vishnd.getVarDouble ('sdf', nspect)
             nschan = vishnd.getVarInt ('nschan', nspect)
@@ -283,13 +286,16 @@ returns: None
             sfreq = vishnd.getVarDouble ('sfreq', nspect)
 
             if nschan != nchan:
-                raise InputStructureError (vis, 'require nchan (%d) = nschan (%d)' %
+                raise InputStructureError (vishnd.path (),
+                                           'require nchan (%d) = nschan (%d)' %
                                            (nchan, nschan))
             if ischan != 1:
-                raise InputStructureError (vis, 'require ischan (%d) = 1' % ischan)
+                raise InputStructureError (vishnd.path (),
+                                           'require ischan (%d) = 1' % ischan)
 
             if nchan % naver != 0:
-                raise InputStructureError (vis, 'require nchan (%d) to be a multiple '
+                raise InputStructureError (vishnd.path (),
+                                           'require nchan (%d) to be a multiple '
                                            'of naver (%d)' % (nchan, naver))
 
             # OK, everything is hunky-dory. Compute new setup.
