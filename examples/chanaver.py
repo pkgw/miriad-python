@@ -128,9 +128,14 @@ UVDAT_OPTIONS = '3'
 
 
 class InputStructureError (Exception):
-    def __init__ (self, path, why):
+    def __init__ (self, path, why, *whyargs):
         self.path = path
-        self.why = why
+
+        if not len (whyargs):
+            self.why = why
+        else:
+            self.why = why % whyargs
+
     def __str__ (self):
         return 'cannot handle input dataset %s: %s' % (self.path, self.why)
 
@@ -240,7 +245,7 @@ returns: None
             if corrtype != 'r' and corrtype != 'j' and corrtype != 'c':
                 raise InputStructureError (vishnd.path (),
                                            'type of "corr" variable (%c) not '
-                                           'expected (one of rjc)' % corrtype)
+                                           'expected (one of rjc)', corrtype)
             outhnd.setCorrelationType (corrtype)
 
             vishnd.copyItem (outhnd, 'history')
@@ -287,16 +292,16 @@ returns: None
 
             if nschan != nchan:
                 raise InputStructureError (vishnd.path (),
-                                           'require nchan (%d) = nschan (%d)' %
-                                           (nchan, nschan))
+                                           'require nchan (%d) = nschan (%d)',
+                                           nchan, nschan)
             if ischan != 1:
                 raise InputStructureError (vishnd.path (),
-                                           'require ischan (%d) = 1' % ischan)
+                                           'require ischan (%d) = 1', ischan)
 
             if nchan % naver != 0:
                 raise InputStructureError (vishnd.path (),
                                            'require nchan (%d) to be a multiple '
-                                           'of naver (%d)' % (nchan, naver))
+                                           'of naver (%d)', nchan, naver)
 
             # OK, everything is hunky-dory. Compute new setup.
 
@@ -369,11 +374,13 @@ Will call mirtask.util.die on some errors.
     opts = ks.process (args)
 
     if opts.out == ' ':
-        util.die ('must specify an output filename (out=...)')
+        util.wrongusage (__doc__, 'must specify an output filename (out=...)')
+
     out = VisData (opts.out)
 
     if opts.naver == -1:
-        util.die ('must specify the number of channels to average (naver=...)')
+        util.wrongusage (__doc__,
+                         'must specify the number of channels to average (naver=...)')
 
     try:
         channelAverage (out, opts.naver, opts.slop, banner=DEFAULT_BANNER, args=args)
