@@ -99,50 +99,53 @@ if opts.vis == ' ':
 if opts.delay and opts.phase:
     wrongusage (__doc__, '"delay" and "phase" options are mutually exclusive')
 
-if opts.rank > 0:
-    rankMode = True
+fnum = opts.feed - 1
+
+if fnum not in (0, 1):
+    wrongusage (__doc__, 'illegal feed number %d', opts.feed)
+
+rankMode = opts.rank > 0
+
+if rankMode:
     print 'Showing %d antennas at each end of gain distribution at each epoch.' % opts.rank
-else:
-    rankMode = False
 
 # Read in basic info.
 
 ds = miriad.Data (opts.vis).open ('rw')
 gr = readgains.GainsReader (ds)
+
 try:
     gr.prep ()
 except Exception, e:
     die (str (e))
+
 ndata = gr.nfeeds + gr.ntau
 
-fnum = opts.feed - 1
-if fnum < 0 or fnum > 1:
-    die ('illegal feed number %d', opts.feed)
 if fnum >= gr.nfeeds:
     die ('requested data for feed %d but dataset only has %d feed(s)',
          opts.feed, gr.nfeeds)
 
-print 'Found gain entries for %d antennas.' % (gr.nants)
+print 'Found gain entries for %d antennas.' % gr.nants
 
 if opts.delay:
     print 'Printing antenna delays.'
     fnum = gr.nfeeds
 else:
     if opts.phase:
-        print 'Printing phases for feed #%d.' % (opts.feed)
+        print 'Printing phases for feed #%d.' % opts.feed
     else:
-        print 'Printing amplitudes for feed #%d.' % (opts.feed)
+        print 'Printing amplitudes for feed #%d.' % opts.feed
 
 firstiteration = True
 
-for (time, gains) in gr.readSeq ():
+for time, gains in gr.readSeq ():
     if firstiteration:
         firstiteration = False
 
         # Figure out which ants are present
         ants = []
 
-        for i in xrange (0, gr.nants):
+        for i in xrange (gr.nants):
             if abs (gains[i * ndata + fnum]) > 0:
                 ants.append (i)
 
@@ -159,7 +162,8 @@ for (time, gains) in gr.readSeq ():
 
     if opts.phase or opts.delay:
         # If delay, we overload fnum to get the right results
-        v = lambda a: N.arctan2 (gains[a * ndata + fnum].imag, gains[a * ndata + fnum].real) * 180 / N.pi
+        v = lambda a: N.arctan2 (gains[a * ndata + fnum].imag,
+                                 gains[a * ndata + fnum].real) * 180 / N.pi
     else:
         v = lambda a: abs (gains[a * ndata + fnum])
 
@@ -168,7 +172,7 @@ for (time, gains) in gr.readSeq ():
         print
         info = [(a + 1, v(a)) for a in ants]
         info.sort (key = lambda tup: tup[1], reverse=False)
-        for tup in info[0:opts.rank]:
+        for tup in info[:opts.rank]:
             print '   % 3d: %g' % tup
         print '        [skipping %d antennas]' % (len (ants) - 2 * opts.rank)
         for tup in info[-opts.rank:]:
@@ -176,5 +180,5 @@ for (time, gains) in gr.readSeq ():
     else:
         # default mode: print table of gains in numerical order
         for ant in ants:
-            print ' %-+#8.3g' % (v(ant)),
+            print ' %-+#8.3g' % v(ant),
     print
