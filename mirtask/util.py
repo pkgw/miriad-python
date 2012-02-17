@@ -101,7 +101,8 @@ terser usage message and exits with an error code.
             raise Exception () # help program didn't work
     except:
         print docstring.strip ()
-        raise SystemExit (0)
+
+    raise SystemExit (0)
 
 
 def checkusage (docstring, argv=None, usageifnoargs=False):
