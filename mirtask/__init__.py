@@ -1697,7 +1697,7 @@ write out the data in the correct order.
 
 See also :meth:`writeRow`.
 """
-        maskeddata = N.ma.atleast_2d (maskeddata)
+        maskeddata = N.atleast_2d (N.ma.asarray (maskeddata))
         ncol, nrow = self.axes[:2]
 
         if maskeddata.ndim != 2:
@@ -1711,14 +1711,21 @@ See also :meth:`writeRow`.
         if axes is not None:
             self.setPlane (axes)
 
+        if maskeddata.mask is N.ma.nomask:
+            self._flagbuf.fill (True)
+            fillbuf = lambda i: i # can't have a pass lambda
+        else:
+            fillbuf = lambda i: N.logical_not (maskeddata.mask[i],
+                                               self._flagbuf)
+
         if not topIsZero:
             for i in xrange (1, nrow + 1):
-                N.logical_not (maskeddata.mask[i-1], self._flagbuf)
+                fillbuf (i - 1)
                 _miriad_c.xywrite (self.tno, i, maskeddata[i-1])
                 _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
         else:
             for i in xrange (1, nrow + 1):
-                N.logical_not (maskeddata.mask[nrow - i], self._flagbuf)
+                fillbuf (nrow - i)
                 _miriad_c.xywrite (self.tno, i, maskeddata[nrow - i])
                 _miriad_c.xyflgwr (self.tno, i, self._flagbuf)
 
