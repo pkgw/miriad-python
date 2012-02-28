@@ -40,6 +40,17 @@ def printBannerSvn (name, desc, idstr):
     return b
 
 
+def printBannerGit (name, desc, idstr):
+    """Print a banner string containing the name of a task, its
+    description, and SHA1 information extracted from a Git ID
+    string. The banner string is returned as well."""
+
+    sha1 = idstr[5:-2]
+    b = '%s: %s (Python, SHA1 %s)' % (name.upper (), desc, sha1)
+    print b
+    return b
+
+
 def die (format, *args):
     """Raise a :exc:`SystemExit` exception with a formatted error message.
 
