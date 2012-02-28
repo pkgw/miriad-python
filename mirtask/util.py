@@ -34,7 +34,7 @@ def printBannerSvn (name, desc, idstr):
         date = '?'
         time = '?'
 
-    b = '%s: %s (Python, SVN r%s, modified %s %s)' % (name.upper (), desc,
+    b = '%s: %s (Python, SVN r%s, modified %s %s)' % (name, desc,
                                                       rev, date, time)
     print b
     return b
@@ -46,7 +46,7 @@ def printBannerGit (name, desc, idstr):
     string. The banner string is returned as well."""
 
     sha1 = idstr[5:-2]
-    b = '%s: %s (Python, SHA1 %s)' % (name.upper (), desc, sha1)
+    b = '%s: %s (Python, SHA1 %s)' % (name, desc, sha1)
     print b
     return b
 
@@ -67,7 +67,7 @@ Example::
       die ('require exactly 3 dimensions, not %d', ndim)
 """
 
-    raise SystemExit ('Error: ' + (format % args))
+    raise SystemExit ('error: ' + (format % args))
 
 
 def showusage (docstring):
