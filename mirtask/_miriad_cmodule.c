@@ -332,6 +332,7 @@ py_hio_generic (PyObject *self, PyObject *args)
 
     switch (PyArray_TYPE (buf)) {
     case NPY_INT8:
+    case NPY_UINT8:
 	mirtype = H_BYTE;
 	break;
     case NPY_INT16:

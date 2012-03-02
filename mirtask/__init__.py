@@ -325,22 +325,103 @@ which are acceptable in other contexts, are not allowed here.
 
 
     def getItemInfo (self, itemname):
-        """Return the characteristics of the item. Returns:
-        (desc, type, n), where 'desc' describes the item or gives its value
-        if it can be expressed compactly; 'type' is one of 'nonexistant',
-        'integer*2', 'integer*8', 'integer', 'real', 'double', 'complex',
-        'character', 'text', 'binary', or 'unknown'; and 'n' is the number
-        of elements in the item. If 'n' is 1, then 'desc' encodes the item's
-        value.
-        """
+        """Get information about a dataset item.
+
+:arg str itemname: the name of the item
+:returns: ``(kind, dtype, nvalues, offset)`` (see below)
+
+If you're interested in fetching the value of an item, in most cases
+you can safely just call :meth:`getScalarItem` or :meth:`getArrayItem`
+directly.
+
+*kind* is a string describing the item data. Possible values are:
+
+============= =========
+Kind          Meaning
+============= =========
+standard      The item is an array of one or more homogeneously-typed data values
+mixed         The item data are heterogeneously typed and not necessarily
+              representable as an array.
+nonstandard   The structure of the item data is unknown.
+missing       The item is not present in the dataset.
+============= =========
+
+If *kind* is "missing", all of remaining values are :const:`None`.
+
+*dtype* is a Numpy datatype for the item values. Possibly values are
+*int16*, *int32*, *int64*, *float32*, *float64*, *complex64*, or
+:class:`str` if the item data are textual. If *kind* is "mixed" or
+"nonstandard", *dtype* is :class:`numpy.uint8`.
+
+*nvalues* is the number of data values in the item, treating it as an
+array. If *kind* is "mixed" or "nonstandard", *nvalues* is the number
+of data bytes in the item.
+
+*offset* is the offset into the item data stream at which the actual
+item data start. The item types are usually recorded in short header
+records located before this position in the item data stream, but in
+some cases the record is missing and its effective size can vary due
+to alignment constraints.
+
+The return values are set up such that "mixed" or "nonstandard" items
+can be read in as byte arrays, but this will rarely be useful. Items
+marked as "nonstandard" do not conform to basic MIRIAD data typing
+rules and are therefore likely to be evidence of dataset corruption or
+extra files inside the dataset directory that do not correspond to
+genuine MIRIAD data.
+"""
 
         self._checkOpen ()
-        (desc, type, n) = _miriad_c.hdprobe (self.tno, itemname)
+        desc, kind, n = _miriad_c.hdprobe (self.tno, itemname)
 
-        if n == 0:
-            raise MiriadError ('error probing item ' + itemname)
+        if kind == 'nonexistent':
+            return 'missing', None, None, None
 
-        return (desc, type, n)
+        if kind == 'unknown':
+            return 'nonstandard', N.uint8, n - 4, 0
+
+        offset = None
+        retkind = 'standard'
+
+        if kind == 'character':
+            # This is a character item with a 4-byte tag identifying
+            # it as such; these get written by wrhda(). These are
+            # probably all short items.  For some moronic reason, in
+            # this case n is set to 1.
+            handle = self.getItem (itemname, 'r')
+            n = handle.getSize () - 4
+            handle.close ()
+            dtype = str
+            offset = 4
+        elif kind == 'text':
+            # This is a character item that just starts with ASCII
+            # text. Probably a history item.
+            dtype = str
+            n -= 4 # mistake in hdprobe()
+            offset = 0
+        elif kind == 'integer*2':
+            dtype = N.int16
+        elif kind == 'integer*8':
+            dtype = N.int64
+        elif kind == 'integer':
+            dtype = N.int32
+        elif kind == 'real':
+            dtype = N.float32
+        elif kind == 'double':
+            dtype = N.float64
+        elif kind == 'complex':
+            dtype = N.complex64
+        elif kind == 'binary':
+            retkind = 'mixed'
+            dtype = N.uint8
+            n -= 4
+        else:
+            raise MiriadError ('unhandled type %s for item %s' % (kind, itemname))
+
+        if offset is None:
+            offset = max (4, dtype ().itemsize)
+
+        return retkind, dtype, n, offset
 
 
     # Elaborations on the basic MIRIAD functions to make it easier
@@ -353,51 +434,22 @@ which are acceptable in other contexts, are not allowed here.
 :returns: the item data
 :rtype: ndarray or :class:`str`
 
-This function reads an entire dataset item into a numpy array.  The
-type of the array is determined from header information present in the
-item data, and the size of the array is determined from the item
-size. No size checking is performed, so attempting to load a very
+This function reads an entire item from a MIRIAD dataset into a numpy
+array. The datatype and size of the array are automatically
+determined. Array sizes are not limited, so attempting to load a very
 large item can eat all of your memory.
 
-Items marked as being of "text" or "mixed binary" type are read in
-as Python strings.
+Items detected as being of textual type are converted to Python
+strings before being returned.
+
+Items of inhomogeneous types ("mixed" or "nonstandard" in
+:meth:`getItemInfo`) are read in as byte arrays.
 """
 
-        desc, type, n = self.getItemInfo (itemname)
+        kind, dtype, n, offset = self.getItemInfo (itemname)
 
-        if type == 'nonexistant':
-            raise MiriadError ('trying to read nonexistant item ' + itemname)
-        elif type == 'unknown':
-            raise MiriadError ('cannot determine type of item ' + itemname)
-        elif type == 'character':
-            # Already gets read into desc for us.
-            return desc
-        elif type == 'integer*2':
-            dtype = N.int16
-        elif type == 'integer*8':
-            dtype = N.int64
-        elif type == 'integer':
-            dtype = N.int32
-        elif type == 'real':
-            dtype = N.float32
-        elif type == 'double':
-            dtype = N.float64
-        elif type == 'complex':
-            dtype = N.complex64
-        elif type == 'text' or type == 'binary':
-            dtype = N.int8
-        else:
-            raise MiriadError ('unhandled type %s for item %s' % (type, itemname))
-
-        # Mistakes in hdprobe() / no offset
-        if type == 'text':
-            n -= 4
-            offset = 0
-        elif type == 'binary':
-            n -= 4
-            offset = 4
-        else:
-            offset = max (4, dtype ().itemsize)
+        if kind == 'missing':
+            raise MiriadError ('trying to read nonexistent item ' + itemname)
 
         item = self.getItem (itemname, 'r')
         data = item.read (offset, dtype, n)
