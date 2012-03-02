@@ -364,11 +364,12 @@ some cases the record is missing and its effective size can vary due
 to alignment constraints.
 
 The return values are set up such that "mixed" or "nonstandard" items
-can be read in as byte arrays, but this will rarely be useful. Items
-marked as "nonstandard" do not conform to basic MIRIAD data typing
-rules and are therefore likely to be evidence of dataset corruption or
-extra files inside the dataset directory that do not correspond to
-genuine MIRIAD data.
+can be read in as byte arrays, but this will rarely be
+useful. External knowledge about the item format will be needed to
+properly decode "mixed" items. Items marked as "nonstandard" do not
+conform to basic MIRIAD data typing rules and are therefore likely to
+be evidence of dataset corruption or extra files inside the dataset
+directory that do not correspond to genuine MIRIAD data.
 """
 
         self._checkOpen ()
