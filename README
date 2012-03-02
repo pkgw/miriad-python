@@ -63,7 +63,7 @@ helpful, descriptive output at that point.
 If you encounter this error, your installation of Miriad is not recent
 enough to contain certain files needed to compile miriad-python
 successfully. Installations of Miriad with source code more recent
-than January 3, 2011 should work. (Version numbers aren't very helpful
+than January 3, 2012 should work. (Version numbers aren't very helpful
 in this case because Miriad releases are very infrequent.) The
 particular error is a lack of private wcslib headers. Consult your
 local Miriad-installation guru for more help if you're not sure how to
