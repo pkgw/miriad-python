@@ -1,53 +1,208 @@
 Miriad-Python 1.2
 =================
 
-Miriad-Python is a bridge between the MIRIAD radio analysis package and
+miriad-python is a bridge between the MIRIAD radio analysis package and
 the Python programming language. It allows you to:
 
 * read and write MIRIAD datasets in Python,
 * execute MIRIAD tasks from Python, and
 * write MIRIAD tasks in Python.
 
-For more information, see
-http://astro.berkeley.edu/~pkwill/miriad-python/ .  For helpful but
-generic installation instructions, see the file INSTALL. For a few
-more hints, see the website. For documentation, see the doc/
-subdirectory; documentation files are processed using the program
-Sphinx. If it's not available on your system, an up-to-date online
-copy of the Miriad-Python documentation can be found on the
-website. For changes from the previous release, see the file NEWS.
+This file contains detailed installation instructions. For all other
+matters, the best resource is the miriad-python website:
 
-Miriad-Python is primarily written by Peter Williams,
-pwilliams@astro.berkeley.edu . This is an early public release with
-documentation that's somewhat preliminary, so feel free to get in touch
-with him if you have any questions, particularly if you have trouble
-installing or using Miriad-Python.
+  http://astro.berkeley.edu/~pkwill/miriad-python/
+
+The website includes up-to-date contact information for the
+developers, who will be happy to assist you if you have trouble
+installing or using miriad-python.
+
+If you use miriad-python in research, please cite the miriad-python
+paper in any resulting publications. The paper is currently available
+as a preprint at http://arxiv.org/abs/1203.0330 ; that page will have
+a link to the offical journal article when it comes out.
 
 
---with-miriad
-=============
+Installation Instructions
+=========================
 
-Miriad-Python needs to be linked with the MIRIAD shared library, and
-hence you must tell the software where to find this library. This will
-almost always be done with the --with-miriad=PATH argument to
-the 'configure' script. Here, PATH is the *prefix* in which MIRIAD
-has been installed. The following files should exist:
+The basic recipe is the standard Linux one:
 
-  PATH/include/miriad-c/miriad.h
-  PATH/lib/libmir.so (the precise name of this may vary with OS;
-                      on Macs, it will be libmir.dylib)
+  ./configure --prefix=<prefix> --with-miriad=<miriad location>
+  make && make install
 
-This setup is only compatible with MIRIAD software built with the
-"new-style" build system, which I (as the author of that build system)
-fully endorse.
+Many more details are below.
+
+Requirements
+------------
+
+The following packages are required to install miriad-python:
+
+ * Python version 2.5 or greater
+ * NumPy version 1.2 or greater
+ * Matching C and Fortran-77 compilers (we use gcc and gfortran 4.4)
+ * A recent working installation of CARMA MIRIAD built with the
+   "new-style" autotools system. More on this below.
+
+There are multiple divergent MIRIAD codebases, and multiple ways to
+build them. Miriad-python must be built against a MIRIAD having three
+characteristics:
+
+  * it must be CARMA, not ATNF, MIRIAD
+  * the version must be recent (newer than Jan 3, 2012)
+  * MIRIAD must be compiled using the "new-style" (autotools) system
+
+CARMA MIRIAD's homepage is
+
+  http://carma.astro.umd.edu/wiki/index.php/Miriad
+
+Unfortunately, the binary packages distributed at that site are built
+with the "old style" system that is incompatible with
+miriad-python. If you use a Mac, we recommend that you obtain a
+"new-style" MIRIAD installation using the MacPorts system, documented
+here:
+
+  http://astro.berkeley.edu/~pkwill/miriad-macport/
+  (Oh no! the MacPort is currently too old to work with this
+   version of miriad-python!)
+
+If you don't use a Mac, it's not too hard to get a build of CARMA
+MIRIAD made with the "new-style" (autotools) build system yourself. To
+obtain up-to-date MIRIAD source code, you may find it helpful to use
+Peter Williams' Git mirror of the CARMA MIRIAD source code repository:
+
+  https://github.com/pkgw/carma-miriad
+
+(In particular, here's a link to get a gzipped tar archive of the
+latest source tree:
+
+  https://github.com/pkgw/carma-miriad/tarball/CVSHEAD )
+
+The miriad-python build configuration step should give you an error if
+it encounters an install of MIRIAD that it can’t handle.
+
+Pre-Configuration
+-----------------
+
+If the file "configure" exists in the same directory as this file, you
+may skip this section. And you want to skip this section if you
+possibly can.
+
+If you're still here, you've probably downloaded miriad-python from
+the Git repository, and the GNU "autotools" build system needs to be
+set up. Sometimes the setup process works like a charm; other times
+things go down in flames and no one except a deep autotools expert can
+figure out how to fix things.
+
+So:
+
+  * If the "configure" script exists and you're not VERY COMFORTABLE
+    with what you're doing, skip this step!
+
+  * If the following pre-configuration steps give you any problems,
+    go to the website and download an official release archive, for
+    which this step is not necessary. If the official releases are
+    too old for your purposes, ask for a new one to be made.
+
+  * The autotools have one advantage in that they're widely used.
+    If you absolutely must fight through them, contact your local
+    system administrator or Linux expert. He or she can probably
+    help without needing to know any specifics about miriad-python.
+
+If you're still still here, the setup process is simple in
+theory. In this directory, run:
+
+  ACLOCAL="aclocal -I build-aux" autoreconf -fi
+
+(This assumes you use a Bourne shell. If you don't know what that is
+or if you are, you should probably stick with official release
+archives.)
+
+If these steps succeed, that's good. But there may be bizarre failures
+farther downstream in the build process related to this step. If
+anything happens that you can't figure out, it is HIGHLY RECOMMENDED
+that you try out an official release to see if that sidesteps the
+problem.
+
+Configuration
+-------------
+
+The first real step to installation is to configure the build. The
+"configure" program will check for a variety of features of your
+computer and report and error if anything is amiss. You must give
+"configure" two pieces of information:
+
+  * The "prefix" where miriad-python files will be installed.
+    The default is /usr/local. The main miriad-python modules will
+    land in a directory named something like
+      <prefix>/lib/python2.6/site-modules/
+
+  * The location where your MIRIAD installation is found. There is
+    no default.
+
+This is all accomplished by running the "configure" script like so:
+
+  ./configure --prefix=PREFIX --with-miriad=MIRPATH
+
+Here, MIRPATH is where MIRIAD has been installed, such that the
+following files should exist:
+
+  MIRPATH/include/miriad-c/miriad.h
+  MIRPATH/lib/libmir.so -- or --
+  MIRPATH/lib/libmir.dylib -- on Macs
 
 If you believe that you're specifying the correct --with-miriad
-argument and the 'configure' checks are still failing, you can peruse
-the file 'config.log', created by 'configure', for the particular error
-that led the tool to fail. Sometimes unrelated problems can show up
-in this phase of the configuration process. If you still have trouble,
-consult your local system adminstrator (with complete contextual
-information) or the Miriad-Python author.
+argument and the "configure" checks are still failing, you can peruse
+the file "config.log", created by "configure", for the particular
+error that led the tool to fail. Sometimes unrelated problems can show
+up in this phase of the configuration process. If you still have
+trouble, consult your local system adminstrator (with complete
+contextual information) or the miriad-python developers.
+
+For thorough but generic instructions on running the "configure"
+program, see
+
+  http://git.savannah.gnu.org/cgit/automake.git/tree/INSTALL
+
+Compilation
+-----------
+
+Just run "make". If the configuration step completes successfully,
+compilation should always succeed. If it doesn't, these generic
+instructions are unable to help you.
+
+Installation
+------------
+
+If the compilation step succeeds, you can install. Run "make install"
+or "sudo make install" or "su -c 'make install'" as appropriate.
+
+Verification
+------------
+
+In order to use miriad-python in your programs, your Python
+interpreter must be able to find the miriad-python modules. If you
+configure miriad-python with a prefix matching that of your Python
+interpreter, this should happen automatically. Otherwise, you may need
+to use the $PYTHONPATH environment variable. The directory that must
+be searched is
+
+  PREFIX/lib/python2.6/site-packages
+
+with two important caveats: firstly, replace the "2.6" with the
+appropriate version of your Python interpreter; secondly, if the
+directory
+
+  PREFIX/lib64/python2.6/site-packages
+
+exists, it must be added to the Python search path as well.
+
+To superficially check that everything is accessible to the Python
+interpreter, you can run
+
+  python -c "import mirtask, mirexec, miriad"
+
+If no errors are reported, things are working.
 
 
 wcslib headers
@@ -116,6 +271,14 @@ Here are the package names for some common Linux distributions:
 If Numpy isn't available as a prebuilt binary package, you'll need to
 install it manually, instructions for which are beyond the scope of
 this document. See http://numpy.scipy.org.
+
+
+Contact Information
+===================
+
+Check the miriad-python website for up-to-date information. At the
+time of release, the best contact person is Peter Williams,
+pwilliams@astro.berkeley.edu .
 
 
 Copyright Notice
