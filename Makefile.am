@@ -46,10 +46,7 @@ pc_DATA = miriad-python.pc
 DISTCHECK_CONFIGURE_FLAGS = @MIR_DISTCHECK_CONFARG@
 EXTRA_DIST = \
  LICENSE \
- LICENSE.GPLv3 \
- LICENSE.LGPLv21 \
- NEWS \
- f2py-copynotice.txt
+ NEWS
 
 snapshot:
 	export GIT_WORK_TREE=$(top_srcdir) && \

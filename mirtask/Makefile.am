@@ -57,17 +57,19 @@ _miriad_f_la_SOURCES = _miriad_fmodule.c _miriad_f-f2pywrappers.f
 # statement saying that the status is unclear but that the license
 # is speculatively GPLv3+.
 
-_%module.c _%-f2pywrappers.f: %.fproto $(top_srcdir)/f2py-copynotice.txt
+EXTRA_DIST = f2py-copynotice.txt
+
+_%module.c _%-f2pywrappers.f: %.fproto f2py-copynotice.txt
 	$(F2PY) -m _$* $<
 	mv _$*module.c _$*moduletmp.c ; \
 	sed -e 's|%START|/*|' -e 's|%IN| *|' -e 's|%END|*/|' \
-	  <$(top_srcdir)/f2py-copynotice.txt \
+	  <f2py-copynotice.txt \
 	  >_$*module.c ; \
 	cat _$*moduletmp.c >>_$*module.c ; \
 	rm -f _$*moduletmp.c
 	mv _$*-f2pywrappers.f _$*-f2pywrapperstmp.f ; \
 	sed -e 's|%START|c     |' -e 's|%IN|c    |' -e 's|%END|c     |' \
-	  <$(top_srcdir)/f2py-copynotice.txt \
+	  <f2py-copynotice.txt \
 	  >_$*-f2pywrappers.f ; \
 	cat _$*-f2pywrapperstmp.f >>_$*-f2pywrappers.f ; \
 	rm -f _$*-f2pywrapperstmp.f
