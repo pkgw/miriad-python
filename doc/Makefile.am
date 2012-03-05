@@ -22,6 +22,7 @@ dist_noinst_DATA = \
  data.txt \
  data-highlev.txt \
  data-lowlev.txt \
+ data-util.txt \
  executing.txt \
  index.txt \
  intro.txt \
