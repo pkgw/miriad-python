@@ -6,6 +6,7 @@
   <title>miriad-python</title>
   <style type="text/css" media="all">
     @import "style.css";
+    .ss { font-family: sans-serif, sans; }
   </style>
 </head>
 
@@ -13,10 +14,10 @@
 <div id="container">
 <h1>miriad-python</h1>
 
-<p>This is the homepage of the <tt>miriad-python</tt> package, which
-provides a bridge between <a href="http://www.python.org/">the Python
-programming language</a> and <a
-href="http://carma.astro.umd.edu/wiki/index.php/Miriad">the MIRIAD
+<p>This is the homepage of the <span class="ss">miriad-python</span>
+package, which provides a bridge between <a
+href="http://www.python.org/">the Python programming language</a> and
+<a href="http://carma.astro.umd.edu/wiki/index.php/Miriad">the MIRIAD
 radio astronomy package</a>. It provides facilities for:</p>
 
 <ul>
@@ -25,118 +26,89 @@ radio astronomy package</a>. It provides facilities for:</p>
 <li>implementing MIRIAD tasks in Python.</li>
 </ul>
 
-<p>For more information, see the <a href="docs/">Miriad-Python
-Manual</a>, which is a work in progress.</p>
+<p>You might be interested in:</p>
 
-<p>Miriad-Python is almost entirely Free Software, licensed under the
-<a href="http://www.gnu.org/copyleft/gpl.html">GPL version 3</a> or
-later. Small portions of it are licensed under a BSD license with an
-advertising clause that limits your ability to make advertising claims
-using the names of the authors of those portions. With that exception,
-Miriad-Python is available for inspection and use by anyone for any
-purpose. Your contributions to the software are encouraged and
-welcomed.</p>
+<p class="latest"><b>Downloading:</b> You have two choices for source
+code download. For the easiest possible installation, use the latest
+<a href="#releases">official release archive</a> described below. For
+the latest code and development infrastructure, clone the <a
+href="http://github.com/pkgw/miriad-python/"><span
+class="ss">miriad-python</span> GitHub repository</a>. The main
+inconvenience of the latter method is that you must prepare the build
+system using the <a
+href="http://en.wikipedia.org/wiki/GNU_build_system">GNU
+“autotools”</a>, which can be quite fragile.</p>
 
-<p class="latest"><b>Latest release:</b> <a
-href="miriad-python-0.6.tar.gz">miriad-python 0.6</a> (source only),
-SHA1 checksum <tt>c70ee78afd59a631110a23a94803e2b9d1c49d68</tt>,
-git commit <tt>acbfa731c5da07c0270b03e9e93c11f4c9b7a4d4</tt></p>
+<p class="latest"><b>Installation Instructions:</b> Detailed
+instructions are included with the source code. The latest
+instructions may be <a
+href="https://github.com/pkgw/miriad-python/blob/master/README">viewed
+on GitHub</a>.</p>
 
-<p class="latest"><b>Development:</b> done in <a
-href="../repos/miriad-python.git">this Git repository</a>, mirrored
-in <a href="http://github.com/pkgw/miriad-python/">GitHub</a> — go
-ahead and fork away!</p>
+<p class="latest"><b>Documentation:</b> Check out the <a
+href="docs/">Miriad-Python Manual</a>, which is a work in
+progress. Documentation is included in the source code and built if
+you have the necessary tools.</p>
+
+<p class="latest"><b>Contributing:</b> We aspire for <span
+class="ss">miriad-python</span> to have an open and welcoming
+development model. Email patches <a href="#contact">to the author</a>,
+or <a href="http://github.com/pkgw/miriad-python/">fork us on
+GitHub</a> and hack away!</p>
+
+<p class="latest"><b>License Terms:</b> <span
+class="ss">miriad-python</span> is almost entirely Free Software,
+licensed under the <a href="http://www.gnu.org/copyleft/gpl.html">GPL
+version 3</a> or later. Small portions of it are licensed under a BSD
+license with an advertising clause that limits your ability to make
+advertising claims using the names of the authors of those
+portions. With that exception, <span class="ss">miriad-python</span>
+is available for inspection and use by anyone for any purpose. Your
+contributions to the software are encouraged and welcomed.</p>
+
+<p>If you use <span class="ss">miriad-python</span> in your research,
+please cite <a
+href="http://arxiv.org/abs/1203.0330">arxiv:1203.0330</a> in any
+resulting publications.</p>
 
 <h2>News</h2>
 
+<p><b>2012 March 03:</b> The <a
+href="http://arxiv.org/abs/1203.0330"><span
+class="ss">miriad-python</span> paper</a> is out on <a
+href="http://arxiv.org/list/astro-ph/recent">astro-ph</a>!</p>
+
 <p><b>2011 April 28:</b> You wouldn’t know it by looking at this
-webpage, but Miriad-Python has been evolving steadily over
-the past year and a half. Today I’m releasing <a
-href="miriad-python-0.6.tar.gz">version 0.6</a>, which is a <em>vast</em>
-improvement over the previous public version. It is much more
-correct and also much easier to use for a variety of tasks. Check
+webpage, but <span class="ss">miriad-python</span> has been evolving
+steadily over the past year and a half. Today I’m releasing <a
+href="miriad-python-0.6.tar.gz">version 0.6</a>, which is a
+<em>vast</em> improvement over the previous public version. It is much
+more correct and also much easier to use for a variety of tasks. Check
 it out!</p>
 
-<p><b>2009 September 28:</b> The first public release of
-Miriad-Python, <a href="miriad-python-0.1.0.tar.gz">version 0.1.0</a>,
-has been posted, and this website has been created. Even though this
-is the first release, it should be quite stable and useful. I’ve been
-using Miriad-Python for the past year or so and it’s worked very well
-and needed no substantial changes to the overall package design. This
-is a source-only release.</p>
+<p><b>2009 September 28:</b> The first public release of <span
+class="ss">miriad-python</span>, <a
+href="miriad-python-0.1.0.tar.gz">version 0.1.0</a>, has been posted,
+and this website has been created. Even though this is the first
+release, it should be quite stable and useful. I’ve been using <span
+class="ss">miriad-python</span> for the past year or so and it’s
+worked very well and needed no substantial changes to the overall
+package design. This is a source-only release.</p>
 
-<h2>Download and Installation</h2>
+<h2>Releases</h2>
+<a name="releases" />
 
-<p>Miriad-Python is currently released only as source code. The latest
-release is <a href="miriad-python-0.6.tar.gz">version
-0.6</a>. Miriad-Python requires at <a
-href="http://numpy.scipy.org">NumPy</a> with development files (in
-particular, the program <tt>f2py</tt>) installed. Miriad-Python
-definitely works with NumPy version 1.5, and may work with NumPy as
-old as 1.0, but I haven’t tested which versions work and which don’t.</p>
-
-<p>Miriad-Python also requires a recent working installation of
-MIRIAD. Because there are several flavors of MIRIAD that are built and
-released in different ways, it’s difficult for us to specify what
-exactly is needed. Version 4.1.1 or newer of MIRIAD should work, but
-somewhat older versions should also be fine. Installations of MIRIAD
-built with the “new-style” build system (using
-<tt>configure</tt>) are required. The Miriad-Python build
-configuration step should give you an error if it encounters an
-install of MIRIAD that it can’t handle. We apologize for being unable
-to give more specific requirements, but installations of MIRIAD vary
-highly and many MIRIAD installs do not derive from standardized
-released packages.</p>
-
-<p>Miriad-Python is built using the standard <a
-href="http://www.gnu.org">GNU</a> tools <tt>autoconf</tt>,
-<tt>automake</tt>, and <tt>libtool</tt>. Linux programmers and system
-administrators should be familiar with these tools if you have any
-problems. The generic recipe for building the software is:</p>
-
-<ol>
-<li>Unpack the source code into a working directory.</li>
-<li>In that directory, run <tt>./configure --help</tt> to see a list
-of package setup options. In particular, note the
-<tt>--with-miriad</tt> and <tt>--prefix</tt> options.</li>
-<li>Run <tt>./configure</tt> with any options you need.</li>
-<li>Run <tt>make install</tt>.</li>
-</ol>
-
-<p>For more detailed instructions, see the file <tt>INSTALL</tt>
-provided with the source code, or consult your local system
-administrator, or email Peter Williams at
-<tt>pwilliams@astro.berkeley.edu</tt>.</p>
-
-<h2>Documentation</h2>
-
-<p>Miriad-Python has a work-in-progress <a href="docs/">manual</a>. We
-hope that you’ll find that the manual provides a good overview of the
-design of Miriad-Python, but there are unfortunately still gaps in its
-coverage. If you’re curious about Miriad-Python, we encourage you to
-take a look at the manual and see if it fits your needs.</p>
-
-<h2>Development and Contributions</h2>
-
-<p>We aspire for Miriad-Python to have an open and welcoming
-development model. Peter Williams
-(<tt>pwilliams@astro.berkeley.edu</tt>) has been the primary developer
-but he is happy for others to become involved in the project. The
-source code to Miriad-Python is stored in a <a
-href="http://git-scm.com">Git</a> repository that’s accessible for
-read-only access via HTTP <a
-href="http://astro.berkeley.edu/~pkwill/repos/miriad-python.git">here</a>.
-For read-write access, contact Peter and he’ll figure something
-out.</p>
-
-<p>There are currently no mailing lists or bug trackers for
-Miriad-Python because the userbase is too small to warrant
-them. If that changes, they’ll be set up.</p>
+<p>Formal releases aren't made often. The latest is <span class="ss"><a
+href="miriad-python-0.6.tar.gz">miriad-python 0.6</a></span> (2011
+April 06; source only), SHA1 checksum <span
+class="ss">c70ee78afd59a631110a23a94803e2b9d1c49d68</span>, git commit
+<span class="ss">acbfa731c5da07c0270b03e9e93c11f4c9b7a4d4</span></p>
 
 <h2>Contact</h2>
+<a name="contact" />
 
-<p>For more information, contact Peter Williams at
-<tt>pwilliams@astro.berkeley.edu</tt>.</p>
+<p>For more information, contact Peter Williams at <span
+class="ss">pwilliams@astro.berkeley.edu</span>.</p>
 
 <div id="footer">
 <p>Copyright 2009&ndash;2012 Peter Williams (all years
