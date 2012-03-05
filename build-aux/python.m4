@@ -5,7 +5,7 @@ dnl contain a copyright notice.
 dnl
 dnl The license of PyGTK is the GNU Lesser General Public License,
 dnl version 2.1. We assume that this file is licensed under those
-dnl terms. That file is included with this software in the file 
+dnl terms. That file is included with this software in the file
 dnl LICENSE.LGPLv2.1.
 
 ## this one is commonly used with AM_PATH_PYTHONDIR ...

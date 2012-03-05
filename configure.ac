@@ -17,13 +17,14 @@ dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_INIT([miriad-python], [0.7])
 AC_CONFIG_SRCDIR([mirtask/_miriad_cmodule.c])
-AC_CONFIG_MACRO_DIR(.)
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE
 
 LT_INIT
 
-AC_SUBST(ACLOCAL_AMFLAGS, ["-I ."])
+AC_SUBST(ACLOCAL_AMFLAGS, ["-I build-aux"])
 
 dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[0.7])
