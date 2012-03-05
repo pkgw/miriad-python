@@ -49,7 +49,7 @@ build them. Miriad-python must be built against a MIRIAD having three
 characteristics:
 
   * it must be CARMA, not ATNF, MIRIAD
-  * the version must be recent (newer than Jan 3, 2012)
+  * the source code must be newer than Jan 3, 2012
   * MIRIAD must be compiled using the "new-style" (autotools) system
 
 CARMA MIRIAD's homepage is
@@ -118,11 +118,11 @@ theory. In this directory, run:
 or if you are, you should probably stick with official release
 archives.)
 
-If these steps succeed, that's good. But there may be bizarre failures
-farther downstream in the build process related to this step. If
-anything happens that you can't figure out, it is HIGHLY RECOMMENDED
-that you try out an official release to see if that sidesteps the
-problem.
+If these steps succeed, that's good. But these steps may succeed and
+still lead to bizarre failures farther downstream in the build
+process. If anything happens that you can't figure out, it is HIGHLY
+RECOMMENDED that you try out an official release to see if that
+sidesteps the problem.
 
 Configuration
 -------------
@@ -203,6 +203,11 @@ interpreter, you can run
   python -c "import mirtask, mirexec, miriad"
 
 If no errors are reported, things are working.
+
+Some example programs are included in the examples/ directory. They
+require real input datasets to operate, but if you have some data
+on-hand you can try them out. Each program is contains extensive
+internal documentation. See also examples/README.
 
 
 wcslib headers
