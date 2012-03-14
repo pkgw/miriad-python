@@ -902,6 +902,81 @@ Returns zero if the variance could not be determined.
         return info[0]
 
 
+    def _getNReadInfo (self, infoname, maxnread, trustmaxnread):
+        self._checkOpen ()
+        info = N.empty (maxnread, dtype=N.double)
+        info.fill (N.nan)
+        _miriad_c.uvinfo (self.tno, infoname, info)
+
+        if trustmaxnread:
+            return info
+
+        for i in xrange (maxnread):
+            if not N.isfinite (info[i]):
+                return info[:i]
+
+        raise MiriadError ('potential buffer overflow in uvinfo() call')
+
+
+    def getSkyFrequencies (self, maxnread=4096, trustmaxnread=False):
+        """Get the sky frequencies of the channels being read.
+
+:arg int maxnread: size of the data buffer; default 4096
+:arg bool trustmaxnread: whether *maxnread* is known to be accurate;
+  default :const:`False`
+:returns: the sky frequencies in GHz
+:rtype: double ndarray
+
+This function returns an array of sky frequencies measured in
+GHz. There's one element for each channel in the most recently-read UV
+record. The values may not match what you'd naively determine from the
+UV variables "sfreq" and "sdf" in various situations.
+
+The MIRIAD subroutine underlying this function requires a preallocated
+buffer for the output data. This routine can determine the correct
+size after-the-fact but does not know how large the buffer should be
+at the time of allocation. The *maxnread* parameter sets this size.
+If the value is too small for your data, memory corruption will
+result!  This function attempts to detect this case and will raise an
+exception if a buffer overrun may have occurred. If *trustmaxnread* is
+:const:`True`, the value of *maxnread* is assumed to be accurate, and
+no checking is performed.
+"""
+        # I planned to override this in uvdat.py with a version
+        # that get the number of channels from uvdatgti('nchan'), but
+        # that function just returns zero for me.
+        return self._getNReadInfo ('sfreq', maxnread, trustmaxnread)
+
+
+    def getBandwidths (self, maxnread=4096, trustmaxnread=False):
+        """Get the bandwidths of the channels being read.
+
+:arg int maxnread: size of the data buffer; default 4096
+:arg bool trustmaxnread: whether *maxnread* is known to be accurate;
+  default :const:`False`
+:returns: the bandwidths in GHz
+:rtype: double ndarray
+
+This function returns an array of channel bandwidths measured in
+GHz. There's one element for each channel in the most recently-read UV
+record. The values may not match what you'd naively determine from the
+UV variables "sfreq" and "sdf" in various situations. Each bandwidth
+value is positive, which is not necessarily true for the underlying
+"sdf" variable.
+
+The MIRIAD subroutine underlying this function requires a preallocated
+buffer for the output data. This routine can determine the correct
+size after-the-fact but does not know how large the buffer should be
+at the time of allocation. The *maxnread* parameter sets this size.
+If the value is too small for your data, memory corruption will
+result!  This function attempts to detect this case and will raise an
+exception if a buffer overrun may have occurred. If *trustmaxnread* is
+:const:`True`, the value of *maxnread* is assumed to be accurate, and
+no checking is performed.
+"""
+        return self._getNReadInfo ('bandwidth', maxnread, trustmaxnread)
+
+
     def baselineShadowed (self, diameter_meters):
         """Returns whether the most recently-read UV record comes from
         antennas that were shadowed, assuming a given antenna
