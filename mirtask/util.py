@@ -988,41 +988,51 @@ linear equations simultaneously, where the i'th equation is::
 def precess (jd1, ra1, dec1, jd2):
     """Precess a coordinate from one Julian Date to another.
 
-Arguments:
-jd1  - The JD of the input coordinates
-ra1  - The input RA in radians
-dec1 - The input dec in radians
-jd2  - The JD to precess to
+:arg double jd1: the JD of the input coordinates
+:arg double ra1: the input RA in radians
+:arg double dec1: the input dec in radians
+:arg double jd2: the JD to precess to
+:rtype: (double, double)
+:returns: (ra2, dec2), the precessed equatorial coordinates, both in radians
 
-Returns: (ra2, dec2), where
-ra2  - The output RA in radians
-dec2 - The output dec in radians
-
-Claimed accuracy is 0.3 arcsec over 50 years. Based on the
-algorithm described in the Explanatory Supplement to the
-Astronomical Almanac, 1993, pp 105-106. Does not account
-for atmospheric refraction, nutation, aberration, or
-gravitational deflection.
+Claimed accuracy is 0.3 arcsec over 50 years. Based on the algorithm
+described in the Explanatory Supplement to the Astronomical Almanac,
+1993, pp 105-106. Does not account for atmospheric refraction,
+nutation, aberration, or gravitational deflection.
 """
     return _miriad_f.precess (jd1, ra1, dec1, jd2)
 
 def equToHorizon (ra, dec, lst, lat):
     """Convert equatorial coordinates to horizon coordinates.
 
-Arguments:
-ra  - The apparent RA in radians
-dec - The apparent dec in radians
-lst - The local sidereal time in radians
-lat - The geodetic latitude of the observatory in radians
-
-Returns: (az, el), where
-az - The azimuth coordinate in radians
-el - The elevation coordinate in radians
-
-If available, this should be superseded by the RALP/NOVAS conversion
-function, which I suspect will be superior to the MIRIAD function.
+:arg double ra: the apparent RA in radians
+:arg double dec: the apparent dec in radians
+:arg double lst: the local sidereal time in radians
+:arg double lat: the geodetic latitude of the observatory in radians
+:rtype: (double, double)
+:returns: (az, el), both in radians
 """
     return _miriad_f.azel (ra, dec, lst, lat)
+
+
+def horizonToEqu (az, el, lst, lat):
+    """Convert horizon coordinates to equatorial coordinates.
+
+:arg double az: the elevation coordinate in radians
+:arg double el: the azimuth coordinate in radians
+:arg double lst: the local sidereal time in radians
+:arg double lat: the geodetic latitude of the observatory in radians
+:rtype: (double, double)
+:returns: (ra, dec), apparent equatorial coordinates, both in radians
+"""
+    # Miriad does not provide a mirror to azel() but it's easy to
+    # implement manually
+    from numpy import arcsin, arctan2, cos, sin, pi
+    dec = arcsin (sin (lat) * sin (el) + cos (lat) * cos (el) * cos (az))
+    ha = arctan2 (-sin (az) * cos (el),
+                   cos (lat) * sin (el) - sin (lat) * cos (el) * cos (az))
+    ra = (lst - ha) % (2 * pi)
+    return ra, dec
 
 
 # Spheroidal convolution functions
