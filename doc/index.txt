@@ -21,9 +21,13 @@
 Miriad-Python Manual
 ====================
 
-Welcome to the *Miriad-Python* manual. If you're unfamiliar with how
-*Miriad-Python* works or what it's for, try starting at the
-:ref:`introduction <intro>`.
+Welcome to the *miriad-python* manual. If you're unfamiliar with how
+*miriad-python* works or what it's for, try starting at the
+:ref:`introduction <intro>`. For more information about the
+*miriad-python* project, including installation instructions, issue
+reporting information, releases, and academic references, please see
+`the miriad-python website
+<http://astro.berkeley.edu/~pkwill/miriad-python/>`_.
 
 Contents
 ========
