@@ -28,10 +28,11 @@ Installation Instructions
 
 The basic recipe is the standard Linux one:
 
-  ./configure --prefix=<prefix> --with-miriad=<miriad location>
-  make && make install
+    ./configure --prefix=PREFIX --with-miriad=MIRIAD_LOCATION
+    make && make install
 
-Many more details are below.
+where `PREFIX` and `MIRIAD_LOCATION` are replaced with appropriate
+values. Many more details are below.
 
 Requirements
 ------------
@@ -86,7 +87,7 @@ it encounters an install of MIRIAD that it can’t handle.
 Pre-Configuration
 -----------------
 
-If the file "configure" exists in the same directory as this file, you
+If the file `configure` exists in the same directory as this file, you
 may skip this section. And you want to skip this section if you
 possibly can.
 
@@ -98,7 +99,7 @@ figure out how to fix things.
 
 So:
 
-  * If the "configure" script exists and you're not VERY COMFORTABLE
+  * If the `configure` script exists and you're not *very comfortable*
     with what you're doing, skip this step!
 
   * If the following pre-configuration steps give you any problems,
@@ -114,7 +115,7 @@ So:
 If you're still still here, the setup process is simple in
 theory. In this directory, run:
 
-  ACLOCAL="aclocal -I build-aux" autoreconf -fi
+    ACLOCAL="aclocal -I build-aux" autoreconf -fi
 
 (This assumes you use a Bourne shell. If you don't know what that is
 or if you are, you should probably stick with official release
@@ -122,46 +123,44 @@ archives.)
 
 If these steps succeed, that's good. But these steps may succeed and
 still lead to bizarre failures farther downstream in the build
-process. If anything happens that you can't figure out, it is HIGHLY
-RECOMMENDED that you try out an official release to see if that
+process. If anything happens that you can't figure out, it is *highly
+recommended* that you try out an official release to see if that
 sidesteps the problem.
 
 Configuration
 -------------
 
 The first real step to installation is to configure the build. The
-"configure" program will check for a variety of features of your
+`configure` program will check for a variety of features of your
 computer and report and error if anything is amiss. You must give
-"configure" two pieces of information:
+`configure` two pieces of information:
 
-  * The "prefix" where miriad-python files will be installed.
-    The default is /usr/local. The main miriad-python modules will
-    land in a directory named something like
-      <prefix>/lib/python2.6/site-modules/
+  * The "prefix" where miriad-python files will be installed.  The
+    default is `/usr/local`. The main miriad-python modules will land
+    in a directory named something like
+    `PREFIX/lib/python2.6/site-modules/`
 
   * The location where your MIRIAD installation is found. There is
     no default.
 
-This is all accomplished by running the "configure" script like so:
+This is all accomplished by running the `configure` script like so:
 
-  ./configure --prefix=PREFIX --with-miriad=MIRPATH
+    ./configure --prefix=PREFIX --with-miriad=MIRPATH
 
 Here, MIRPATH is where MIRIAD has been installed, such that the
-following files should exist:
-
-  MIRPATH/include/miriad-c/miriad.h
-  MIRPATH/lib/libmir.so -- or --
-  MIRPATH/lib/libmir.dylib -- on Macs
+following files should exist: `MIRPATH/include/miriad-c/miriad.h` and
+`MIRPATH/lib/libmir.EXT`, where `EXT` is `so` on Linux machines and
+`dylib` on Macs.
 
 If you believe that you're specifying the correct --with-miriad
-argument and the "configure" checks are still failing, you can peruse
-the file "config.log", created by "configure", for the particular
+argument and the `configure` checks are still failing, you can peruse
+the file `config.log`, created by `configure`, for the particular
 error that led the tool to fail. Sometimes unrelated problems can show
 up in this phase of the configuration process. If you still have
 trouble, consult your local system adminstrator (with complete
 contextual information) or the miriad-python developers.
 
-For thorough but generic instructions on running the "configure"
+For thorough but generic instructions on running the `configure`
 program, see
 
   http://git.savannah.gnu.org/cgit/automake.git/tree/INSTALL
@@ -169,15 +168,15 @@ program, see
 Compilation
 -----------
 
-Just run "make". If the configuration step completes successfully,
+Just run `make`. If the configuration step completes successfully,
 compilation should always succeed. If it doesn't, these generic
 instructions are unable to help you.
 
 Installation
 ------------
 
-If the compilation step succeeds, you can install. Run "make install"
-or "sudo make install" or "su -c 'make install'" as appropriate.
+If the compilation step succeeds, you can install. Run `make install`
+or `sudo make install` or `su -c 'make install'` as appropriate.
 
 Verification
 ------------
@@ -186,23 +185,23 @@ In order to use miriad-python in your programs, your Python
 interpreter must be able to find the miriad-python modules. If you
 configure miriad-python with a prefix matching that of your Python
 interpreter, this should happen automatically. Otherwise, you may need
-to use the $PYTHONPATH environment variable. The directory that must
+to use the `$PYTHONPATH` environment variable. The directory that must
 be searched is
 
-  PREFIX/lib/python2.6/site-packages
+    PREFIX/lib/python2.6/site-packages
 
-with two important caveats: firstly, replace the "2.6" with the
+with two important caveats: firstly, replace the `2.6` with the
 appropriate version of your Python interpreter; secondly, if the
 directory
 
-  PREFIX/lib64/python2.6/site-packages
+    PREFIX/lib64/python2.6/site-packages
 
 exists, it must be added to the Python search path as well.
 
 To superficially check that everything is accessible to the Python
 interpreter, you can run
 
-  python -c "import mirtask, mirexec, miriad"
+    python -c "import mirtask, mirexec, miriad"
 
 If no errors are reported, things are working.
 
@@ -223,11 +222,11 @@ We use the GitHub issue tracker for handling bug reports. See
 wcslib headers
 ==============
 
-(This section documents an error that may be reported by the 'configure'
+(This section documents an error that may be reported by the `configure`
 script in certain conditions.)
 
 First of all, sorry for the terse error message produced by the
-'configure' program -- the tools we use make it really hard to produce
+`configure` program -- the tools we use make it really hard to produce
 helpful, descriptive output at that point.
 
 If you encounter this error, your installation of Miriad is not recent
@@ -243,11 +242,11 @@ react to this situation.
 bughandler_c
 ============
 
-(This section documents an error that may be reported by the 'configure'
+(This section documents an error that may be reported by the `configure`
 script in certain conditions.)
 
 First of all, sorry for the terse error message produced by the
-'configure' program -- the tools we use make it really hard to produce
+`configure` program -- the tools we use make it really hard to produce
 helpful, descriptive output at that point.
 
 The source of this error is that your installation of Miriad is not
@@ -264,24 +263,24 @@ react to this situation.
 f2py
 ====
 
-(This section documents an error that may be reported by the 'configure'
+(This section documents an error that may be reported by the `configure`
 script in certain conditions.)
 
 First of all, sorry for the terse error message produced by the
-'configure' program -- the tools we use make it really hard to produce
+`configure` program -- the tools we use make it really hard to produce
 helpful, descriptive output at that point.
 
-The source of this error is that your system does not have the "f2py"
+The source of this error is that your system does not have the `f2py`
 program available. This program is usually distributed with the Numpy
 package for numerical work in Python. If Numpy isn't available at all,
 you need to install it. You may also need to install additional packages
-to get the f2py program in particular. On most OSes, both pieces are 
+to get the f2py program in particular. On most OSes, both pieces are
 available as a prebuilt binary package that should be easy to install.
 Here are the package names for some common Linux distributions:
 
-    Fedora: numpy, numpy-f2py
-    Ubuntu: python-numpy
-  OpenSuSE: python-numpy
+      Fedora: numpy, numpy-f2py
+      Ubuntu: python-numpy
+    OpenSuSE: python-numpy
 
 If Numpy isn't available as a prebuilt binary package, you'll need to
 install it manually, instructions for which are beyond the scope of
