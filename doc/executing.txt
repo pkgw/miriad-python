@@ -73,7 +73,7 @@ subclass of the :class:`TaskBase` class, which provides a generic
 structure for invoking MIRIAD tasks. The :mod:`mirexec` module defines
 such subclasses for many, but far from all, of the tasks provided with
 MIRIAD. It's easy to create your own :class:`TaskBase` subclass for
-anything you need that's not provided with *Miriad-Python*,
+anything you need that's not provided with *miriad-python*,
 however. See :ref:`below <customtasks>` for more information.
 
 The :class:`TaskBase` class provides functions for setting keyword

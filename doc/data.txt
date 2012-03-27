@@ -21,7 +21,7 @@
 Loading and Processing MIRIAD Data
 ==================================
 
-*Miriad-Python* deals with MIRIAD data on two levels:
+*miriad-python* deals with MIRIAD data on two levels:
 
 * There is a lightweight high-level class, :class:`miriad.Data`, that
   allows you to easily store references to datasets, check whether they
@@ -32,7 +32,7 @@ Loading and Processing MIRIAD Data
   requires a familiarity with the details of the MIRIAD data formats,
   which this documentation does not attempt to provide.
 
-If you're just getting started with *Miriad-Python*, it's important to
+If you're just getting started with *miriad-python*, it's important to
 understand the high-level :class:`miriad.Data` class but not necessary
 to read about the low-level :mod:`mirtask` module just yet.
 

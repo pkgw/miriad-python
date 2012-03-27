@@ -24,7 +24,7 @@
 # detect tasks that are implemented as modules. Keep it within the
 # first 32 bytes of the file.
 #
-# This is a wrapper script for Miriad-Python tasks that are
+# This is a wrapper script for miriad-python tasks that are
 # implemented as Python modules. (This is something you might
 # want to do if you want the task to be directly callable from
 # other Python code.)

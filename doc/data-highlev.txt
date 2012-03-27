@@ -82,7 +82,7 @@ And you can open the dataset with :meth:`~Data.open` to get
 access to its contents. See :ref:`datalowlev` for more information.
 
 You may also wish to enable tracing of MIRIAD task execution in
-*Miriad-Python* by calling :func:`basicTrace`. There are a few more
+*miriad-python* by calling :func:`basicTrace`. There are a few more
 rarely-used members of :class:`~Data` not mentioned here that are
 documented in the :ref:`API reference <miriadapiref>` below.
 
