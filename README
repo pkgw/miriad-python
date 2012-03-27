@@ -63,20 +63,22 @@ miriad-python. If you use a Mac, we recommend that you obtain a
 here:
 
   http://astro.berkeley.edu/~pkwill/miriad-macport/
-  (Oh no! the MacPort is currently too old to work with this
-   version of miriad-python!)
 
-If you don't use a Mac, it's not too hard to get a build of CARMA
-MIRIAD made with the "new-style" (autotools) build system yourself. To
-obtain up-to-date MIRIAD source code, you may find it helpful to use
-Peter Williams' Git mirror of the CARMA MIRIAD source code repository:
+If you don't use a Mac, it's not too hard to build CARMA MIRIAD with
+the "new-style" (autotools) build system yourself. It is easiest to
+start with the most recent source code package used by the MacPort:
+
+  http://astro.berkeley.edu/~pkwill/miriad-macport/miriad-latest.tar.gz
+
+For the very latest MIRIAD source code, you may find it useful to
+access Peter Williams' GitHub mirror of the CARMA MIRIAD source
+tree.
 
   https://github.com/pkgw/carma-miriad
 
-(In particular, here's a link to get a gzipped tar archive of the
-latest source tree:
-
-  https://github.com/pkgw/carma-miriad/tarball/CVSHEAD )
+This option presents the same autotools-related challenges as those
+relating to Git checkouts of this package -- see the following
+section.
 
 The miriad-python build configuration step should give you an error if
 it encounters an install of MIRIAD that it can’t handle.
