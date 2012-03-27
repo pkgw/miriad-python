@@ -1,5 +1,5 @@
-miriad-python 1.2
-=================
+miriad-python 1.2.1
+===================
 
 miriad-python is a bridge between the MIRIAD radio analysis package and
 the Python programming language. It allows you to:

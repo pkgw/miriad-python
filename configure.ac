@@ -15,7 +15,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([miriad-python], [1.2])
+AC_INIT([miriad-python], [1.2.1])
 AC_CONFIG_SRCDIR([mirtask/_miriad_cmodule.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux])
