@@ -40,7 +40,7 @@ of a task, run many tasks in parallel, and so on.
 Running a MIRIAD task in :mod:`mirexec` requires three steps which,
 as shown above, can often be condensed into a single line of Python:
 
-#. Create an instance of a "task" class corresponding to the task 
+#. Create an instance of a "task" class corresponding to the task
    you wish to run.
 #. Set the task keywords and options.
 #. Call a method that actually launches the task.
@@ -173,7 +173,7 @@ has different uses:
 
 Defining Your Own Task Classes
 -------------------------------
-  
+
 In most cases, it's straightforward to define your own task class. To
 wrap the task "newtask", you should write something like::
 

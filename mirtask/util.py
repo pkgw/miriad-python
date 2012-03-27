@@ -358,7 +358,7 @@ def polarizationNumber (polname):
 def polarizationIsInten (polnum):
     """Return True if the given polarization is intensity-type, e.g.,
     is I, XX, YY, RR, or LL."""
-    
+
     return _miriad_f.polspara (polnum)
 
 # And, merging them together: antpol and basepol handling.
@@ -856,9 +856,9 @@ Implemented using the Miriad function NLLSQU.
 
     from _miriad_f import nllsqu
     arr = lambda shape: N.zeros (shape, dtype=N.float32, order='F')
-    
+
     # Verify arguments
-    
+
     guess = N.asarray (guess, dtype=N.float32, order='F')
     if guess.ndim != 1:
         raise ValueError ('Least squares guess must be 1-dimensional')
@@ -904,7 +904,7 @@ Implemented using the Miriad function NLLSQU.
         if relCrit <= 0: raise ValueError ('"relCrit" must be positive')
 
     allowFail = bool (allowFail)
-    
+
     # Construct scratch arrays
 
     normResids = arr ((neqn, ))
@@ -923,7 +923,7 @@ Implemented using the Miriad function NLLSQU.
         msg = ('Nonlinear least-squares fit failed: success = %d '
                '(see docstring for explanations)' % success)
         raise RuntimeError (msg)
-    
+
     # Return useful results
 
     rChiSq = (normResids**2).sum () / (neqn - nunk)
@@ -954,13 +954,13 @@ linear equations simultaneously, where the i'th equation is::
 """
 
     from _miriad_f import llsqu
-    
+
     coeffs = N.asarray (coeffs, dtype=N.float32, order='F')
     if coeffs.ndim != 2:
         raise ValueError ('"coeffs" must be a 2D array.')
 
     nunk, neqn = coeffs.shape
-    
+
     if neqn < nunk:
         raise RuntimeError ('Not enough equations to solve problem')
 
@@ -974,7 +974,7 @@ linear equations simultaneously, where the i'th equation is::
     pivot = N.ndarray ((nunk, ), dtype=N.intc, order='F')
 
     # Do it!
-    
+
     c, success = llsqu (vals, coeffs, b, pivot)
 
     if success != 0:

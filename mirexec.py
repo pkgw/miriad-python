@@ -96,9 +96,9 @@ del _initchildenv
 
 def addEnvironmentClassic (home, hosttype):
     global _bindir, _childenv
-    
+
     _bindir = join (home, 'bin', hosttype)
-    
+
     _childenv['MIR'] = home
     _childenv['MIRHOST'] = hosttype
     _childenv['AIPSTV'] = 'XASIN'
@@ -124,9 +124,9 @@ def addEnvironmentClassic (home, hosttype):
 
 def addEnvironmentAutotools (home):
     global _bindir, _childenv
-    
+
     _bindir = join (home, 'bin')
-    
+
     _childenv['MIR'] = home
     _childenv['AIPSTV'] = 'XASIN'
     _childenv['MIRBIN'] = _bindir
@@ -145,7 +145,7 @@ def _mirBinPath (name):
         # the case, we'll find out a in a second when the launch of
         # the task fails.
         return name
-    
+
     return join (_bindir, name)
 
 
@@ -161,14 +161,14 @@ class DefaultedTaskType (type):
     # and makes tab-completing easy.
     #
     # We also guess the task name if _name is not set. Cute.
-    
+
     def __init__ (cls, name, bases, dict):
         type.__init__ (cls, name, bases, dict)
-        
+
         # TaskBase doesn't get any special treatment
         if name == 'TaskBase':
             return
-        
+
         if '_name' not in dict:
             if name.startswith ('Task'):
                 setattr (cls, '_name', name[4:].lower ())
@@ -375,7 +375,7 @@ module, it's easy to wrap it yourself: see :ref:`customtasks`.
 """
 
     __metaclass__ = DefaultedTaskType
-    
+
     _name = None
     _keywords = None
     _options = None
@@ -403,7 +403,7 @@ instance via :func:`setattr`.
         cmd = [_mirBinPath (self._name)]
 
         # Options
-        
+
         options = []
 
         for opt in self._options or []:
@@ -432,13 +432,13 @@ instance via :func:`setattr`.
             cmd.append ('options=' + ','.join (options))
 
         # Keywords
-        
+
         for name in self._keywords or []:
             key = name
 
             if key[-1] == '_':
                 key = key[:-1]
-            
+
             val = getattr (self, name)
 
             if val is None:
@@ -638,7 +638,7 @@ class TaskUVList (TaskBase):
 class TaskUVPlot (TaskBase):
     # XXX FIXME: there is a 'log' option, but that would conflict
     # with the 'log' parameter.
-    
+
     _name = 'uvplt'
     _keywords = ['vis', 'line', 'device', 'axis', 'size', 'select',
                  'stokes', 'xrange', 'yrange', 'average', 'hann',
@@ -689,13 +689,13 @@ class TaskIMom (TaskBase):
     _keywords = ['in_', 'region', 'min', 'max', 'log']
     _options = ['skew', 'clipmean', 'clip1sigma']
 
-    
+
 class TaskImFit (TaskBase):
     _keywords = ['in_', 'region', 'clip', 'object', 'spar',
                  'fix', 'out']
     _options = ['residual']
 
-    
+
 class TaskUVAver (TaskBase):
     _keywords = ['vis', 'select', 'line', 'ref', 'stokes',
                  'interval', 'out']
@@ -789,7 +789,7 @@ class TaskUVCat (TaskBase):
 class SmaUVPlot (TaskBase):
     # XXX FIXME: there is a 'log' option, but that would conflict
     # with the 'log' parameter.
-    
+
     _name = 'smauvplt'
     _keywords = ['vis', 'line', 'device', 'axis', 'size', 'select',
                  'stokes', 'xrange', 'yrange', 'average', 'hann',
@@ -804,12 +804,12 @@ class SmaUVPlot (TaskBase):
 
 class SmaUVSpec (TaskBase):
     _name = 'smauvspec'
-    
+
     _keywords = ['vis', 'select', 'line', 'stokes', 'interval', 'hann',
                  'offset', 'catpath', 'vsource', 'veltype', 'veldef',
                  'strngl', 'axis', 'yrange', 'dotsize', 'device',
                  'nxy', 'log']
-    
+
     _options = ['nocal', 'nopass', 'nopol', 'ampscalar', 'rms',
                 'nobase', 'avall', 'dots', 'flagged', 'all',
                 'jplcat', 'restfreq']
@@ -830,7 +830,7 @@ class TaskUVGen2 (TaskBase):
                  'lat', 'cycle', 'pbfwhm', 'center', 'gnoise',
                  'pnoise', 'systemp', 'tpower', 'jyperk', 'out']
 
-    
+
 class TaskUVCal (TaskBase):
     _keywords = ['vis', 'select', 'radec', 'badchan', 'endchan', 'nave',
                  'sigma', 'scale', 'offset', 'model', 'polcal', 'polcode',

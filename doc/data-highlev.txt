@@ -22,7 +22,7 @@ High-Level Access to MIRIAD Data: :mod:`miriad`
 ===============================================
 
 .. module:: miriad
-   :synopsis: Talk about MIRIAD datasets naturally in Python. 
+   :synopsis: Talk about MIRIAD datasets naturally in Python.
 .. moduleauthor:: Peter Williams <peter@newton.cx>
 
 On the commandline, you refer to datasets by their filenames. The

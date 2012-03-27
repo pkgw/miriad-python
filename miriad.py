@@ -46,7 +46,7 @@ action can be traced by calling :func:`trace`.
     def t (cmd):
         print "MIRIAD: '" + "' '".join (cmd) + "'"
         sys.stdout.flush ()
-    
+
     launchTrace = t
 
 def trace (cmd):
@@ -110,9 +110,9 @@ filenames underlying both datasets are equal.
 
     def __hash__ (self):
         return hash (self.realPath ())
-    
+
     # Low-level attributes
-    
+
     @property
     def exists (self):
         """Read-only :class:`bool`. :const:`True` if the dataset specified
@@ -141,7 +141,7 @@ attribute::
         # conditions, the history file should always be modified when the
         # dataset is modified, and the history file should always be there.
         return os.stat (self.path ('history'))[ST_MTIME]
-    
+
     @property
     def umtime (self):
         """Read-only :class:`int`. The "unconditional" modification
@@ -153,7 +153,7 @@ returned if the dataset does not exist. See the example in
         except OSError, e:
             if e.errno == 2: return 0
             raise e
-    
+
     def checkExists (self):
         """:rtype: :const:`None`
 
@@ -180,11 +180,11 @@ and return. If not, raise an :class:`Exception`."""
 
 
     # Low-level operations
-    
+
     def moveTo (self, dest):
         """Move the dataset to a new location.
 
-:arg dest: the new filename for the dataset 
+:arg dest: the new filename for the dataset
 :type dest: :class:`str`, or anything upon which :func:`str` can be called.
 :rtype: :class:`~Data`
 :returns: :const:`self`
@@ -197,9 +197,9 @@ called with a "[rename]" operation.
 
         self.checkExists ()
         dest = str (dest)
-        
+
         trace (['[rename]', 'from=%s' % self, 'to=%s' % dest])
-        
+
         os.rename (self.base, dest)
         self.base = dest
 
@@ -235,7 +235,7 @@ through the copy.
 
         return self
 
-    
+
     def delete (self):
         """Delete the dataset.
 
@@ -295,7 +295,7 @@ to set the appropriate task input keyword.
 
 
     # Programming-related helpers.
-    
+
     def makeVariant (self, name, kind=None):
         """Create another :class:`Data` instance with a similar name.
 
@@ -338,7 +338,7 @@ variants, respectively.
 
 :arg vclass: the class to be used by :func:`vvis`
 :type vclass: any subclass of :class:`VisData`
-:raises ValueError: if *vclass* is not a subclass 
+:raises ValueError: if *vclass* is not a subclass
   of :class:`VisData`
 
 Sets the class instantiated by *all* calls to :meth:`vvis`. This
@@ -371,7 +371,7 @@ throughout a program::
 
 :arg: iclass: the class to be used by :func:`vim`
 :type iclass: any subclass of :class:`ImData`
-:raises ValueError: if *iclass* is not a subclass 
+:raises ValueError: if *iclass* is not a subclass
   of :class:`ImData`
 
 Sets the class instantiated by *all* calls to :meth:`vim`. This
@@ -412,7 +412,7 @@ calling :meth:`defaultVisClass`.
 """
 
         return self.makeVariant (name, self._defVisClass)
-    
+
     def vim (self, name):
         """Create an :class:`ImData` variant of this dataset.
 
@@ -434,7 +434,7 @@ calling :meth:`defaultImClass`.
         from mirtask import DataSet
         return DataSet (self.base, mode)
 
-    
+
     def open (self, mode):
         """Opens the dataset for access.
 

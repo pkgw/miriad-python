@@ -314,7 +314,7 @@ def _getString (kw):
 def getNPol ():
     """Return the number of simultaneous polarizations being returned by readData.
 Zero indicates that this number could not be determined.
-"""    
+"""
     return _getOneInt ('npol')
 
 def getPols ():

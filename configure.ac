@@ -55,7 +55,7 @@ AC_SUBST([AM_CFLAGS])
 dnl Miriad.
 
 AC_ARG_WITH([miriad],
-AS_HELP_STRING([--with-miriad=PREFIX], 
+AS_HELP_STRING([--with-miriad=PREFIX],
 [Miriad libraries and headers have been installed in prefix PREFIX]),
 [],with_miriad=noextra)
 

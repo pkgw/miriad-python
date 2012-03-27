@@ -93,7 +93,7 @@ def _keymatch (key, types, maxout):
 def _get_unlimited (name, mget):
     # Get a potentially unlimited number of values for a keyword
     # using the function 'mget', which satisfies
-    # 
+    #
     # mget (name, nmax) -> list of values (length <= nmax)
 
     allvals = []
@@ -412,7 +412,7 @@ Character       Feature behavior
                 standard "line" keyword.
 *s*             Input data should be polarization-processed via
                 the standard "stokes" keyword.
-*r*             Input data should be divided by a reference 
+*r*             Input data should be divided by a reference
                 via the standard "ref" keyword.
 ==========      ==================
 
@@ -424,7 +424,7 @@ Character       Feature behavior
 ==========      ==================
 *p*             Planet rotation and scaling corrections should be applied.
 *w*             UVW coordinates should be returned in wavelength units, not
-                nanoseconds. (Beware when writing these data to new UV 
+                nanoseconds. (Beware when writing these data to new UV
                 datasets, as the output routines expect the values to
                 be in nanoseconds.)
 *1*             (The character is the number one.) Average the data

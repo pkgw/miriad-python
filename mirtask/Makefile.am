@@ -52,7 +52,7 @@ _miriad_f_la_LIBADD = libmirtasksupport.la $(MIR_LIBS)
 _miriad_f_la_SOURCES = _miriad_fmodule.c _miriad_f-f2pywrappers.f
 
 # f2py doesn't specify what license(s) may be applied to the files
-# it generates. These generated files are distributed, however, so 
+# it generates. These generated files are distributed, however, so
 # they should have copyright notices applied. Manually munge in a
 # statement saying that the status is unclear but that the license
 # is speculatively GPLv3+.

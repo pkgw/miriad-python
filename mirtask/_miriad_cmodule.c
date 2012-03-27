@@ -1199,7 +1199,7 @@ py_uvputvrr (PyObject *self, PyObject *args)
     char *name;
     PyObject *value;
 
-    if (!PyArg_ParseTuple (args, "isO!", &tno, &name, 
+    if (!PyArg_ParseTuple (args, "isO!", &tno, &name,
 			   &PyArray_Type, &value))
 	return NULL;
 

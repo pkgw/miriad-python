@@ -86,11 +86,11 @@ class GainsCalculator (object):
     _solno = None
     _timetab = None
     _gflags = None
-    
+
     def read (self, vis):
         vhnd = vis.open ('rw')
         self.interval = vhnd.getScalarItem ('interval', 0.)
-        assert self.interval > 0. 
+        assert self.interval > 0.
         gr = readgains.GainsReader (vhnd)
         gr.prep ()
         self.nants = gr.nants
@@ -246,7 +246,7 @@ class GainsCalculator (object):
 
     def bpfactor (self, time, blcode, pol):
         assert pol < 0
-        
+
         # Copied from uvgnfac
         if self.nfeeds == 1:
             f1 = f2 = 0

@@ -27,7 +27,7 @@ Loading and Processing MIRIAD Data
   allows you to easily store references to datasets, check whether they
   exist, rename them, and so on.
 
-* There is a lower-level module, :mod:`mirtask`, that lets you open up 
+* There is a lower-level module, :mod:`mirtask`, that lets you open up
   datasets and access at their contents directly. Doing so successfully
   requires a familiarity with the details of the MIRIAD data formats,
   which this documentation does not attempt to provide.

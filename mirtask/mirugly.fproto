@@ -1,8 +1,8 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module intprd__user__routines 
-    interface intprd_user_interface 
+python module intprd__user__routines
+    interface intprd_user_interface
         subroutine intpget(lu,e_indices_pnt0_e,e_dat_1_pnt0_e) ! in subs/intpio.f:intprd:unknown_interface
             integer :: lu
             integer :: e_indices_pnt0_e
@@ -10,8 +10,8 @@ python module intprd__user__routines
         end subroutine intpget
     end interface intprd_user_interface
 end python module intprd__user__routines
-python module fdjac2__user__routines 
-    interface fdjac2_user_interface 
+python module fdjac2__user__routines
+    interface fdjac2_user_interface
         subroutine fcn(m,n,x,wa,iflag) ! in subs/nswc.f:fdjac2:unknown_interface
             integer optional,check(len(wa)>=m),depend(wa) :: m=len(wa)
             integer optional,check(len(x)>=n),depend(x) :: n=len(x)
@@ -21,8 +21,8 @@ python module fdjac2__user__routines
         end subroutine fcn
     end interface fdjac2_user_interface
 end python module fdjac2__user__routines
-python module lmdif__user__routines 
-    interface lmdif_user_interface 
+python module lmdif__user__routines
+    interface lmdif_user_interface
         subroutine fcn(m,n,x,fvec,iflag) ! in subs/nswc.f:lmdif:unknown_interface
             integer optional,check(len(fvec)>=m),depend(fvec) :: m=len(fvec)
             integer optional,check(len(x)>=n),depend(x) :: n=len(x)
@@ -32,8 +32,8 @@ python module lmdif__user__routines
         end subroutine fcn
     end interface lmdif_user_interface
 end python module lmdif__user__routines
-python module asjy__user__routines 
-    interface asjy_user_interface 
+python module asjy__user__routines
+    interface asjy_user_interface
         subroutine funjy(e_wk_6_e,e_wk_5_e,e_wk_4_e,fi,dfi) ! in subs/nswc.f:asjy:unknown_interface
             real :: e_wk_6_e
             real :: e_wk_5_e
@@ -43,8 +43,8 @@ python module asjy__user__routines
         end subroutine funjy
     end interface asjy_user_interface
 end python module asjy__user__routines
-python module powell__user__routines 
-    interface powell_user_interface 
+python module powell__user__routines
+    interface powell_user_interface
         subroutine calcfx(n,x,f) ! in subs/powell.f:powell:unknown_interface
             integer optional,check(len(x)>=n),depend(x) :: n=len(x)
             real dimension(n) :: x
@@ -52,8 +52,8 @@ python module powell__user__routines
         end subroutine calcfx
     end interface powell_user_interface
 end python module powell__user__routines
-python module wintshow__user__routines 
-    interface wintshow_user_interface 
+python module wintshow__user__routines
+    interface wintshow_user_interface
         subroutine func(x,y) ! in subs/win.f:wintshow:unknown_interface
             integer :: x
             integer :: y

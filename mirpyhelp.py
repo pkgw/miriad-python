@@ -81,7 +81,7 @@ def printKeywordDoc (keyword, dest):
 
     match = '%N ' + keyword
     inKeyword = False
-    
+
     for l in file (kwfile, 'r'):
         if inKeyword:
             if l.startswith ('%N'): break
@@ -104,14 +104,14 @@ def printDocSection (name, full, dest):
     # specially-formatted docstring.
 
     inString = False
-    
+
     for line in file (full, 'r'):
         if not inString:
             if line.startswith ('"""='):
                 inString = True
                 # 'line' still has the trailing newline so use the
                 # finishing comma with print
-                print >>dest, '#' + line[3:], 
+                print >>dest, '#' + line[3:],
         else:
             if line.startswith ('"""'): break
 
@@ -181,7 +181,7 @@ def showDoc (name, pdoc, sdoc):
             print >>sys.stderr, 'No standard entry for', name, 'and it doesn\'t appear'
             print >>sys.stderr, ' to be a Python file.'
             return True
-        
+
         isPython = True
 
     tmpdir = tmpin = None
@@ -197,17 +197,17 @@ def showDoc (name, pdoc, sdoc):
             tmpdir = mkdtemp ()
             tmpin = join (tmpdir, name)
             os.symlink ('/dev/stdin', tmpin)
-                
+
         pager_cmd = os.environ.get ('PAGER') or 'more'
         pager = None
-        
+
         try:
             pager = Popen (pager_cmd, stdin=PIPE,
                            shell=True, close_fds=True)
 
             try:
                 doc = None
-                
+
                 if isPython:
                     doc_cmd = ['doc', '-e', '-o', dirname, tmpin]
                     doc = Popen (doc_cmd, stdin=PIPE,
@@ -241,7 +241,7 @@ def cmdline (args):
 
     pdoc = os.environ['MIRPDOC']
     sdoc = os.environ['MIRSDOC']
-    
+
     if len (args) == 1:
         failures = showDoc ('mirpyhelp.py', pdoc, sdoc)
     else:
@@ -256,5 +256,3 @@ def cmdline (args):
 
 if __name__ == '__main__':
     sys.exit (cmdline (sys.argv))
-
-    

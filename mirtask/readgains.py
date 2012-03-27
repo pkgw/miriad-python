@@ -24,7 +24,7 @@ __all__ = ['GainsReader', 'readBandpass' ]
 
 class GainsReader (object):
     """Read in gains from a Miriad data set. Code based on gplist.for."""
-    
+
     def __init__ (self, dset):
         self.dset = dset
 
@@ -33,7 +33,7 @@ class GainsReader (object):
     nfeeds = None
     ntau = None
     nsols = None
-    
+
     def prep (self):
         """Read in header information, preparing to read the gains
         information itself. Sets the following attributes on the object:
@@ -55,21 +55,21 @@ class GainsReader (object):
         self.nants = ngains / (nfeeds + ntau)
         self.gitem = self.dset.getItem ('gains', 'r')
         self.nsols = (self.gitem.getSize () - 8) / (8 * ngains + 8)
-        
+
     def readAll (self):
         """Read in all of the gain and time information in at
         once. Returns (time, gains), where time is an ndarray of nsols
         doubles, and gains is an ndarray of (nsols, ngains) complexes."""
 
         if self.nsols is None: raise RuntimeError ('Need to call prep() first!')
-        
+
         nsols, ngains = self.nsols, self.ngains
-        
+
         offset = 8
         pnt = 0
         time = N.ndarray (nsols, dtype=N.double)
         gains = N.ndarray ((nsols, ngains), dtype=N.complex64)
-        
+
         for i in xrange (0, nsols):
             time[i] = self.gitem.read (offset, N.float64, 1)
             offset += 8
@@ -83,15 +83,15 @@ class GainsReader (object):
     def readSeq (self):
         """Generate a sequence of (time, gains), where time is a double and
         gains is an ndarray of ngains complexes."""
-        
+
         if self.nsols is None: raise RuntimeError ('Need to call prep() first!')
-        
+
         nsols, ngains = self.nsols, self.ngains
-        
+
         offset = 8
         time = N.ndarray (1, dtype=N.double)
         gains = N.ndarray (ngains, dtype=N.complex64)
-        
+
         for i in xrange (0, nsols):
             self.gitem.readInto (offset, time)
             offset += 8
@@ -122,12 +122,12 @@ def readBandpass (dset):
               is the number of feeds on each antenna: expected to be 1
               or 2. nchan is as in freqs.
     """
-    
+
     if not dset.hasItem ('bandpass'):
         raise ValueError ('Input "%s" doesn\'t have a gains table!' % dset.path ())
 
     # Prep counts and check sanity
-    
+
     ngains = dset.getScalarItem ('ngains', 0)
     nfeeds = dset.getScalarItem ('nfeeds', 1)
     ntau = dset.getScalarItem ('ntau', 0)
@@ -150,7 +150,7 @@ def readBandpass (dset):
 
     hdfreq = dset.getItem ('freqs', 'r')
     freqs = N.ndarray (nchan0, dtype=N.double)
-    
+
     n = 0
     ofs = 8
     nschans = N.ndarray (nspect0, dtype=N.int32)
@@ -171,7 +171,7 @@ def readBandpass (dset):
         raise RuntimeError ('Disagreeing number of channels and spectral window widths '
                             'in UV dataset: sum(nschan) = %d, nchan0 = %d' % (nschans.sum (),
                                                                               nchan0))
-    
+
     hdfreq.close ()
 
     # Bandpass table
@@ -180,5 +180,5 @@ def readBandpass (dset):
     gains = N.ndarray ((nants, nfeeds, nchan0), dtype=N.complex64)
     hdbpass.readInto (8, gains)
     hdbpass.close ()
-    
+
     return nschans, freqs, gains
