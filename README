@@ -212,6 +212,14 @@ on-hand you can try them out. Each program is contains extensive
 internal documentation. See also examples/README.
 
 
+Bug Reports
+===========
+
+We use the GitHub issue tracker for handling bug reports. See
+
+  https://github.com/pkgw/miriad-python/issues
+
+
 wcslib headers
 ==============
 
@@ -285,7 +293,10 @@ Contact Information
 
 Check the miriad-python website for up-to-date information. At the
 time of release, the best contact person is Peter Williams,
-pwilliams@astro.berkeley.edu .
+pwilliams@astro.berkeley.edu . For bug reports, use the issue
+tracker on the miriad-python GitHub page:
+
+  https://github.com/pkgw/miriad-python/issues
 
 
 Copyright Notice
