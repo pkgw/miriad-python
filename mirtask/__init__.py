@@ -1497,6 +1497,16 @@ use the classical MIRIAD APIs for coordinate manipulation.
                     specax = i
                 else:
                     warnings.append ('multiple spectral axes')
+            elif axtype == _AXTYPE_LIN:
+                # wcslib uses the following test to guess if an axis
+                # is a celestial one. It freaks out with MIRIAD's
+                # UU---SIN and friends because it (rightfully) doesn't
+                # recognize UU (e.g.) as a latitude or longitude
+                # axis. Here we modify the ctype presented to wcslib
+                # to get it to (correctly) think that the axis is
+                # linear rather than celestial.
+                if len (ctype) == 8 and ctype[4] == '-':
+                    ctypes[i] = ctypes[i][:4].rstrip ('-')
 
             work[0,i] = self.getScalarItem ('cdelt%d' % (i + 1), 1)
             work[1,i] = self.getScalarItem ('crval%d' % (i + 1), 1)
