@@ -57,7 +57,7 @@ def die (format, *args):
 :arg str format: a format string
 :arg args: arguments to the format string
 
-A :exc:`SystemExit` exception is raised with the argument ``'Error: '
+A :exc:`SystemExit` exception is raised with the argument ``'error: '
 + (format % args)``. If uncaught, the interpreter exits with an error
 code and prints the exception argument.
 
@@ -214,7 +214,7 @@ See also :func:`checkusage` and :func:`showusage`.
     else:
         detail = rest[0] % tuple (rest[1:])
 
-    print >>sys.stderr, 'Error:', detail
+    print >>sys.stderr, 'error:', detail
     print >>sys.stderr
 
     # If the docstring doesn't appear to be in MIRIAD doc format,

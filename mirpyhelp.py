@@ -172,10 +172,10 @@ def showDoc (name, pdoc, sdoc):
                 full = modobj.__file__
                 if full.endswith ('.pyc'): full = full[:-1]
             except Exception, e:
-                print >>sys.stderr, 'Error: The task', name, 'seems to be a Python module'
-                print >>sys.stderr, 'but I can\'t successfully load the module to get its'
-                print >>sys.stderr, 'docs.'
-                print >>sys.stderr, 'Exception:', e
+                print >>sys.stderr, 'error: The task', name, 'seems to be a Python module'
+                print >>sys.stderr, '  but I can\'t successfully load the module to get its'
+                print >>sys.stderr, '  docs.'
+                print >>sys.stderr, '  Exception:', e
                 return True
         elif 'python' not in start:
             print >>sys.stderr, 'No standard entry for', name, 'and it doesn\'t appear'
@@ -235,8 +235,8 @@ def showDoc (name, pdoc, sdoc):
 
 def cmdline (args):
     if 'MIRPDOC' not in os.environ:
-        print >>sys.stderr, 'Error: Environment variable $MIRPDOC not defined.'
-        print >>sys.stderr, 'Unable to look up documentation.'
+        print >>sys.stderr, 'error: Environment variable $MIRPDOC not defined.'
+        print >>sys.stderr, '  Unable to look up documentation.'
         sys.exit (1)
 
     pdoc = os.environ['MIRPDOC']

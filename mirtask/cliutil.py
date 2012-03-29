@@ -108,7 +108,7 @@ def _cli_except_hook (etype, exc, tb):
 
         details.append ('Debugging information is logged ' + logmsg)
 
-    print >>sys.stderr, 'Error:', msg
+    print >>sys.stderr, 'error:', msg
     for detail in details:
         print >>sys.stderr, '      ', detail
 
