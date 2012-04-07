@@ -162,25 +162,25 @@ class DefaultedTaskType (type):
     #
     # We also guess the task name if _name is not set. Cute.
 
-    def __init__ (cls, name, bases, dict):
-        type.__init__ (cls, name, bases, dict)
+    def __init__ (cls, name, bases, mdict):
+        type.__init__ (cls, name, bases, mdict)
 
         # TaskBase doesn't get any special treatment
         if name == 'TaskBase':
             return
 
-        if '_name' not in dict:
+        if '_name' not in mdict:
             if name.startswith ('Task'):
                 setattr (cls, '_name', name[4:].lower ())
             else:
                 raise Exception ('Task class must define a _name member')
 
-        for p in dict.get ('_keywords', []):
-            if p not in dict:
+        for p in mdict.get ('_keywords', []):
+            if p not in mdict:
                 setattr (cls, p, None)
 
-        for o in dict.get ('_options', []):
-            if o not in dict:
+        for o in mdict.get ('_options', []):
+            if o not in mdict:
                 setattr (cls, o, False)
 
 
