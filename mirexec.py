@@ -365,13 +365,13 @@ This method captures the task output and hence uses
 
 class TaskBase (object):
     """:synopsis: Generic MIRIAD task launcher
-:arg kwargs: attributes to set on the object
+:arg kwargs: attributes to set on the object (with :meth:`set`)
 
-A generic launcher class for MIRIAD tasks. Don't create instances
-of this class --- instead, create instances of its subclasses,
-such as :class:`TaskInvert` or :class:`TaskUVCat`. If you
-want to invoke a task that hasn't been wrapped in the :mod:`mirexec`
-module, it's easy to wrap it yourself: see :ref:`customtasks`.
+A generic launcher class for MIRIAD tasks. Don't create instances of
+this class --- instead, create instances of its subclasses, such as
+:class:`TaskInvert` or :class:`TaskUVCat`. If you want to invoke a
+task that hasn't been wrapped in the :mod:`mirexec` module, it's easy
+to wrap it yourself: see :ref:`customtasks`.
 """
 
     __metaclass__ = DefaultedTaskType
@@ -384,6 +384,85 @@ module, it's easy to wrap it yourself: see :ref:`customtasks`.
         self.set (**kwargs)
 
 
+    def _get_options (self):
+        # I think it'd be really confusing to set options based on the
+        # Python truthiness of option fields -- e.g., task.foo =
+        # 'hello' causing "task options=foo" to be run, if "foo" is an
+        # option. So the only valid values for an option are True,
+        # False, and None. I'm too lazy to enforce this on option
+        # setting, but we can enforce this here, which is called
+        # whenever a task is run.
+
+        def testoption (opt):
+            val = getattr (self, opt, False)
+            if val is None:
+                return False
+            if not isinstance (val, bool):
+                raise ValueError ('option "%s" set to non-bool, non-None value %s'
+                                  % (opt, val))
+            return val
+
+        return ','.join (x for x in self._options if testoption (x))
+
+
+    def _set_options (self, optstr):
+        for o in self._options:
+            setattr (self, o, False)
+
+        if not len (optstr):
+            return
+
+        for item in optstr.split (','):
+            # Might be useful to have a generic minimum-match utility
+            # function. Python code to do the basics is in
+            # pwpy/intfbin/qimage.
+            match = None
+
+            for o in self._options:
+                if not o.startswith (item):
+                    continue
+                if match is not None:
+                    raise ValueError ('ambiguous option item "%s": could be '
+                                      '"%s" or "%s"' % (item, match, o))
+                match = o
+
+            if match is None:
+                raise ValueError ('unrecognized option "%s" (abbreviations '
+                                  'were checked)' % item)
+
+            setattr (self, match, True)
+
+
+    def _del_options (self):
+        self._set_options ('')
+
+
+    options = property (_get_options, _set_options, _del_options,
+                        """This is a read/write synthetic property that
+encodes the current options in the form of a comma-separated string as
+per standard MIRIAD usage. It is recommended that you use the independent
+boolean fields to get and set option states, but this mechanism is
+provided for completeness. Here are some examples::
+
+  t = TaskUVPlot (source=True, hours=True)
+  print t.options # yields 'hours,source'
+  t.options = 'sou,ava'
+  print t.options # yields 'avall,source'
+  print t.avall # yields True
+  del t.options
+  print t.options # yields ''
+
+As shown in the example above, abbreviations of option names are
+allowed when setting options using this property. Because of this effect
+and possible reordering, option strings do not roundtrip::
+
+  t.options = s
+  s == t.options # not necessarily True
+
+Deleting the options property clears all options.
+""")
+
+
     def set (self, **kwargs):
         """Set keywords and options on the task
 
@@ -391,9 +470,20 @@ module, it's easy to wrap it yourself: see :ref:`customtasks`.
 :returns: *self*
 
 This function is merely a shorthand that sets attributes on the
-instance via :func:`setattr`.
-"""
+instance via :func:`setattr`. To provide for consistent semantics, if
+one of the arguments sets the synthetic "options" attribute, this
+attribute is set before all others. That is::
 
+   t.set (a=True, b=False, options='b,c')
+
+will result in the options *a* and *c* being :const:`True`. Without
+this ordering constraint, the results of the above operation would
+vary unpredictably with the order of items returned by iterating
+through **kwargs**.
+"""
+        optstr = kwargs.pop ('options', None)
+        if optstr is not None:
+            self._set_options (optstr)
         for (key, val) in kwargs.iteritems ():
             setattr (self, key, val)
         return self
@@ -402,36 +492,9 @@ instance via :func:`setattr`.
     def commandLine (self):
         cmd = [_mirBinPath (self._name)]
 
-        # Options
-
-        options = []
-
-        for opt in self._options or []:
-            val = getattr (self, opt)
-
-            # I think it'd be really confusing to set options based on
-            # the Python truthiness of option fields -- e.g., task.foo = 'hello'
-            # causing "task options=foo" to be run, if "foo" is an option.
-            # So the only valid values for an option are True, False, and None.
-            # I have a dim memory of there being a task or two that actually
-            # accept nonboolean inputs through the options keyword in some
-            # evil way, but if I ever run into that again that can be dealt
-            # with.
-
-            if val is None:
-                continue
-
-            if not isinstance (val, bool):
-                raise ValueError ('Option %s set to non-bool, non-None value %s' \
-                                      % (opt, val))
-
-            if val:
-                options.append (opt)
-
-        if len (options) > 0:
-            cmd.append ('options=' + ','.join (options))
-
-        # Keywords
+        ostr = self.options
+        if len (ostr):
+            cmd.append ('options=' + ostr)
 
         for name in self._keywords or []:
             key = name
