@@ -459,7 +459,10 @@ and possible reordering, option strings do not roundtrip::
   t.options = s
   s == t.options # not necessarily True
 
-Deleting the options property clears all options.
+Because there is no way in an option string to express the
+deactivation of an option, *setting this property clears all options
+not explicitly activated.* Deleting the options property clears all
+options.
 """)
 
 
