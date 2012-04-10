@@ -377,8 +377,8 @@ to wrap it yourself: see :ref:`customtasks`.
     __metaclass__ = DefaultedTaskType
 
     _name = None
-    _keywords = None
-    _options = None
+    _keywords = ()
+    _options = ()
 
     def __init__ (self, **kwargs):
         self.set (**kwargs)
