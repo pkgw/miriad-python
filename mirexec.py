@@ -992,3 +992,8 @@ class TaskFits (TaskBase):
     _keywords = 'in_ op out line region select stokes velocity'.split ()
     _options = ('compress nochi lefty varwt blcal nocal nopol '
                 'nopass rawdss nod2').split ()
+
+
+class TaskConvol (TaskBase):
+    _keywords = 'map beam fwhm pa region out scale sigma'.split ()
+    _options = 'final divide asymmetric correlate'.split ()
