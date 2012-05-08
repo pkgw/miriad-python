@@ -25,6 +25,7 @@ mtpy_PYTHON = \
   cliutil.py \
   emucal.py \
   keys.py \
+  mostable.py \
   readgains.py \
   util.py \
   uvdat.py \
