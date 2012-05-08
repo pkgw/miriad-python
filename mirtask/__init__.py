@@ -1376,6 +1376,7 @@ use :meth:`miriad.ImData.open`.
     """
 
     _wcs = None
+    _wcs_warnings = None
 
     def __init__ (self, path, mode, axes=None):
         if mode == 'rw':
@@ -1431,7 +1432,7 @@ At the moment, we do not encourage newly-written Python code to attempt to
 use the classical MIRIAD APIs for coordinate manipulation.
 """
         if self._wcs is not None:
-            return self._wcs
+            return self._wcs, self._wcs_warnings
 
         import pywcs
 
@@ -1580,6 +1581,7 @@ use the classical MIRIAD APIs for coordinate manipulation.
             raise CoordinateError (e)
 
         self._wcs = w
+        self._wcs_warnings = warnings
         return w, warnings
 
 
