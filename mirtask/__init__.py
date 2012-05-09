@@ -1391,7 +1391,7 @@ use :meth:`miriad.ImData.open`.
         else:
             if mode == 'c':
                 raise ValueError ('axes must be specified when creating a new XY dataset')
-            axes = N.zeros (16, dtype=N.intc)
+            axes = N.zeros (7, dtype=N.intc)
 
         self.axes = axes
         self._path = path
