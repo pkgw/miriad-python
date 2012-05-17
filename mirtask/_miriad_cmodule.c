@@ -2158,6 +2158,28 @@ py_mirwcs_celset (PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+py_mirwcs_compute_freq (PyObject *self, PyObject *args)
+{
+    int status;
+    double specval, restfreq;
+    char *spectype;
+    struct spxprm specinfo;
+
+    if (!PyArg_ParseTuple (args, "sdd", &spectype, &specval, &restfreq))
+	return NULL;
+
+    status = specx (spectype, specval, restfreq, 0.0, &specinfo);
+
+    if (status) {
+	PyErr_Format (PyExc_ValueError, "error %d in wcslib:specx", status);
+	return NULL;
+    }
+
+    return Py_BuildValue ("d", specinfo.freq);
+}
+
+
 /* vtable */
 
 static PyMethodDef methods[] = {
@@ -2304,6 +2326,7 @@ static PyMethodDef methods[] = {
     DEF(mirwcs_set_prjcode, "(_Wcsprm params, str code) => void"),
     DEF(mirwcs_set_prjpv, "(_Wcsprm params, ind index, double value) => void"),
     DEF(mirwcs_celset, "(_Wcsprm params) => error-string or None"),
+    DEF(mirwcs_compute_freq, "(str spectype, double specval, double restfreq) => double"),
 
     /* Done. Sentinel. */
 
