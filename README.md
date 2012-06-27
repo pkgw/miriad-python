@@ -17,10 +17,9 @@ The website includes up-to-date contact information for the
 developers, who will be happy to assist you if you have trouble
 installing or using miriad-python.
 
-If you use miriad-python in research, please cite the miriad-python
-paper in any resulting publications. The paper is currently available
-as a preprint at http://arxiv.org/abs/1203.0330 ; that page will have
-a link to the offical journal article when it comes out.
+If you use miriad-python in academic research, please cite Williams
+et al., 2012 PASP 124 624 (doi:10.1086/666604) in any resulting
+publications.
 
 
 Installation Instructions
