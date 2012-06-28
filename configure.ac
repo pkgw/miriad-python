@@ -15,7 +15,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with miriad-python.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([miriad-python], [1.2.1])
+AC_INIT([miriad-python], [1.2.2])
 AC_CONFIG_SRCDIR([mirtask/_miriad_cmodule.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux])
@@ -29,7 +29,6 @@ AC_SUBST(ACLOCAL_AMFLAGS, ["-I build-aux"])
 dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[1.2])
 AC_SUBST([MIRPY_COPYRIGHT],["2009-2012 Peter Williams"])
-
 
 
 dnl Compiler flags. Python 2.x code needs -fno-strict-aliasing if
