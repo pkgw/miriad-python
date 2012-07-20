@@ -129,7 +129,17 @@ dnl do.
 AC_PROG_MKDIR_P
 AC_SUBST([MKDIR_P])
 
+dnl AC_PROG_F77 doesn't raise an error if no compiler was found, and
+dnl doesn't actually check whether the compiler works ...
 AC_PROG_F77
+test -z "$F77" && AC_MSG_FAILURE([no acceptable Fortran 77 compiler was found in \$PATH])
+AC_LANG_PUSH([Fortran 77])
+AC_MSG_CHECKING([whether $F77 can link a simple test program])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],[AC_MSG_RESULT([yes])],
+  [AC_MSG_RESULT([no])
+   AC_MSG_FAILURE([the Fortran 77 compiler $F77 couldn't link a simple test program])])
+AC_LANG_POP([Fortran 77])
+
 AM_PATH_PYTHON(2.3.5)
 AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
 
