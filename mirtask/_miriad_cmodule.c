@@ -66,7 +66,9 @@ check_int_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_INT) {
-	PyErr_Format (PyExc_ValueError, "%s must be a plain-int-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s has an unacceptable dtype: itemsize must "
+		      "be %d, but is %d", argname, NPY_SIZEOF_INT,
+		      PyArray_ITEMSIZE (array));
 	return 1;
     }
 
@@ -88,7 +90,9 @@ check_float_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_FLOAT) {
-	PyErr_Format (PyExc_ValueError, "%s must be a plain-float-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s has an unacceptable dtype: itemsize must "
+		      "be %d, but is %d", argname, NPY_SIZEOF_FLOAT,
+		      PyArray_ITEMSIZE (array));
 	return 1;
     }
 
@@ -110,7 +114,9 @@ check_double_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != NPY_SIZEOF_DOUBLE) {
-	PyErr_Format (PyExc_ValueError, "%s must be a double-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s has an unacceptable dtype: itemsize must "
+		      "be %d, but is %d", argname, NPY_SIZEOF_DOUBLE,
+		      PyArray_ITEMSIZE (array));
 	return 1;
     }
 
@@ -132,7 +138,9 @@ check_complexf_array (PyObject *array, char *argname)
     }
 
     if (PyArray_ITEMSIZE (array) != 2*NPY_SIZEOF_FLOAT) {
-	PyErr_Format (PyExc_ValueError, "%s must be a plain-complex-sized ndarray", argname);
+	PyErr_Format (PyExc_ValueError, "%s has an unacceptable dtype: itemsize must "
+		      "be %d, but is %d", argname, 2 * NPY_SIZEOF_FLOAT,
+		      PyArray_ITEMSIZE (array));
 	return 1;
     }
 
