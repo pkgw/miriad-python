@@ -141,7 +141,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],[AC_MSG_RESULT([yes])],
 AC_LANG_POP([Fortran 77])
 
 AM_PATH_PYTHON(2.3.5)
-AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
+AM_CHECK_PYTHON_HEADERS(,[AC_MSG_FAILURE(could not find Python headers)])
 
 AC_PATH_PROG(F2PY, f2py, false)
 if test x"$F2PY" = xfalse ; then
@@ -158,8 +158,8 @@ AC_FUNC_FSEEKO
 dnl Here we have to work around the fact that __file__ is replaced by
 dnl M4. D'oh!
 
-AM_CHECK_PYMOD(numpy,ndarray,,AC_MSG_ERROR([could not find Numpy module]))
-NUMPY_INCLUDEDIR=`python -c 'import numpy, os.path as p ; f = getattr (numpy, "__" + "file__") ; print p.join (p.dirname (f), "core", "include")'`
+AM_CHECK_PYMOD(numpy,ndarray,,AC_MSG_FAILURE([could not find the Python module "numpy"]))
+NUMPY_INCLUDEDIR=`$PYTHON -c 'import numpy, os.path as p ; f = getattr (numpy, "__" + "file__") ; print p.join (p.dirname (f), "core", "include")'`
 AC_SUBST(NUMPY_INCLUDEDIR)
 
 dnl Check for Sphinx, used to create docs
