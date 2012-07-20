@@ -1640,10 +1640,11 @@ py_xyzsetup (PyObject *self, PyObject *args)
 static PyObject *
 py_xyzs2c (PyObject *self, PyObject *args)
 {
-    int tno, subcubenr;
+    int tno;
+    long int subcubenr;
     PyObject *coords;
 
-    if (!PyArg_ParseTuple (args, "iiO!", &tno, &subcubenr, &PyArray_Type, &coords))
+    if (!PyArg_ParseTuple (args, "ilO!", &tno, &subcubenr, &PyArray_Type, &coords))
 	return NULL;
 
     if (check_int_array (coords, "coords"))
@@ -1658,7 +1659,8 @@ py_xyzs2c (PyObject *self, PyObject *args)
 static PyObject *
 py_xyzc2s (PyObject *self, PyObject *args)
 {
-    int tno, subcubenr;
+    int tno;
+    long int subcubenr;
     PyObject *coords;
 
     if (!PyArg_ParseTuple (args, "iO!", &tno, &PyArray_Type, &coords))
@@ -1669,7 +1671,7 @@ py_xyzc2s (PyObject *self, PyObject *args)
 
     MTS_CHECK_BUG;
     xyzc2s_c (tno, PyArray_DATA (coords), &subcubenr);
-    return Py_BuildValue ("i", subcubenr);
+    return Py_BuildValue ("l", subcubenr);
 }
 
 
