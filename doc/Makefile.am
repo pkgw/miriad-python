@@ -77,11 +77,12 @@ clean-local:
 
 # Helper target to upload the docs to the website
 
-websitedir = $(HOME)/public_html/miriad-python/docs
+websitehost = cfa0
+websitedir = /data/wdocs/pwilliam/www-docs/miriad-python/docs
 
 push: $(HTML_STAMP)
-	rm -rf $(websitedir)/*
-	cp -a html/* $(websitedir)
+	ssh $(websitehost) rm -rf $(websitedir)/*
+	tar cz -C html . |ssh $(websitehost) tar xz -C $(websitedir)
 
 view: $(HTML_STAMP)
 	firefox ./html/index.html &
