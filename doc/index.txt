@@ -27,7 +27,7 @@ Welcome to the *miriad-python* manual. If you're unfamiliar with how
 *miriad-python* project, including installation instructions, issue
 reporting information, releases, and academic references, please see
 `the miriad-python website
-<http://astro.berkeley.edu/~pkwill/miriad-python/>`_.
+<https://www.cfa.harvard.edu/~pwilliam/miriad-python/>`_.
 
 Contents
 ========

@@ -11,7 +11,7 @@ the Python programming language. It allows you to:
 This file contains detailed installation instructions. For all other
 matters, the best resource is the miriad-python website:
 
-  http://astro.berkeley.edu/~pkwill/miriad-python/
+  https://www.cfa.harvard.edu/~pwilliam/miriad-python/
 
 The website includes up-to-date contact information for the
 developers, who will be happy to assist you if you have trouble
@@ -62,13 +62,13 @@ miriad-python. If you use a Mac, we recommend that you obtain a
 "new-style" MIRIAD installation using the MacPorts system, documented
 here:
 
-  http://astro.berkeley.edu/~pkwill/miriad-macport/
+  https://www.cfa.harvard.edu/~pwilliam/miriad-macport/
 
 If you don't use a Mac, it's not too hard to build CARMA MIRIAD with
 the "new-style" (autotools) build system yourself. It is easiest to
 start with the most recent source code package used by the MacPort:
 
-  http://astro.berkeley.edu/~pkwill/miriad-macport/miriad-latest.tar.gz
+  https://www.cfa.harvard.edu/~pwilliam/miriad-macport/miriad-latest.tar.gz
 
 For the very latest MIRIAD source code, you may find it useful to
 access Peter Williams' GitHub mirror of the CARMA MIRIAD source
@@ -291,7 +291,7 @@ Contact Information
 
 Check the miriad-python website for up-to-date information. At the
 time of release, the best contact person is Peter Williams,
-pwilliams@astro.berkeley.edu . For bug reports, use the issue
+pwilliams@cfa.harvard.edu . For bug reports, use the issue
 tracker on the miriad-python GitHub page:
 
   https://github.com/pkgw/miriad-python/issues
