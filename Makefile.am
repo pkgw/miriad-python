@@ -44,7 +44,7 @@ pc_DATA = miriad-python.pc
 # configure script, not just the tar directory name.
 
 DISTCHECK_CONFIGURE_FLAGS = @MIR_DISTCHECK_CONFARG@
-EXTRA_DIST = LICENSE
+EXTRA_DIST = LICENSE README.md
 
 snapshot:
 	export GIT_WORK_TREE=$(top_srcdir) && \
