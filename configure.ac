@@ -24,8 +24,6 @@ AM_MAINTAINER_MODE
 
 LT_INIT
 
-AC_SUBST(ACLOCAL_AMFLAGS, ["-I build-aux"])
-
 dnl Used in doc/conf.py.in
 AC_SUBST([MIRPY_SHORTVERSION],[1.2])
 AC_SUBST([MIRPY_COPYRIGHT],["2009-2012 Peter Williams"])

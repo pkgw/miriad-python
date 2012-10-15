@@ -24,6 +24,8 @@ if BUILD_DOCS
 SUBDIRS += doc
 endif
 
+ACLOCAL_AMFLAGS = -I build-aux
+
 # Main modules ...
 
 python_PYTHON = miriad.py mirexec.py
