@@ -1,4 +1,4 @@
-dnl Copyright 2009-2012 Peter Williams
+dnl Copyright 2009-2013 Peter Williams
 dnl
 dnl This file is part of miriad-python.
 dnl
@@ -22,6 +22,7 @@ AC_CONFIG_MACRO_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign -Wall])
 AM_MAINTAINER_MODE
 
+AM_PROG_AR dnl needed to make libtool happy
 LT_INIT
 
 dnl Used in doc/conf.py.in
@@ -48,30 +49,77 @@ AX_CHECK_COMPILE_FLAG([-Wstrict-prototypes],[
 
 AC_SUBST([AM_CFLAGS])
 
+dnl ============================================================
+dnl Checking for MIRIAD. We try to support both old-style binary
+dnl packages and autoconf installs.
 
-dnl Miriad.
+dnl MIRIAD: prerequsities
+
+AC_PROG_MKDIR_P
+AC_SUBST([MKDIR_P]) dnl might only be needed for very old autoconf
+AC_PROG_LN_S
+
+dnl MIRIAD: --with-miriad handling
+dnl We need two versions of search paths: one for makefiles, one for
+dnl config checks.
 
 AC_ARG_WITH([miriad],
 AS_HELP_STRING([--with-miriad=PREFIX],
 [Miriad libraries and headers have been installed in prefix PREFIX]),
 [],with_miriad=noextra)
 
-orig_LIBS="$LIBS"
-orig_CPPFLAGS="$CPPFLAGS"
+AC_SUBST(MIR_DISTCHECK_CONFARG)
+AC_MSG_CHECKING([type of MIRIAD installation])
 
 if test x"$with_miriad" = xnoextra ; then
-  MIR_LIBS=""
-  MIR_CPPFLAGS=""
-  MIR_DISTCHECK_CONFARG=""
+  AC_MSG_RESULT([system package (use --with-miriad=... if this fails)])
   miriad_loc="system search path"
-else
-  MIR_LIBS="-L${with_miriad}/lib"
-  MIR_CPPFLAGS="-I${with_miriad}/include/miriad-c"
+elif test -f "${with_miriad}/src/inc/maxdim.h" ; then
+  AC_MSG_RESULT([old-style binary package])
+  miriad_loc="$with_miriad (old-style binary package)"
   MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
-  LIBS="$MIR_LIBS $LIBS"
-  CPPFLAGS="$MIR_CPPFLAGS $CPPFLAGS"
-  miriad_loc="$with_miriad"
+
+  AC_MSG_CHECKING([for host type of old-style MIRIAD build])
+  mirhosttype=`uname -s |tr A-Z a-z`
+  AC_MSG_RESULT([$mirhosttype])
+
+  dnl Symlinking like this makes it so we don't have to worry about
+  dnl whether $with_miriad is absolute/relative, etc.
+  rm -rf mirinc mirpkg
+  $LN_S "${with_miriad}" mirpkg
+  $MKDIR_P mirinc/wcslib
+  (cd mirinc
+   $LN_S ../mirpkg/src/inc/maxdim.h .
+   for h in miriad.h sysdep.h ; do
+     $LN_S ../mirpkg/src/subs/$h .
+   done
+  )
+  (cd mirinc/wcslib
+   $LN_S ../../mirpkg/borrow/wcslib/wcsconfig.h .
+   for h in ../../mirpkg/borrow/wcslib/C/*.h ; do
+     $LN_S $h .
+   done
+  )
+
+  mir_output_libdir='-L${abs_top_builddir}/mirpkg/lib/'"$mirhosttype"
+  mir_output_cppflags='-I${top_builddir}/mirinc'
+  mir_cfg_libdir="-Lmirpkg/lib/$mirhosttype"
+  mir_cfg_cppflags="-Imirinc"
+else
+  AC_MSG_RESULT([standard])
+  miriad_loc="$with_miriad (standard installation)"
+  MIR_DISTCHECK_CONFARG="--with-miriad=${with_miriad}"
+
+  mir_output_libdir="-L${with_miriad}/lib"
+  mir_output_cppflags="-I${with_miriad}/include/miriad-c"
+  mir_cfg_libdir="$mir_output_libdir"
+  mir_cfg_cppflags="$mir_output_cppflags"
 fi
+
+dnl MIRIAD: headers
+
+orig_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$mir_cfg_cppflags $CPPFLAGS"
 
 AC_CHECK_HEADER([miriad.h],[],[
   AC_MSG_ERROR([Couldn't find Miriad headers. See README on --with-miriad.])
@@ -81,51 +129,60 @@ AC_CHECK_HEADER([wcslib/wcs.h],[],[
   AC_MSG_ERROR([Couldn't find wcslib headers. See README on wcslib headers.])
 ])
 
-AC_CHECK_LIB([mir], [wrhda_],[
-  dnl Check succeeded
-  mirextra=""
-],[
-  dnl Check failed - maybe older setup that needs extra libraries?
-  dnl Check for a different function name to avoid the configure cache
-  dnl from short-circuiting the check to failure.
-  maybemirextra="-lmir_uvio -lmir_linpack -lpgplot"
-  AC_CHECK_LIB([mir], [wrhdd_],[
-    dnl Succeeded.
-    mirextra="$maybemirextra"
-  ],[
-    dnl Still failed.
-    AC_MSG_ERROR([Couldn't find Miriad libraries. See README on --with-miriad.])
-  ],[$maybemirextra])
-])
+CPPFLAGS="$orig_CPPFLAGS"
+MIR_CPPFLAGS="$mir_output_cppflags"
+AC_SUBST(MIR_CPPFLAGS)
 
-AC_CHECK_LIB([mir], [bughandler_c], [],[
+dnl MIRIAD: libraries to link
+
+mir_libs="-lm"
+
+AC_CHECK_LIB([mir_wcs], [wcsini], [
+  mir_libs="-lmir_wcs $mir_libs"
+], [
+  AC_CHECK_LIB([wcs], [wcsini],[
+    mir_libs="-lwcs $mir_libs"
+  ],[
+    AC_MSG_ERROR([couldn't find a WCS library])
+  ],[$mir_cfg_libdir $mir_libs])
+],[$mir_cfg_libdir $mir_libs])
+
+AC_CHECK_LIB([mir], [wrhda_],[
+  mir_libs="-lmir $mir_libs"
+],[
+  AC_MSG_ERROR([Couldn't find Miriad libraries. See README on --with-miriad.])
+],[$mir_cfg_libdir $mir_libs])
+
+AC_CHECK_LIB([mir], [bughandler_c], [
+  : dnl do nothing; if left empty, autoconf adds another -lmir
+],[
   AC_MSG_ERROR([Miriad libraries too old; see README on bughandler_c])
-], [$mirextra])
+], [$mir_cfg_libdir $mir_libs])
 
 AC_CHECK_LIB([mir], [uvchkshadow_c], [
     chkshadow=1 chkshadowstr=yes
-  ],[
+],[
     chkshadow=0 chkshadowstr=no
-  ],[$mirextra])
+],[$mir_cfg_libdir $mir_libs])
+
 AC_DEFINE_UNQUOTED([HAVE_UVCHKSHADOW], [$chkshadow],
   [Define if the MIRIAD library provides uvchkshadow_c().])
 
-MIR_LIBS="$MIR_LIBS -lmir $mirextra"
-LIBS="$orig_LIBS"
-CPPFLAGS="$orig_CPPFLAGS"
+AC_CHECK_LIB([mir], [sdot_], [
+  : dnl do nothing; if left empty, autoconf adds another -lmir
+], [
+  AC_CHECK_LIB([linpack], [sdot_],[
+    mir_libs="$mir_libs -llinpack"
+  ],[
+    AC_MSG_ERROR([couldn't determine how to link in linpack routines])
+  ],[$mir_cfg_libdir $mir_libs])
+], [$mir_cfg_libdir $mir_libs])
 
+MIR_LIBS="$mir_output_libdir $mir_libs"
 AC_SUBST(MIR_LIBS)
-AC_SUBST(MIR_CPPFLAGS)
-AC_SUBST(MIR_DISTCHECK_CONFARG)
 
-dnl Checks
 
-dnl We use this in the doc/ install rule. On my Fedora 10 computers this
-dnl subst wasn't needed but on a SuSE 10.2 it was -- I think that older
-dnl (<=1.9) automakes don't define this automatically whereas newer ones
-dnl do.
-AC_PROG_MKDIR_P
-AC_SUBST([MKDIR_P])
+dnl Checks for other dependencies
 
 dnl AC_PROG_F77 doesn't raise an error if no compiler was found, and
 dnl doesn't actually check whether the compiler works ...
