@@ -210,11 +210,15 @@ dnl too otherwise we'll disagree about the size of off_t
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 
-dnl Here we have to work around the fact that __file__ is replaced by
-dnl M4. D'oh!
+dnl Numpy. We have to work around M4's replacement of __file__. D'oh!
 
-AM_CHECK_PYMOD(numpy,ndarray,,AC_MSG_FAILURE([could not find the Python module "numpy"]))
-NUMPY_INCLUDEDIR=`$PYTHON -c 'import numpy, os.path as p ; f = getattr (numpy, "__" + "file__") ; print p.join (p.dirname (f), "core", "include")'`
+AM_CHECK_PYMOD([numpy],[ndarray],,
+[
+  AC_MSG_FAILURE([could not find the Python module "numpy"])
+])
+
+NUMPY_INCLUDEDIR=`$PYTHON -c 'import numpy, os.path as p
+print p.join (p.dirname (numpy.[__][file__]), "core", "include")'`
 AC_SUBST(NUMPY_INCLUDEDIR)
 
 dnl Check for Sphinx, used to create docs
