@@ -167,6 +167,8 @@ and return. If not, raise an :class:`Exception`."""
         """:rtype: :class:`str`
 :returns: The real path (as defined by :func:`os.path.realpath`)
   to this dataset.
+
+Get the "real path" (defined by :func:`os.path.realpath`) to this dataset.
 """
         return os.path.realpath (self.base)
 
@@ -175,6 +177,8 @@ and return. If not, raise an :class:`Exception`."""
         """:rtype: :class:`str`
 :returns: A path composed of user-defined items relative to this
   dataset's path.
+
+Construct a path relative to this dataset's path.
 """
         return os.path.join (self.base, *args)
 
