@@ -1,4 +1,4 @@
-miriad-python 1.2.1
+miriad-python 1.2.4
 ===================
 
 miriad-python is a bridge between the MIRIAD radio analysis package and
@@ -25,7 +25,7 @@ publications.
 Installation Instructions
 =========================
 
-The basic recipe is the standard Linux one:
+The basic installation recipe is the standard Linux one:
 
     ./configure --prefix=PREFIX --with-miriad=MIRIAD_LOCATION
     make && make install
@@ -40,27 +40,36 @@ The following packages are required to install miriad-python:
 
  * Python version 2.5 or greater
  * NumPy version 1.2 or greater
- * Matching C and Fortran-77 compilers (we use gcc and gfortran 4.4)
- * A recent working installation of CARMA MIRIAD built with the
-   "new-style" autotools system. More on this below.
+ * Matching C and Fortran-77 compilers (we use gcc and gfortran 4.8)
+ * A recent working installation of CARMA MIRIAD. More on this below.
 
-There are multiple divergent MIRIAD codebases, and multiple ways to
-build them. Miriad-python must be built against a MIRIAD having three
-characteristics:
+If you're using a Mac, the best way to get an installation of Python with
+Numpy is to install the latest version of the "Anaconda" Python distribution,
+found here:
 
-  * it must be CARMA, not ATNF, MIRIAD
-  * the source code must be newer than Jan 3, 2012
-  * MIRIAD must be compiled using the "new-style" (autotools) system
+  http://www.continuum.io/downloads
+
+If you install this Python distribution, make sure to start a new terminal
+that picks up the custom Anaconda `python` program before proceeding. You
+should also make sure to install miriad-python into the same location as
+Anaconda so that it can find the miriad-python modules automatically.
+
+There are multiple divergent MIRIAD codebases, and multiple ways to build
+them. Miriad-python must be built against the CARMA version of MIRIAD. We
+attempt to support a variety of installations, but the most reliable setup is
+a recent installation based on the "new-style" autotools build system.
 
 CARMA MIRIAD's homepage is
 
   http://carma.astro.umd.edu/wiki/index.php/Miriad
 
-Unfortunately, the binary packages distributed at that site are built
-with the "old style" system that is incompatible with
-miriad-python. If you use a Mac, we recommend that you obtain a
-"new-style" MIRIAD installation using the MacPorts system, documented
-here:
+The binary packages distributed at that site are built with the "old style"
+system. Miriad-python aims to be compatible with these packages, but there
+are some issues with the way that they're built that can prevent things
+from working.
+
+If you use a Mac and the CARMA binary packages don't work for you, we
+suggest the MIRIAD MacPort:
 
   https://www.cfa.harvard.edu/~pwilliam/miriad-macport/
 
@@ -146,10 +155,11 @@ This is all accomplished by running the `configure` script like so:
 
     ./configure --prefix=PREFIX --with-miriad=MIRPATH
 
-Here, MIRPATH is where MIRIAD has been installed, such that the
-following files should exist: `MIRPATH/include/miriad-c/miriad.h` and
-`MIRPATH/lib/libmir.EXT`, where `EXT` is `so` on Linux machines and
-`dylib` on Macs.
+Here, MIRPATH is where MIRIAD has been installed. If you use a "new-style"
+installation, the following files should exist:
+`MIRPATH/include/miriad-c/miriad.h` and `MIRPATH/lib/libmir.EXT`, where `EXT`
+is `so` on Linux machines and `dylib` on Macs. If you're using a CARMA
+precompiled distribution, the file `MIRPATH/src/inc/maxdim.h` should exist.
 
 If you believe that you're specifying the correct --with-miriad
 argument and the `configure` checks are still failing, you can peruse
@@ -281,9 +291,9 @@ Here are the package names for some common Linux distributions:
       Ubuntu: python-numpy
     OpenSuSE: python-numpy
 
-If Numpy isn't available as a prebuilt binary package, you'll need to
-install it manually, instructions for which are beyond the scope of
-this document. See http://numpy.scipy.org.
+If Numpy isn't available as a prebuilt binary package, you'll need to install
+it manually, instructions for which are beyond the scope of this document. See
+http://numpy.scipy.org or http://www.continuum.io/downloads.
 
 
 Contact Information
@@ -300,7 +310,7 @@ tracker on the miriad-python GitHub page:
 Copyright Notice
 ================
 
-Copyright 2009-2012 Peter Williams
+Copyright 2009-2013 Peter Williams
 
 This file is free documentation; the copyright holder gives unlimited
 permission to copy, distribute, and modify it.
