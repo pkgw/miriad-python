@@ -39,6 +39,10 @@ except SyntaxError:
     from _uvdat_compat_24 import _inputSets, _read_gen
 
 
+# Note that changing this after import has no effect, since at that point the
+# value has already been captured in the function definitions.
+default_maxchan = 16384
+
 class UVDatDataSet (UVDataSet):
     """:synopsis: a handle to a UV dataset being read with the UVDAT
     subsystem
@@ -172,7 +176,7 @@ enforce this condition, use :func:`inputSets`.
     return UVDatDataSet (tin)
 
 
-def read (saveFlags=False, maxchan=4096):
+def read (saveFlags=False, maxchan=default_maxchan):
     """Read in data via the UVDAT subsystem.
 
 :arg saveFlags: whether to rewrite the flags of the dataset(s) as it/they are
@@ -199,7 +203,7 @@ arrays do not change from iteration to iteration, but their contents do.
 
 def setupAndRead (toread, uvdOptions, saveFlags, nopass=False, nocal=False,
                   nopol=False, select=None, line=None, stokes=None, ref=None,
-                  maxchan=4096):
+                  maxchan=default_maxchan):
     """Set up the UVDAT subsystem manually and read in the data.
 
 :arg toread: the name(s) of the dataset or datasets to read
