@@ -166,7 +166,7 @@ argument and the `configure` checks are still failing, you can peruse
 the file `config.log`, created by `configure`, for the particular
 error that led the tool to fail. Sometimes unrelated problems can show
 up in this phase of the configuration process. If you still have
-trouble, consult your local system adminstrator (with complete
+trouble, consult your local system administrator (with complete
 contextual information) or the miriad-python developers.
 
 For thorough but generic instructions on running the `configure`
